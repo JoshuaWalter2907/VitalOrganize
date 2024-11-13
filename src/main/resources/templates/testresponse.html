@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Dummy Eintrag</title>
+</head>
+<body>
+
+<h2>Gefundener Dummy-Eintrag</h2>
+
+<!-- Dummy-Daten anzeigen -->
+<p><strong>ID:</strong> <span th:text="${dummy.id}"></span></p>
+<p><strong>Name:</strong> <span th:text="${dummy.name}"></span></p>
+<p><strong>Datum:</strong> <span th:text="${dummy.date}"></span></p>
+
+<!-- Link zurück zur Suche -->
+<a href="/test">Zurück zur Suche</a>
+
+</body>
+</html>
