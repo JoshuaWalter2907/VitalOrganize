@@ -1,0 +1,396 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url("../images/background.jpg") no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.wrapper{
+    width: 420px;
+    background: transparent;
+    border: 2px solid rgb(255, 255, 255, .2);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+    color: #fff;
+    border-radius: 10px;
+    padding: 30px 40px;
+}
+
+.wrapper h1{
+    font-size: 36px;
+    text-align: center;
+}
+
+.wrapper .input-box{
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 30px 0;
+    display: flex;
+    align-items: center;
+}
+
+.input-box input{
+    width: 85%;
+    height: 40%;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .2);
+    outline: none;
+    border-radius: 40px;
+    font-size: 16px;
+    color: #fff;
+    padding: 20px 45px 20px 20px;
+}
+
+.input-box input::placeholder{
+    color: #fff;
+}
+
+.input-box i{
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.wrapper .remember-forgot{
+    display: flex;
+    justify-content: space-between;
+    font-size: 14.5px;
+    margin: -15px 0 15px;
+}
+
+.remember-forgot label input{
+    accent-color: #fff;
+    margin-right: 3px;
+}
+
+.remember-forgot a{
+    color: #fff;
+    text-decoration: none;
+}
+
+.remember-forgot a:hover{
+    text-decoration: underline;
+}
+
+.social-login {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.social-btn {
+    width: 100%;
+    height: 45px;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Google Button */
+.google-btn {
+    background-color: #db4437; /* Google Rot */
+    color: #fff;
+}
+
+/* Discord Button */
+.discord-btn {
+    background-color: #7289da; /* Discord Blau */
+    color: #fff;
+}
+
+/* Apple Button */
+.apple-btn {
+    background-color: #000000; /* Apple Schwarz */
+    color: #fff;
+}
+
+/* Hover-Effekte für die Buttons */
+.social-btn:hover {
+    opacity: 0.8;
+}
+
+.wrapper .btn{
+    width: 100%;
+    height: 45px;
+    background: #fff;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+}
+
+.wrapper .register-link{
+    font-size: 14.5px;
+    text-align: center;
+    margin: 20px 0 15px;
+}
+
+.register-link p a{
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+}
+.register-link p a:hover{
+    text-decoration: underline;
+}
+
+header {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+}
+
+header nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+header nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+header nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Footer Styles */
+footer {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+footer ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+footer ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+footer ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Grundlegendes Styling für den Header */
+header {
+    background-color: #1B1B1B; /* Dunkler Hintergrund für den Header */
+    color: #F5F5F5; /* Helle Textfarbe */
+    padding: 10px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+}
+
+.header-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Login Button */
+.login-button {
+    background-color: #D4A441; /* Goldene Farbe */
+    color: #1B1B1B;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.login-button:hover {
+    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
+}
+
+/* Dropdown Menü */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+
+/* Dropdown Button */
+.dropdown-button {
+    background-color: #1B1B1B; /* Gleiche Hintergrundfarbe wie der Header */
+    color: #D4A441; /* Goldene Schriftfarbe */
+    border: 1px solid #D4A441;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.dropdown-button:hover {
+    background-color: #333333; /* Dunklerer Hintergrund bei Hover */
+}
+
+/* Dropdown Inhalte */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #1B1B1B; /* Gleicher dunkler Hintergrund wie der Header */
+    min-width: 150px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+.dropdown-content a {
+    color: #F5F5F5; /* Weiße Schriftfarbe */
+    padding: 10px 12px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease-in-out;
+    border-bottom: 1px solid #333; /* Trennlinie zwischen Items */
+}
+
+.dropdown-content a:hover {
+    background-color: #333333; /* Hintergrundfarbe bei Hover */
+}
+
+/* Zeige das Dropdown bei Hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Navigation */
+header nav ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+header nav ul li {
+    margin: 0 15px;
+}
+
+/* Links im Header */
+header nav ul li a {
+    color: #D4A441; /* Goldene Farbe für Links */
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Hover-Effekt für Links */
+header nav ul li a:hover {
+    color: #A86E2B; /* Braunton für Hover-Effekt */
+}
+
+/* Trennlinie unter dem Header */
+header::after {
+    content: '';
+    display: block;
+    height: 2px;
+    background-color: #D4A441; /* Goldene Linie */
+    margin: 10px auto 0;
+    width: 100vw;
+    max-width: 100%;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+/* Allgemeine Stile für den Footer */
+footer {
+    background-color: #1B1B1B; /* Dunkler Hintergrund */
+    color: #D4A441; /* Weiße Schrift */
+    padding: 20px 0;
+    position: fixed; /* Fixiert den Footer am unteren Rand */
+    bottom: 0; /* Stellt sicher, dass der Footer immer am unteren Rand ist */
+    width: 100%; /* Breite des Footers auf 100% setzen */
+    z-index: 999; /* Sicherstellen, dass der Footer über anderen Elementen ist */
+    text-align: center; /* Text im Footer zentrieren */
+}
+
+footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+footer ul li {
+    display: inline;
+    margin-right: 20px; /* Abstand zwischen den Links */
+}
+
+footer ul li a {
+    text-decoration: none;
+    color: #D4A441; /* Weiße Links */
+    font-weight: 600;
+}
+
+footer ul li a:hover {
+    text-decoration: underline; /* Unterstreichen bei Hover */
+}
+
+/* Sicherstellen, dass der Footer nicht den Inhalt überlappt, wenn wenig Inhalt auf der Seite ist */
+body {
+    margin-bottom: 60px; /* Dies sorgt dafür, dass der Footer nicht den Inhalt überlappt */
+}
+

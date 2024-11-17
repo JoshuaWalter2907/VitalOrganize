@@ -19,11 +19,18 @@ public class DummyController {
         this.dummyService = dummyService;
     }
 
+
+    @GetMapping("/")
+    public String showHomePage() {return "home";}
+
+
     // GET-Mapping für die Test-Seite
-    @GetMapping("/test")
+    @GetMapping("/login")
     public String showTestPage() {
-        return "test";  // Zeigt das 'test.html' Template an
+        return "Login";  // Zeigt das 'test.html' Template an
     }
+
+
 
     // POST-Mapping für die Verarbeitung der Suchanfrage
     @PostMapping("/search")
