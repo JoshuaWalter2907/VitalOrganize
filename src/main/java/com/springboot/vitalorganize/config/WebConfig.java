@@ -131,7 +131,6 @@ public class WebConfig implements WebMvcConfigurer {
         }
     }
 
-
     private static String getUsername(Authentication authentication) {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String username = oAuth2User.getAttribute("login");
