@@ -7,15 +7,32 @@
     font-family: "Poppins", sans-serif;
 }
 
+body.gold-theme{
+    --background-color: #FFA500;
+    --text-color: #1A237E;
+    --background-image: url("../images/background.jpg");
+}
+
+body.light-theme{
+    --background-color: white;
+    --text-color: black;
+    --background-image: url("../images/background_B&W.jpg.png");
+}
+
+
 body{
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: url("../images/background.jpg") no-repeat;
+    background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    background-image: var(--background-image);
 }
+
 
 .wrapper{
     width: 420px;
@@ -33,6 +50,30 @@ body{
     text-align: center;
 }
 
+/* Positioniere Tooltip über dem Icon */
+.input-box {
+    position: relative;
+}
+
+.tooltip-text {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    display: none; /* Standardmäßig versteckt */
+}
+
+#show-password-icon:hover + .tooltip-text {
+    display: block; /* Tooltip beim Hovern anzeigen */
+}
+
 .wrapper .input-box{
     position: relative;
     width: 100%;
@@ -41,7 +82,6 @@ body{
     display: flex;
     align-items: center;
 }
-
 .input-box input{
     width: 85%;
     height: 40%;
@@ -160,8 +200,6 @@ body{
 }
 
 header {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: #fff;
     padding: 20px 0;
     text-align: center;
 }
@@ -189,7 +227,7 @@ header nav ul li a:hover {
 
 /* Footer Styles */
 footer {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.5); /* Halbtransparentes Schwarz */
     color: #fff;
     padding: 10px 0;
     text-align: center;
@@ -218,8 +256,6 @@ footer ul li a:hover {
 
 /* Grundlegendes Styling für den Header */
 header {
-    background-color: #1B1B1B; /* Dunkler Hintergrund für den Header */
-    color: #F5F5F5; /* Helle Textfarbe */
     padding: 10px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
     width: 100%;
@@ -247,7 +283,7 @@ header {
 
 /* Login Button */
 .login-button {
-    background-color: #D4A441; /* Goldene Farbe */
+    background-color: var(--background-color); /* Goldene Farbe */
     color: #1B1B1B;
     border: none;
     padding: 8px 16px;
@@ -273,9 +309,9 @@ header {
 
 /* Dropdown Button */
 .dropdown-button {
-    background-color: #1B1B1B; /* Gleiche Hintergrundfarbe wie der Header */
-    color: #D4A441; /* Goldene Schriftfarbe */
-    border: 1px solid #D4A441;
+    background-color: var(--text-color); /* Gleiche Hintergrundfarbe wie der Header */
+    color: var(--background-color); /* Goldene Schriftfarbe */
+    border: 1px solid var(--background-color);
     padding: 8px 16px;
     font-size: 14px;
     cursor: pointer;
@@ -304,7 +340,6 @@ header {
     text-decoration: none;
     display: block;
     transition: background-color 0.3s ease-in-out;
-    border-bottom: 1px solid #333; /* Trennlinie zwischen Items */
 }
 
 .dropdown-content a:hover {
@@ -331,7 +366,7 @@ header nav ul li {
 
 /* Links im Header */
 header nav ul li a {
-    color: #D4A441; /* Goldene Farbe für Links */
+    color: var(--background-color); /* Goldene Farbe für Links */
     text-decoration: none;
     font-size: 18px;
     font-weight: bold;
@@ -343,23 +378,22 @@ header nav ul li a:hover {
     color: #A86E2B; /* Braunton für Hover-Effekt */
 }
 
-/* Trennlinie unter dem Header */
-header::after {
-    content: '';
-    display: block;
-    height: 2px;
-    background-color: #D4A441; /* Goldene Linie */
-    margin: 10px auto 0;
-    width: 100vw;
-    max-width: 100%;
-    margin-left: 20px;
-    margin-right: 20px;
-}
+/*!* Trennlinie unter dem Header *!*/
+/*header::after {*/
+/*    content: '';*/
+/*    display: block;*/
+/*    height: 2px;*/
+/*    background-color: var(--background-color); !* Goldene Linie *!*/
+/*    margin: 10px auto 0;*/
+/*    width: 100vw;*/
+/*    max-width: 100%;*/
+/*    margin-left: 20px;*/
+/*    margin-right: 20px;*/
+/*}*/
 
 /* Allgemeine Stile für den Footer */
 footer {
-    background-color: #1B1B1B; /* Dunkler Hintergrund */
-    color: #D4A441; /* Weiße Schrift */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
     padding: 20px 0;
     position: fixed; /* Fixiert den Footer am unteren Rand */
     bottom: 0; /* Stellt sicher, dass der Footer immer am unteren Rand ist */
@@ -381,7 +415,7 @@ footer ul li {
 
 footer ul li a {
     text-decoration: none;
-    color: #D4A441; /* Weiße Links */
+    color: var(--background-color); /* Weiße Links */
     font-weight: 600;
 }
 
@@ -394,3 +428,104 @@ body {
     margin-bottom: 60px; /* Dies sorgt dafür, dass der Footer nicht den Inhalt überlappt */
 }
 
+/* Sektion für die Funktionen */
+.feature-section {
+    padding: 0;
+    text-align: center;
+    position: relative;
+    min-height: 100vh; /* Die Sektion nimmt mindestens die Höhe des Bildschirms ein */
+}
+
+/* Große Überschrift in der Mitte */
+.section-title {
+    font-size: 2.5rem;
+    color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    font-weight: 700;
+}
+
+/* Container für die Funktionskarten */
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 Spalten */
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    padding-top: 100px; /* Abstand von der Überschrift */
+}
+
+/* Stil für die Funktionskarten */
+.feature-card {
+    background-size: cover; /* Das Bild soll den gesamten Bereich ausfüllen */
+    background-position: center; /* Das Bild wird immer zentriert */
+    height: 300px; /* Höhe der Karte */
+    border-radius: 10px;
+    color: #fff;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Verhindert, dass der Inhalt über die Karte hinausgeht */
+    transition: background-color 0.3s ease-in-out; /* Weicher Übergang beim Hover */
+}
+
+.feature-card:hover {
+    background-color: rgba(0, 0, 0, 0.7); /* Dunklerer Hintergrund beim Hover */
+}
+
+/* Inhalt der Funktionskarten */
+.feature-content {
+    z-index: 2; /* Damit der Text über dem Bild angezeigt wird */
+    background-color: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund für besseren Kontrast */
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Titel der Karten */
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Beschreibung in den Karten */
+.feature-card p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* Call-to-Action Button */
+.cta-button {
+    display: inline-block;
+    background-color: var(--background-color); /* Goldene Farbe */
+    color: var(--text-color);
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
+}
+
+/* Responsives Design: Auf kleineren Bildschirmen wird das Grid in eine Spalte umgewandelt */
+@media (max-width: 768px) {
+    .features-container {
+        grid-template-columns: 1fr; /* Nur eine Spalte auf kleinen Bildschirmen */
+    }
+
+    .feature-card {
+        height: 250px; /* Geringere Höhe auf kleineren Bildschirmen */
+    }
+}
