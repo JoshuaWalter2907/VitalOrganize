@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="/css/chat.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <h1>Willkommen im Chat</h1>
+
+  <!-- Eingabe für neuen Chat -->
+  <div id="new-chat">
+    <label for="username">Benutzername des Freundes:</label>
+    <input type="text" id="username" placeholder="Benutzername eingeben">
+    <button id="start-chat" onclick="startNewChat()">Neuen Chat starten</button>
+  </div>
+
+  <div id="chat-window" style="display: none;">
+    <div id="chat-header">
+      <h2>Chat mit <span id="chat-partner"></span></h2>
+      <button onclick="endChat()">Chat beenden</button>
+    </div>
+
+    <div id="messages" style="max-height: 300px; overflow-y: scroll;">
+      <!-- Hier werden die Nachrichten angezeigt -->
+    </div>
+
+    <div id="message-input">
+      <input type="text" id="message" placeholder="Nachricht eingeben...">
+      <button onclick="sendMessage()">Senden</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/chat.js"></script>
+</body>
+</html>

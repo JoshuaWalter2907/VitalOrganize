@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.config;
 
-import com.springboot.vitalorganize.dao.UserRepository;
+import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -9,25 +9,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 
-import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Locale;
 
 
@@ -41,10 +37,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
                     // Öffentliche Ressourcen
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll();
-                    registry.requestMatchers("/login", "/error").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition").permitAll();
+                    registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
                     // Geschützte Ressourcen
                     registry.anyRequest().authenticated();
                 })
@@ -57,10 +54,14 @@ public class WebConfig implements WebMvcConfigurer {
 
                                 if ("discord".equals(provider)) {
                                     handleDiscordLogin(oauth2Token); // Discord-spezifische Logik
-                                    response.sendRedirect("/profile");
+                                    response.sendRedirect("/profileaddition");
                                 } else if ("google".equals(provider)) {
                                     handleGoogleLogin(oauth2Token); // Google-spezifische Logik
-                                    response.sendRedirect("/profile");
+                                    response.sendRedirect("/profileaddition");
+                                }else if("github".equals(provider)) {
+                                    handleGitHubLogin(oauth2Token);
+                                    response.sendRedirect("/profileaddition");
+
                                 } else {
                                     response.sendRedirect("/profile");
                                 }
@@ -69,12 +70,6 @@ public class WebConfig implements WebMvcConfigurer {
                             }
                         })
                 )
-                .formLogin(form -> {
-                    form
-                            .loginPage("/login") // Login-Seite für Formular-Login
-                            .defaultSuccessUrl("/profile", true) // Nach erfolgreichem Login weiterleiten
-                            .permitAll();
-                })
                 .logout(logout -> {
                     logout
                             .logoutUrl("/logout") // Logout-Endpunkt
@@ -84,22 +79,82 @@ public class WebConfig implements WebMvcConfigurer {
                 .build();
     }
 
+
+        private void handleFormLogin(String email, String password, Authentication authentication) {
+
+        authentication.setAuthenticated(true);
+        // Prüfen, ob Benutzer bereits existiert
+        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "local");
+
+        if (userEntity == null) {
+            // Benutzer erstellen, falls nicht vorhanden
+            userEntity = new UserEntity();
+            userEntity.setEmail(email);
+            userEntity.setPassword(passwordEncoder().encode(password)); // Passwort verschlüsseln
+            userEntity.setRole("USER"); // Standardrolle
+            userEntity.setProvider("local"); // Anbieter auf "local" setzen
+            userEntity.setPublic(false);
+            userEntity.setBirthday(LocalDate.of(1900, 1, 1));
+            userRepository.save(userEntity);
+
+            System.out.println("Neuer Benutzer erstellt: " + email);
+        } else {
+            System.out.println("Benutzer existiert bereits: " + email);
+        }
+
+        // Hinweis: Zusätzliche Logik kann hier hinzugefügt werden, wie z.B. Logging oder Auditing
+    }
+
+
+
     private void handleGoogleLogin(OAuth2AuthenticationToken authentication) {
         String username = authentication.getPrincipal().getAttribute("username");
         String email = authentication.getPrincipal().getAttribute("email");
 
-        UserEntity userEntity = userRepository.findByUsernameAndProvider(email, "google");
+        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "google");
         if (userEntity == null) {
             userEntity = new UserEntity();
-            userEntity.setUsername(email);
+            userEntity.setEmail(email);
+            userEntity.setUsername("");
             userEntity.setPassword(""); // Passwort leer für OAuth
             userEntity.setRole("USER"); // Standardrolle
             userEntity.setProvider("google"); // Anbieter auf "discord" setzen
+            userEntity.setPublic(false);
+            userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userRepository.save(userEntity);
-            System.out.println("Neuer Benutzer erstellt: " + username);
+            System.out.println("Neuer Benutzer erstellt: " + email);
         } else {
             // Falls notwendig, Attribute aktualisieren
-            System.out.println("Benutzer aktualisiert: " + username);
+            System.out.println("Benutzer aktualisiert: " + email);
+        }
+    }
+
+    private void handleGitHubLogin(OAuth2AuthenticationToken authentication) {
+        // GitHub-spezifische Attribute abrufen
+        String username = authentication.getPrincipal().getAttribute("login"); // GitHub-Benutzername
+        String email = authentication.getPrincipal().getAttribute("email"); // GitHub-E-Mail-Adresse
+
+        if (email == null) {
+            email = username + "@github.com"; // Dummy-E-Mail erstellen
+        }
+
+        // Benutzer in der Datenbank suchen
+        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "github");
+        if (userEntity == null) {
+            // Benutzer erstellen, wenn er nicht existiert
+            userEntity = new UserEntity();
+            userEntity.setEmail(email); // Als Benutzername die E-Mail verwenden
+            userEntity.setUsername("");
+            userEntity.setPassword(""); // Passwort leer für OAuth
+            userEntity.setRole("USER"); // Standardrolle
+            userEntity.setProvider("github"); // Anbieter auf "github" setzen
+            userEntity.setPublic(false);
+            userEntity.setBirthday(LocalDate.of(1900, 1, 1));
+            userRepository.save(userEntity);
+            System.out.println("Neuer Benutzer erstellt: " + email);
+        } else {
+            // Optional: Bestehende Benutzerattribute aktualisieren
+            System.out.println("Benutzer aktualisiert: " + email);
         }
     }
 
@@ -115,14 +170,17 @@ public class WebConfig implements WebMvcConfigurer {
         }
 
         // Überprüfen, ob der Benutzer bereits existiert
-        UserEntity userEntity = userRepository.findByUsernameAndProvider(email, "discord");
+        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "discord");
         if (userEntity == null) {
             // Benutzer existiert nicht, also neuen erstellen
             userEntity = new UserEntity();
-            userEntity.setUsername(email);  // E-Mail als Benutzernamen verwenden
+            userEntity.setEmail(email);  // E-Mail als Benutzernamen verwenden
+            userEntity.setUsername("");
             userEntity.setPassword("");     // Kein Passwort für OAuth
             userEntity.setRole("USER");
             userEntity.setProvider("discord"); // Standardrolle
+            userEntity.setPublic(false);
+            userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userRepository.save(userEntity);
             System.out.println("Neuer Discord-Benutzer erstellt: " + email);
         } else {

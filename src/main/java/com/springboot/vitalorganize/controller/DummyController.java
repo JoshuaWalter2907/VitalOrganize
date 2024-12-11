@@ -1,10 +1,12 @@
 package com.springboot.vitalorganize.controller;
 
+import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.Dummy;
+import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.DummyService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -14,15 +16,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
-import java.security.Principal;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.time.LocalDate;
+
+import static java.lang.Thread.sleep;
 
 @Controller
 public class DummyController {
 
     private final DummyService dummyService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     public DummyController(DummyService dummyService) {
@@ -87,51 +93,53 @@ public class DummyController {
     @GetMapping("/profile")
     public String profile(@RequestParam(value = "theme", defaultValue = "light") String theme,
                           @RequestParam(value = "lang", defaultValue = "en") String lang,
-                          @AuthenticationPrincipal OAuth2User user, Model model) {
+                          @AuthenticationPrincipal OAuth2User user,
+                          OAuth2AuthenticationToken authentication, // Für `registrationId`
+                          Model model) {
 
         System.out.println("Benutzerattribute: " + user.getAttributes());
 
+        // Extrahiere den Authentifizierungs-Provider
+        String provider = authentication.getAuthorizedClientRegistrationId(); // "google", "discord", "github"
+        System.out.println(provider);
 
-        // Extrahiere den Authentifizierungs-Provider (Google oder Discord)
-        String provider = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("");  // "google" oder "discord" sollte hier sein
-
-        String name = user.getAttribute("name");  // Name des Benutzers (bei Google)
-        String email = user.getAttribute("email");  // Email des Benutzers (bei beiden)
+        String name = user.getAttribute("name"); // Allgemeiner Benutzername
+        String email = user.getAttribute("email"); // Allgemeine E-Mail
         String photoUrl = "";
 
-        Object issuerObj = user.getAttribute("iss");
-        String issuer = (issuerObj != null) ? issuerObj.toString() : null;
+        // Provider-spezifische Logik
+        switch (provider) {
+            case "google":
+                photoUrl = user.getAttribute("picture"); // Google Profilbild
+                break;
 
-        System.out.println("issuer: " + issuer);
+            case "discord":
+                String discordId = user.getAttribute("id"); // Discord ID
+                String avatarHash = user.getAttribute("avatar"); // Discord Avatar-Hash
 
-        if ("https://accounts.google.com".equals(issuer)) {
-            provider = "google";
-        } else {
-            provider = "discord";
+                if (discordId != null && avatarHash != null) {
+                    photoUrl = "https://cdn.discordapp.com/avatars/" + discordId + "/" + avatarHash + ".png";
+                } else {
+                    photoUrl = "https://cdn.discordapp.com/embed/avatars/0.png"; // Standardavatar
+                }
+                break;
+
+            case "github":
+                name = user.getAttribute("login"); // GitHub Login-Name
+                photoUrl = user.getAttribute("avatar_url"); // GitHub Profilbild
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unbekannter Provider: " + provider);
         }
 
-        if ("google".equals(provider)) {
-            // Google-spezifische Logik
-            photoUrl = user.getAttribute("picture");  // Google Foto URL
-        } else if ("discord".equals(provider)) {
-            // Discord-spezifische Logik
-            String discordId = user.getAttribute("id");  // Discord ID
-            String avatarHash = user.getAttribute("avatar");  // Avatar-Hash von Discord
+        System.out.println(photoUrl);
 
-            if (discordId != null && avatarHash != null) {
-                photoUrl = "https://cdn.discordapp.com/avatars/" + discordId + "/" + avatarHash + ".png";
-            } else {
-                // Standard-Avatar, falls kein Avatar vorhanden ist
-                photoUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
-            }
-        }
+
         // Füge die extrahierten Werte dem Model hinzu
         model.addAttribute("name", name);
         model.addAttribute("email", email);
-        model.addAttribute("photo", photoUrl);  // Profilbild-URL
+        model.addAttribute("photo", photoUrl); // Profilbild-URL
 
         // Dynamisch den Pfad zum CSS-Theme auswählen
         String themeCss = "/css/" + theme + "-theme.css";
@@ -141,6 +149,90 @@ public class DummyController {
         model.addAttribute("lang", lang);
 
         // Gib das Thymeleaf-Template zurück, das die Daten anzeigt
-        return "user-profile";  // Der Name des Thymeleaf-Templates (z.B. profile.html)
+        return "user-profile"; // Der Name des Thymeleaf-Templates (z.B. profile.html)
     }
+
+    @GetMapping("/profileaddition")
+    public String profileAdditionGet(@RequestParam(value = "theme", defaultValue = "light") String theme,Model model,
+                                     @AuthenticationPrincipal OAuth2User user,
+                                     OAuth2AuthenticationToken authentication, HttpSession session) {
+
+        String provider = authentication.getAuthorizedClientRegistrationId();
+        String email = user.getAttribute("email");
+        System.out.println(user);
+
+        if (provider.equals("github")) {
+            String username = user.getAttribute("login");
+            System.out.println(username);
+            email = username + "@github.com"; // Dummy-E-Mail erstellen
+            System.out.println(email);
+        }
+
+        System.out.println(email + " " + provider);
+
+        UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
+
+        model.addAttribute("user", existingUser);
+        model.addAttribute("birthDate", existingUser.getBirthday());
+
+        if(existingUser != null && !existingUser.getUsername().isEmpty()) {
+            return "redirect:/profile";
+        }else{
+            return "Profile Additions";
+        }
+
+    }
+
+    @PostMapping("/profileaddition")
+    public String profileAddition(@RequestParam("inputString") String inputString,
+                                  @RequestParam(name = "isPublic", required = false) boolean status,
+                                  @RequestParam("birthDate") String birthDate,
+                                  Model model,
+                                  HttpSession session,
+                                  @AuthenticationPrincipal OAuth2User user,
+                                  OAuth2AuthenticationToken authentication) {
+
+        String provider = authentication.getAuthorizedClientRegistrationId();
+        String email = user.getAttribute("email");
+
+        if (provider.equals("github")) {
+            String username = user.getAttribute("login");
+            System.out.println(username);
+            email = username + "@github.com"; // Dummy-E-Mail erstellen
+            System.out.println(email);
+        }
+
+        System.out.println(email + " " + provider);
+
+        UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
+        System.out.println(existingUser);
+
+
+        boolean usernameExists = userRepository.existsByUsername(inputString);
+        System.out.println(usernameExists);
+        System.out.println(status);
+
+        existingUser.setPublic(status);
+        existingUser.setBirthday(LocalDate.parse(birthDate));
+
+        if (usernameExists) {
+            return "redirect:/profileaddition"; // HTML-Seite mit Vorschlägen anzeigen
+        }
+
+        existingUser.setUsername(inputString);
+        userRepository.save(existingUser);
+
+        System.out.println(inputString);
+
+        return "redirect:/profile";
+
+
+    }
+
+    @GetMapping("/chat")
+    public String getChat(){
+        return "chat";
+    }
+
+
 }
