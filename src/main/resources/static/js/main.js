@@ -86,3 +86,20 @@ languageLinks.forEach(link => {
         window.location.href = url.toString(); // Seite mit der neuen Sprache laden
     });
 });
+
+// Elemente referenzieren
+const toggleFormButton = document.getElementById('toggleFormButton');
+const formContainer = document.getElementById('formContainer');
+
+// Formular ein- oder ausblenden
+toggleFormButton.addEventListener('click', () => {
+    formContainer.classList.toggle('show');
+});
+
+paypal.Buttons({
+    style: {
+        layout: 'vertical',
+        color: 'blue',
+        shape: 'rect',
+        label: 'paypal'
+    }}).render('#paypal-button-container');

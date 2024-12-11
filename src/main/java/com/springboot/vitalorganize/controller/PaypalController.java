@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +36,23 @@ public class PaypalController {
 
 
     @GetMapping("/paypal")
-    public String paypal() {
+    public String paypal(
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
+            Model model
+    ) {
+
+        String themeCss = "/css/" + theme + "-theme.css";
+        model.addAttribute("themeCss", themeCss);
+
+        // Sprache dem Modell hinzufügen
+        model.addAttribute("lang", lang);
+
+        Double balance = paypalService.getCurrentBalance();
+        System.out.println(balance);
+        model.addAttribute("balance", String.format("%.2f", balance));
+
+
         return "paypal";
     }
 
@@ -81,7 +98,7 @@ public class PaypalController {
     }
 
     @GetMapping("/paypal/success")
-    public String paypalSuccess(
+    public RedirectView paypalSuccess(
             @RequestParam("paymentId") String paymentId,
             @RequestParam("PayerID") String payerId,
             @AuthenticationPrincipal OAuth2User user,
@@ -121,17 +138,17 @@ public class PaypalController {
                 Payment payment = paypalService.executePayment(paymentId, payerId);
                 if(payment.getState().equals("approved")){
                     paypalService.addPayment(zahlung);
-                    return "subscriptionSuccess";
+                    return new RedirectView("/paypal");
                 }
             } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
                 double balance = paypalService.getCurrentBalance();
                 if(Double.valueOf(amount) > balance){
-                    return "paymentError";
+                    return new RedirectView("/paypal/error");
                 }else{
                     zahlung.setType(PaymentType.AUSZAHLEN);
                     paypalService.executePayout(receiverEmail, amount,currency);
                     paypalService.addPayment(zahlung);
-                    return "subscriptionSuccess";
+                    return new RedirectView("/paypal");
                 }
             }
 
@@ -141,12 +158,12 @@ public class PaypalController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return "subscriptionSuccess";
+        return new RedirectView("/paypal");
     }
 
     @GetMapping("/paypal/cancel")
     public String paypalCancel(){
-        return "paymentCancel";
+        return "paypal";
     }
 
     @GetMapping("/paypal/error")

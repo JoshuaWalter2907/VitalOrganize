@@ -82,7 +82,8 @@ body{
     display: flex;
     align-items: center;
 }
-.input-box input{
+.input-box input,
+.input-box select{
     width: 85%;
     height: 40%;
     background: transparent;
@@ -519,13 +520,112 @@ body {
     background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
 }
 
-/* Responsives Design: Auf kleineren Bildschirmen wird das Grid in eine Spalte umgewandelt */
-@media (max-width: 768px) {
-    .features-container {
-        grid-template-columns: 1fr; /* Nur eine Spalte auf kleinen Bildschirmen */
-    }
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-    .feature-card {
-        height: 250px; /* Geringere Höhe auf kleineren Bildschirmen */
-    }
+.layout{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column; /* Stellt sicher, dass der Button und das Formular vertikal gestapelt sind */
+    align-items: flex-start; /* Ausrichtung des Inhalts auf der linken Seite */
+    max-width: 45%; /* Maximale Breite für den Container */
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.2); /* Hintergrundfarbe mit Transparenz */
+    border-radius: 10px; /* Abgerundete Ecken */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung für den Container */
+}
+
+.paybutton {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.paybutton:hover {
+    background-color: #0056b3;
+}
+
+/* Verstecktes Formular */
+.form-container {
+    display: none; /* Standardmäßig unsichtbar */
+    width: 100%; /* Passt sich an die Breite des Containers an */
+    pointer-events: none; /* Verhindert Interaktionen mit dem Formular */
+    transition: opacity 0.3s ease; /* Sanfte Übergangseffekte */
+}
+
+/* Sichtbar gemachtes Formular */
+.form-container.show {
+    display: block;
+    pointer-events: auto; /* Ermöglicht Interaktionen */
+}
+.form-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Zentriert die Formularelemente */
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 400px;
+}
+
+#paypal-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.image-large {
+    width: 100%; /* Bild passt sich an die Breite des Containers an */
+    height: auto; /* Beibehaltung des Seitenverhältnisses */
+    display: block;
+}
+
+
+.image-text {
+    position: absolute;
+    top: 35%; /* Zentriere vertikal */
+    left: 50%; /* Zentriere horizontal */
+    transform: translate(-50%, -50%); /* Exakte Zentrierung */
+    color: white; /* Textfarbe */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Optional: Schatten für bessere Lesbarkeit */
+    text-align: center;
+}
+
+.image-text h1 {
+    font-family: "Cooper Black", cursive;
+    font-size: 2rem;
+    margin: 0;
+    color: gold;
+}
+
+.image-text p {
+    font-size: 5rem;
+    margin: 5px 0 0;
+    color: gold;
+
 }
