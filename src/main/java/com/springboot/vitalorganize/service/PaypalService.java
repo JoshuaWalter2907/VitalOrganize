@@ -26,7 +26,6 @@ public class PaypalService {
 
     public final APIContext apiContext;
 
-    @Autowired
     private final PaymentRepository paymentRepository;
 
     @Value("${paypal.client.id}")

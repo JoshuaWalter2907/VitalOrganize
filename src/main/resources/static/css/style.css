@@ -31,6 +31,8 @@ body{
     background-color: var(--background-color);
     color: var(--text-color);
     background-image: var(--background-image);
+    background-attachment: fixed;
+
 }
 
 
@@ -196,6 +198,7 @@ body{
     text-decoration: none;
     font-weight: 600;
 }
+
 .register-link p a:hover{
     text-decoration: underline;
 }
@@ -258,6 +261,7 @@ footer ul li a:hover {
 /* Grundlegendes Styling für den Header */
 header {
     padding: 10px 0;
+    background-color: rgba(0, 0, 0, 0.3);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
     width: 100%;
     position: fixed;
@@ -269,7 +273,7 @@ header {
 
 .header-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
@@ -277,7 +281,7 @@ header {
     width: 100%;
 }
 
-.header-left {
+.header-right {
     display: flex;
     align-items: center;
 }
@@ -629,3 +633,4 @@ body {
     color: gold;
 
 }
+

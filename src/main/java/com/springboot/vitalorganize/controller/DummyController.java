@@ -1,10 +1,13 @@
 package com.springboot.vitalorganize.controller;
 
+import com.springboot.vitalorganize.model.MessageEntity;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.Dummy;
 import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.DummyService;
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,24 +20,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
 @Controller
+@AllArgsConstructor
 public class DummyController {
 
     private final DummyService dummyService;
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    public DummyController(DummyService dummyService) {
-        this.dummyService = dummyService;
-    }
-
+    private final ChatService chatService;
 
     @RequestMapping("/")
     public String home(
@@ -155,7 +157,8 @@ public class DummyController {
     @GetMapping("/profileaddition")
     public String profileAdditionGet(@RequestParam(value = "theme", defaultValue = "light") String theme,Model model,
                                      @AuthenticationPrincipal OAuth2User user,
-                                     OAuth2AuthenticationToken authentication, HttpSession session) {
+                                     OAuth2AuthenticationToken authentication,
+                                     HttpSession session) {
 
         String provider = authentication.getAuthorizedClientRegistrationId();
         String email = user.getAttribute("email");
@@ -230,9 +233,51 @@ public class DummyController {
     }
 
     @GetMapping("/chat")
-    public String getChat(){
+    public String chat(
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
+            @RequestParam(value = "user1", required = true) int user1,
+            @RequestParam(value = "user2", required = true) int user2,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken authentication,
+            Model model
+    ) {
+
+        String username = "joshua";
+
+        String themeCss = "/css/" + theme + "-theme.css";
+        model.addAttribute("themeCss", themeCss);
+        model.addAttribute("lang", lang);
+
+        List<MessageEntity> messages = chatService.getMessages((long) user1, (long) user2, 0, 50);
+        System.out.println(messages);
+
+        model.addAttribute("messages", messages);
+        model.addAttribute("currentUser", username); // Der aktuelle Benutzer
+
         return "chat";
     }
+
+    @PostMapping("/send")
+    public String sendMessage(
+            @RequestParam String sender,
+            @RequestParam String receiver,
+            @RequestParam String content,
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
+            RedirectAttributes redirectAttributes
+    ) {
+        // Nachricht speichern
+        chatService.sendMessage(sender, receiver, content);
+
+        // Parameter zurückgeben, um die Seite neu zu laden
+        redirectAttributes.addAttribute("theme", theme);
+        redirectAttributes.addAttribute("lang", lang);
+        redirectAttributes.addAttribute("user1", sender);
+        redirectAttributes.addAttribute("user2", receiver);
+        return "redirect:/chat";
+    }
+
 
 
 }
