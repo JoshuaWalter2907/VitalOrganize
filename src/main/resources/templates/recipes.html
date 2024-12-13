@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Rezepte</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Rezeptübersicht</h1>
+<!-- Suchfeld -->
+<form action="#" method="get">
+    <input type="text" name="search" placeholder="Suche nach Rezepten" />
+    <button type="submit">Suchen</button>
+</form>
+<!-- Anlegen Button für interne Rezepte -->
+<div th:if="${isInternal}">
+    <form action="/recipes/create" method="get">
+        <button type="submit">Rezept anlegen</button>
+    </form>
+</div>
+<!-- Tabelle mit Rezepten -->
+<table>
+    <thead>
+    <tr>
+        <th>Titel</th>
+        <th>Diät</th>
+        <th>Schwierigkeit</th>
+        <th>Portionen</th>
+        <th>Zutaten</th>
+        <th>Kalorien</th>
+        <th>Bewertung</th>
+        <th>Quelle</th>
+        <th>Gesamtzeit (min)</th>
+        <th>Aktionen</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="recipe : ${recipes}">
+        <td th:text="${recipe.title ?: ''}"></td>
+        <td>
+            <ul th:if="${recipe.diet != null && !recipe.diet.isEmpty()}">
+                <li th:each="dietData : ${recipe.diet ?: ''}">
+                   <span th:text="${dietData ?: ''}"></span>
+                </li>
+            </ul>
+        </td>
+        <td th:text="${recipe.difficulty ?: ''}"></td>
+        <td th:text="${recipe.portions ?: ''}"></td>
+        <td>
+            <ul>
+                <li th:each="ingredient : ${recipe.ingredients ?: ''}">
+                    <span th:text="${ingredient.amount ?: ''}"></span>
+                    <span th:text="${ingredient.unit ?: ''}"></span>
+                    <span th:text="${ingredient.name ?: ''}"></span>
+                </li>
+            </ul>
+        </td>
+        <td th:text="${recipe.nutrition?.kcal ?: ''}"></td>
+        <td>
+            <span th:text="${recipe.rating?.ratingValue ?: ''}"></span>
+            (<span th:text="${recipe.rating?.ratingCount ?: ''}"></span> Bewertungen)
+        </td>
+        <td>
+            <a th:href="${recipe.source ?: ''}" th:text="${recipe.source_url ?: ''}"></a>
+        </td>
+        <td th:text="${recipe.totalTime != null ? recipe.totalTime / 60 : ''}"></td>
+        <td>
+            <!-- Button für jede Zeile -->
+            <button th:if="${isInternal}" th:onclick="'edit(' + ${recipe.id} + ')'" >Bearbeiten</button>
+            <button th:if="${isInternal}" th:onclick="'delete(' + ${recipe.id} + ')'" >Löschen</button>
+            <button th:if="${!isInternal}" th:onclick="'saveLocally(' ')'" >Lokal speichern</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

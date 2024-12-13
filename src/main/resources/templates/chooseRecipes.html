@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezepte Auswahl</title>
+</head>
+<body>
+<h1>Rezepte Auswahl</h1>
+<div class="button-container">
+    <form action="/recipes/internal" method="get">
+        <button type="submit">Eigene Rezepte</button>
+    </form>
+    <form action="/recipes/external" method="get">
+        <button type="submit">Externe Rezepte</button>
+    </form>
+</div>
+</body>
+</html>
