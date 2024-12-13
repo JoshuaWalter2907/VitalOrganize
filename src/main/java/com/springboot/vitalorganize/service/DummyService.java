@@ -4,6 +4,7 @@ import com.springboot.vitalorganize.dao.DummyDAO;
 import com.springboot.vitalorganize.model.Dummy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service

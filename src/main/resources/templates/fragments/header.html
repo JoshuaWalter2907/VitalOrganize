@@ -1,0 +1,42 @@
+<header>
+  <div class="header-container">
+    <div class="header-left">
+
+      <!-- Theme Dropdown -->
+      <div class="dropdown">
+        <button class="dropdown-button" th:text="#{theme}">Theme</button>
+        <div class="dropdown-content">
+          <a href="#" data-theme="light" th:text="#{theme.light}">Light</a>
+          <a href="#" data-theme="dark" th:text="#{theme.dark}">Dark</a>
+          <a href="#" data-theme="gold" th:text="#{theme.golden}">Golden</a>
+        </div>
+      </div>
+
+      <!-- Language Dropdown -->
+      <div class="dropdown">
+        <button class="dropdown-button" th:text="#{language}">Language</button>
+        <div class="dropdown-content">
+          <!-- Sprachauswahl mit Links -->
+          <a th:href="@{/ (lang ='de')}" th:text="#{language.german}">Deutsch</a>
+          <a th:href="@{/ (lang ='en')}" th:text="#{language.english}">English</a>
+        </div>
+      </div>
+
+      <!-- Login Button -->
+      <a th:if="${username != null}"
+         th:href="@{/profile}"
+         class="login-button"
+         th:text="#{profile}">
+        Profile
+      </a>
+
+      <!-- Login Button für nicht eingeloggte Nutzer -->
+      <a th:unless="${username != null}"
+         th:href="@{/login}"
+         class="login-button"
+         th:text="#{login}">
+        Login
+      </a>
+    </div>
+  </div>
+</header>
