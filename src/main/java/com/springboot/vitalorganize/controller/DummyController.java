@@ -1,30 +1,36 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.MessageEntity;
-import com.springboot.vitalorganize.model.UserRepository;
-import com.springboot.vitalorganize.model.Dummy;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.DummyService;
+import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.codehaus.groovy.antlr.treewalker.SourcePrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.Thread.sleep;
 
@@ -33,8 +39,11 @@ import static java.lang.Thread.sleep;
 public class DummyController {
 
     private final DummyService dummyService;
+    private final MessageRepository messageRepository;
+    private final SimpMessagingTemplate brokerMessagingTemplate;
 
     private UserRepository userRepository;
+    private ChatGroupRepository chatGroupRepository;
 
     private final ChatService chatService;
 
@@ -236,48 +245,111 @@ public class DummyController {
     public String chat(
             @RequestParam(value = "theme", defaultValue = "light") String theme,
             @RequestParam(value = "lang", defaultValue = "en") String lang,
-            @RequestParam(value = "user1", required = true) int user1,
-            @RequestParam(value = "user2", required = true) int user2,
+            @RequestParam(value = "user2", required = false) Long user2,
+            @RequestParam(value = "group", required = false) Long groupId,
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication,
+            HttpSession session,
             Model model
     ) {
 
-        String username = "joshua";
+
+        String provider = authentication.getAuthorizedClientRegistrationId(); // "google", "discord", "github"
+        String email = user.getAttribute("email"); // Allgemeine E-Mail
+        int id = 0;
+
 
         String themeCss = "/css/" + theme + "-theme.css";
         model.addAttribute("themeCss", themeCss);
         model.addAttribute("lang", lang);
 
-        List<MessageEntity> messages = chatService.getMessages((long) user1, (long) user2, 0, 50);
+        switch (provider) {
+            case "google":
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+            case "discord":
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+            case "github":
+                String username = user.getAttribute("login");
+                System.out.println(username);
+                email = username + "@github.com";
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+        }
+
+
+        System.out.println(provider + " " + email + " " + id);
+
+        UserEntity existingUser = userRepository.findUserEntityById((long) id);
+        System.out.println(existingUser);
+        String username = existingUser.getUsername();
+        System.out.println(username);
+
+        List<ChatGroup> chatGroups = chatService.getChatGroups((long) id);
+        model.addAttribute("chatGroups", chatGroups);
+
+        List<MessageEntity> messages = null;
+        UserEntity selectedUser = null;
+        ChatGroup selectedGroup = null;
+
+        if (groupId != null) {
+            selectedGroup = chatGroupRepository.findById(groupId).orElse(null);
+            messages = chatService.getGroupMessages(groupId, 0, 50);
+        } else if (user2 != null) {
+            selectedUser = userRepository.findUserEntityById(user2);
+            messages = chatService.getMessages((long) id, user2, 0, 50);
+        }
+
+        List<UserEntity> chatParticipants = chatService.getChatParticipants((long) id);
+        System.out.println(chatParticipants);
+
         System.out.println(messages);
 
         model.addAttribute("messages", messages);
         model.addAttribute("currentUser", username); // Der aktuelle Benutzer
+        model.addAttribute("selectedUser", selectedUser);
+        model.addAttribute("selectedGroup", selectedGroup);
+        model.addAttribute("chatParticipants", chatParticipants);
+        model.addAttribute("RecipientId", user2);
+        model.addAttribute("SenderId", id);
 
         return "chat";
     }
 
-    @PostMapping("/send")
-    public String sendMessage(
-            @RequestParam String sender,
-            @RequestParam String receiver,
-            @RequestParam String content,
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            RedirectAttributes redirectAttributes
-    ) {
-        // Nachricht speichern
-        chatService.sendMessage(sender, receiver, content);
+    @MessageMapping("/chat/send")
+    public MessageEntity sendMessage(@Payload String messageEntity) throws JsonProcessingException {
+        System.out.println("Ich war hier");
+        // Wenn du den Benutzer mit der Nachricht validieren möchtest, kannst du dies hier tun.
+        // Zum Beispiel: Die MessageEntity enthält möglicherweise bereits den Sender und Empfänger.
 
-        // Parameter zurückgeben, um die Seite neu zu laden
-        redirectAttributes.addAttribute("theme", theme);
-        redirectAttributes.addAttribute("lang", lang);
-        redirectAttributes.addAttribute("user1", sender);
-        redirectAttributes.addAttribute("user2", receiver);
-        return "redirect:/chat";
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> messageMap = objectMapper.readValue(messageEntity, Map.class);
+
+        System.out.println(messageEntity);
+
+        String content = (String) messageMap.get("content");
+        System.out.println(content);
+        String SenderId = (String) messageMap.get("senderId");
+        System.out.println(SenderId);
+        String RecipientId = (String) messageMap.get("recipientId");
+        System.out.println(RecipientId);
+        String chatGroupId = (String) messageMap.get("chatGroupId");
+
+        int sender = Integer.parseInt(SenderId);
+        MessageEntity savedMessage;
+
+        if (chatGroupId != null) {
+            Long groupId = Long.parseLong(chatGroupId);
+            savedMessage = chatService.sendGroupMessage((long) sender, groupId, content);
+            brokerMessagingTemplate.convertAndSend("/topic/messages/group/" + groupId, savedMessage);
+        } else {
+            int receiver = Integer.parseInt(RecipientId);
+            savedMessage = chatService.sendMessage(sender, receiver, content);
+            brokerMessagingTemplate.convertAndSend("/topic/messages/" + receiver, savedMessage);
+        }
+
+        return savedMessage;
     }
-
-
 
 }

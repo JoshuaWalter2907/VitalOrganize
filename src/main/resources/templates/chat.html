@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" th:href="@{/css/chat.css}">
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/chat.css}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
   <title>Chat</title>
 </head>
 <body>
@@ -38,22 +41,22 @@
 
     <!--chats -->
     <div class="chat-list">
-      <div class="chat-box">
-        <div class="img-box">
-          <img class="img-cover" src="https://lh5.googleusercontent.com/-7ssjf_mDE1Q/AAAAAAAAAAI/AAAAAAAAASo/tioYx2oklWEHoo5nAEyCT-KeLxYqE5PuQCLcDEAE/s100-c-k-no-mo/photo.jpg" alt="">
-        </div>
-        <div class="chat-details">
-          <div class="text-head">
-            <h4>Nowfal</h4>
-            <p class="time unread">11:49</p>
+      <!-- Iteration über alle Chat-Teilnehmer -->
+      <div th:each="participant : ${chatParticipants}" class="chat-box">
+        <a th:href="@{/chat(user2=${participant.id})}" class="chat-link">
+          <div class="chat-details">
+            <div class="text-head">
+              <!-- Name des Chat-Teilnehmers -->
+              <h4 th:text="${participant.username}">Participant Name</h4>
+              <!-- Zeit der letzten Nachricht (dynamisch einfügen, falls verfügbar) -->
+            </div>
+            <!-- Weitere Inhalte wie Nachricht oder Status -->
           </div>
-          <div class="text-message">
-            <p>“How are you?”</p>
-            <b>1</b>
-          </div>
-        </div>
+        </a>
       </div>
     </div>
+
+
 
   </div>
 
@@ -77,21 +80,41 @@
     </div>
 
     <!--chat-container -->
-    <div class="chat-container">
+    <div class="chat-container" th:if="${selectedUser != null || selectedGroup != null}">
       <div th:each="message : ${messages}"
-           th:classappend="${message.sender == currentUser ? 'my-message' : 'friend-message'}"
+           th:classappend="${message.sender.username == currentUser ? 'my-message' : 'friend-message'}"
            class="message-box">
-        <p th:text="${message.content}"></p>
-        <span th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
+
+        <!-- Gruppennachrichten-Prefix anzeigen -->
+        <p>
+            <span th:if="${message.chatGroup != null}"
+                  th:text="'[Group ' + message.chatGroup.id + '] '"></span>
+          <span th:text="${message.content}"></span>
+        </p>
+
+        <!-- Zeitstempel -->
+        <span class="message-time"
+              th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
       </div>
     </div>
 
-</div>
+    <form class="chatbox-input" id="message-form">
+      <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
+      <input type="text" id="current-user-id" th:value="${SenderId}">
+      <input type="text" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
+      <input type="hidden" id="chat-group-id" th:value="${GroupId}">
+      <button type="submit">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+
 </div>
 <footer th:replace="fragments/footer:: footer"></footer>
 
 <!-- Einbinden des JavaScript-Files -->
 <script src="/js/main.js"></script>
+<script src="/js/chat.js"></script>
 
 </body>
 </html>

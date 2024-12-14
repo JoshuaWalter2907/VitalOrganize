@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Setter
@@ -23,14 +24,19 @@ public class MessageEntity {
     private UserEntity sender;
 
     @ManyToOne
-    @JoinColumn(name = "recipientId", nullable = false)
+    @JoinColumn(name = "recipientId", nullable = true)
     private UserEntity recipient;
+
+    @ManyToOne
+    @JoinColumn(name = "chat_group_id") // Gruppe, in der die Nachricht gesendet wurde
+    private ChatGroup chatGroup;
 
     @Column(nullable = false)
         private String content;
 
     @Column(nullable = false)
         private LocalDateTime timestamp;
+
 
 
     @Override

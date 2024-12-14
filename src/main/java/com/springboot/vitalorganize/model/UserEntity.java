@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 
 import java.lang.annotation.Documented;
 import java.time.LocalDate;
@@ -42,5 +43,8 @@ public class UserEntity {
     @Column(name = "is_public", nullable = false)
     private boolean isPublic;
 
+    @JsonIgnore
+    @ManyToMany(mappedBy = "users")
+    private List<ChatGroup> chatGroups;
 
 }

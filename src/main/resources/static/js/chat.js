@@ -1,28 +1,116 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const chatContainer = document.querySelector(".chat-container");
 
-let currentPage = 0;
-let user1 = "user1"; // Replace with dynamic user info
-let user2 = "user2";
+    // Funktion: Scrollt zum Ende des Containers
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-async function loadMessages() {
-    const response = await fetch(`/api/chat/${user1}/${user2}?page=${currentPage}&size=50`);
-    const messages = await response.json();
-    const chatContainer = document.getElementById("chat-container");
+    // Überwacht Änderungen im Chat-Container
+    const observer = new MutationObserver(() => {
+        const isUserScrolling = chatContainer.scrollTop + chatContainer.clientHeight < chatContainer.scrollHeight;
 
-    messages.reverse().forEach(msg => {
-        const messageBox = document.createElement("div");
-        messageBox.className = msg.sender.username === user1 ? "message-box my-message" : "message-box friend-message";
-        messageBox.innerHTML = `<p>${msg.content}<br><span>${new Date(msg.timestamp).toLocaleTimeString()}</span></p>`;
-        chatContainer.prepend(messageBox);
+        if (!isUserScrolling) {
+            // Nur automatisch scrollen, wenn der Benutzer nicht manuell scrollt
+            scrollToBottom();
+        }
     });
 
-    currentPage++;
-}
+    observer.observe(chatContainer, { childList: true }); // Beobachtet neue Nachrichten
 
-document.getElementById("chat-container").addEventListener("scroll", async (e) => {
-    if (e.target.scrollTop === 0) {
-        await loadMessages();
-    }
+    // Optional: Initial einmal scrollen
+    scrollToBottom();
 });
 
-// Initial load
-loadMessages();
+
+var stompClient = null;
+
+// Function to connect to the WebSocket server
+function connect() {
+    var socket = new SockJS('/ws/chat'); // WebSocket-Endpoint (musst du in deinem Controller definieren)
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+
+        // Subscribe to the destination where messages will be sent
+        var recipientId = document.getElementById('recipient-id').value;
+        var senderId = document.getElementById('current-user-id').value;
+        console.log("Subscribing to /topic/messages/" + senderId);
+        stompClient.subscribe('/topic/messages/' + senderId, function (messageOutput) {
+            var message = JSON.parse(messageOutput.body);
+            console.log("Received message:", message);
+            showMessage(message);
+        });
+    });
+}
+
+// Function to send a message to the WebSocket server
+function sendMessage(event) {
+    event.preventDefault();
+    var messageInput = document.getElementById('message-input').value;
+    var senderId = document.getElementById('current-user-id').value;
+    var recipientId = document.getElementById('recipient-id').value || null;
+    const chatGroupId = document.getElementById('chat-group-id').value || null;
+
+    console.log(recipientId + " " + chatGroupId);
+
+    if (messageInput.trim() !== "") {
+        var message = {
+            content: messageInput,
+            senderId: senderId,
+            recipientId: recipientId,
+            chatGroupId: chatGroupId
+        };
+        console.log("Message to send: ", message);
+        stompClient.send("/app/chat/send", {}, JSON.stringify(message)); // Send the message to the server
+
+
+        showMessage(message);
+        // Clear the input field after sending
+        document.getElementById('message-input').value = '';
+    }
+}
+
+// Function to append new message to the chat UI
+function showMessage(message) {
+    var messageContainer = document.querySelector('.chat-container');
+    var newMessage = document.createElement('div');
+    newMessage.classList.add('message-box');
+    newMessage.classList.add(message.senderId === document.getElementById('current-user-id').value ? 'my-message' : 'friend-message');
+
+    console.log(newMessage);
+
+    const groupPrefix = message.chatGroupId ? `[Group ${message.chatGroupId}] ` : '';
+
+    var formattedTimestamp = formatCurrentTimestamp();
+
+    newMessage.innerHTML = `<p>${groupPrefix}${message.content}</p><span class="message-time">${formattedTimestamp}</span>`;
+    messageContainer.appendChild(newMessage);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+}
+
+function connectToGroupChat(groupId) {
+    stompClient.subscribe(`/topic/messages/group/${groupId}`, function (messageOutput) {
+        const message = JSON.parse(messageOutput.body);
+        showMessage(message);
+    });
+}
+
+function formatCurrentTimestamp() {
+    var now = new Date(); // Aktuelles Datum und Uhrzeit
+
+    var hours = now.getHours(); // Stunden
+    var minutes = now.getMinutes(); // Minuten
+
+    // Stelle sicher, dass die Stunden und Minuten immer zweizifrig sind
+    hours = hours < 10 ? '0' + hours : hours;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+
+    return hours + ':' + minutes; // Rückgabe im Format "HH:mm"
+}
+
+// Set up the form submit event handler
+document.getElementById('message-form').addEventListener('submit', sendMessage);
+
+// Connect to WebSocket server when the page loads
+window.onload = connect;
