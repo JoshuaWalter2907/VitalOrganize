@@ -48,6 +48,7 @@ body{
     width: 80%;
     height: calc(100vh - 140px);
     display: flex;
+    flex-direction: row;
     box-shadow: 0 1px 1px  0 rgba(0,0,0,0.5), 0px 2px 5px 0 rgba(0,0,0,0.6);
     overflow: hidden;
 }
@@ -56,6 +57,7 @@ body{
     flex: 0 0 30%;
     background-color: white;
     overflow-y: auto;
+    position: relative;
 }
 
 .main-container .right-container {
@@ -271,7 +273,7 @@ img {
 }
 
 .chat-list .chat-box .chat-details .text-head .unread {
-    color: #06e744;
+    color: #dcf8c6;
 }
 
 
@@ -395,7 +397,7 @@ img {
 
 .my-message {
     align-self: flex-end; /* Positioniere die Nachricht nach links */
-    background-color: #d4edda; /* Grün für eigene Nachrichten */
+    background-color: #dcf8c6; /* Grün für eigene Nachrichten */
     color: black;
     text-align: left;
 }
@@ -418,7 +420,7 @@ img {
     left: -12px;
     width: 20px;
     height: 20px;
-    background: linear-gradient(225deg, #fff 0%, #fff 50%, transparent 50%, transparent);
+    background: linear-gradient(225deg, #f8d7da 0%, #f8d7da 50%, transparent 50%, transparent);
 }
 
 .right-container .chatbox-input {
@@ -459,3 +461,57 @@ img {
     font-size: 12px; /* Kleinere Schriftgröße */
     color: #999; /* Dezente Farbe */
 }
+
+.create-button{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.create-group-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.create-group-btn:hover {
+    background-color: #0056b3;
+}
+
+.user-selection-container {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 600px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.user-list {
+    margin: 20px 0;
+}
+
+.user-list label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.send-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.send-btn:hover {
+    background-color: #218838;
+}
+

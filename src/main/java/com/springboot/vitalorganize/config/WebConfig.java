@@ -110,6 +110,7 @@ public class WebConfig implements WebMvcConfigurer {
     private void handleGoogleLogin(OAuth2AuthenticationToken authentication) {
         String username = authentication.getPrincipal().getAttribute("username");
         String email = authentication.getPrincipal().getAttribute("email");
+        String picture = authentication.getPrincipal().getAttribute("picture");
 
         UserEntity userEntity = userRepository.findByEmailAndProvider(email, "google");
         if (userEntity == null) {
@@ -121,6 +122,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setProvider("google"); // Anbieter auf "discord" setzen
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
+            userEntity.setProfilePictureUrl(picture);
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
         } else {
@@ -133,6 +135,7 @@ public class WebConfig implements WebMvcConfigurer {
         // GitHub-spezifische Attribute abrufen
         String username = authentication.getPrincipal().getAttribute("login"); // GitHub-Benutzername
         String email = authentication.getPrincipal().getAttribute("email"); // GitHub-E-Mail-Adresse
+        String picture = authentication.getPrincipal().getAttribute("avatar_url");
 
         if (email == null) {
             email = username + "@github.com"; // Dummy-E-Mail erstellen
@@ -150,6 +153,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setProvider("github"); // Anbieter auf "github" setzen
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
+            userEntity.setProfilePictureUrl(picture);
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
         } else {
@@ -163,6 +167,14 @@ public class WebConfig implements WebMvcConfigurer {
         OAuth2User oAuth2User = authentication.getPrincipal();
         String discordId = oAuth2User.getAttribute("id"); // Benutzer-ID von Discord
         String email = oAuth2User.getAttribute("email"); // E-Mail von Discord
+        String picture;
+        String avatarHash = oAuth2User.getAttribute("avatar"); // Discord Avatar-Hash
+
+        if (discordId != null && avatarHash != null) {
+            picture = "https://cdn.discordapp.com/avatars/" + discordId + "/" + avatarHash + ".png";
+        } else {
+            picture = "https://cdn.discordapp.com/embed/avatars/0.png"; // Standardavatar
+        }
 
         if (discordId == null || email == null) {
             System.out.println("Fehler: Keine Benutzer-ID oder E-Mail von Discord erhalten.");
@@ -181,24 +193,13 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setProvider("discord"); // Standardrolle
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
+            userEntity.setProfilePictureUrl(picture);
             userRepository.save(userEntity);
             System.out.println("Neuer Discord-Benutzer erstellt: " + email);
         } else {
             // Falls erforderlich, Benutzerinformationen aktualisieren
             System.out.println("Benutzer existiert bereits: " + email);
         }
-    }
-
-    private static String getUsername(Authentication authentication) {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String username = oAuth2User.getAttribute("login");
-        if (username == null || username.isEmpty()) {
-            username = oAuth2User.getAttribute("email"); // Alternative
-        }
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Both login and email are missing from OAuth2 response.");
-        }
-        return username;
     }
 
 

@@ -112,3 +112,19 @@ window.addEventListener("scroll", () => {
 
     lastScrollPosition = currentScrollPosition;
 });
+
+function sendEmail() {
+    console.log("ich war hier");
+    fetch('/api/send-email', {
+        method: 'POST',
+    })
+        .then(response => {
+            if (response.ok) {
+                console.log('E-Mail wurde erfolgreich gesendet!');
+                alert('E-Mail wurde erfolgreich gesendet!');
+            } else {
+                alert('Fehler beim Senden der E-Mail.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}

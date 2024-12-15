@@ -1,5 +1,8 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,18 +31,11 @@ public class ChatGroup {
             joinColumns = @JoinColumn(name = "chat_group_id"), // Spalte für ChatGroup-ID
             inverseJoinColumns = @JoinColumn(name = "user_id") // Spalte für User-ID
     )
-    private List<UserEntity> users; // Benutzer, die zur Gruppe gehören
+    private List<UserEntity> users;
+
 
     @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL)
     private List<MessageEntity> messages; // Nachrichten in der Gruppe
 
-    @Override
-    public String toString() {
-        return "ChatGroup{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", users=" + (users != null ? users.size() : "0") +
-                '}';
-    }
 
 }

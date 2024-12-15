@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -34,6 +36,10 @@ public class PaypalController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+
 
     @GetMapping("/paypal")
     public String paypal(
@@ -50,7 +56,7 @@ public class PaypalController {
 
         Double balance = paypalService.getCurrentBalance();
         System.out.println(balance);
-        model.addAttribute("balance", String.format("%.2f", balance));
+        model.addAttribute("balance", balance);
 
 
         return "paypal";
@@ -64,6 +70,7 @@ public class PaypalController {
             @RequestParam("description") String description,
             @RequestParam("type") String type,
             @RequestParam("email") String email,
+            @AuthenticationPrincipal OAuth2User user,
             HttpSession session
     ){
 
@@ -72,6 +79,7 @@ public class PaypalController {
         session.setAttribute("description", description);
         session.setAttribute("type", type);
         session.setAttribute("email", email);
+        session.setAttribute("method", method);
 
         try {
             String cancleUrl = "http://localhost:8080/paypal/cancel";
@@ -113,6 +121,39 @@ public class PaypalController {
         String provider = authentication.getAuthorizedClientRegistrationId();
         String receiverEmail = session.getAttribute("email").toString();
         String email = user.getAttribute("email");
+        String method = session.getAttribute("method").toString();
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getAttribute("email").toString());
+            message.setSubject("Zahlungsbestätigung - PayPal");
+
+            // E-Mail-Inhalt mit professionellem Format
+            message.setText(String.format(
+                    "Sehr geehrte/r %s,\n\n" +
+                            "wir haben Ihre PayPal-Zahlung erhalten. Hier sind die Details Ihrer Transaktion:\n\n" +
+                            "-----------------------------------\n" +
+                            "Zahlungsbetrag: %s %s\n" +
+                            "Zahlungsmethode: %s\n" +
+                            "Transaktionsbeschreibung: %s\n" +
+                            "Transaktionstyp: %s\n" +
+                            "-----------------------------------\n\n" +
+                            "Wir danken Ihnen für Ihre Zahlung. Ihre Transaktion wird nun bearbeitet.\n\n" +
+                            "Falls Sie Fragen haben oder Unterstützung benötigen, wenden Sie sich bitte an unseren Kundenservice.\n\n" +
+                            "Mit freundlichen Grüßen,\n" +
+                            "Ihr VitalOrganize-Team\n" +
+                            "-----------------------------------\n"
+                    ,
+                    user.getAttribute("name").toString(), // Benutzername
+                    amount, currency, method, description, type
+            ));
+
+            System.out.println(message);
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (provider.equals("github")) {
             String username = user.getAttribute("login");

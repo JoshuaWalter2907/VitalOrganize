@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.model;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
@@ -9,4 +10,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findUserEntityById(Long user2);
     boolean existsByUsername(String username);
     Optional<UserEntity> findByUsername(String username);
+
+    List<UserEntity> findAllByisPublic(boolean isPublic);
 }

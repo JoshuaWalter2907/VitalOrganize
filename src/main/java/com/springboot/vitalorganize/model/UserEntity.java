@@ -1,10 +1,12 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import net.minidev.json.annotate.JsonIgnore;
 
 import java.lang.annotation.Documented;
 import java.time.LocalDate;
@@ -46,5 +48,13 @@ public class UserEntity {
     @JsonIgnore
     @ManyToMany(mappedBy = "users")
     private List<ChatGroup> chatGroups;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "direct_chat_id")
+    private DirectChat directChat; // Für Einzelchats
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;  // Profilbild-URL
 
 }

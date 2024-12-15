@@ -27,20 +27,32 @@ var stompClient = null;
 
 // Function to connect to the WebSocket server
 function connect() {
-    var socket = new SockJS('/ws/chat'); // WebSocket-Endpoint (musst du in deinem Controller definieren)
+    var socket = new SockJS('/ws/chat'); // WebSocket-Endpoint
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
 
-        // Subscribe to the destination where messages will be sent
-        var recipientId = document.getElementById('recipient-id').value;
         var senderId = document.getElementById('current-user-id').value;
-        console.log("Subscribing to /topic/messages/" + senderId);
-        stompClient.subscribe('/topic/messages/' + senderId, function (messageOutput) {
-            var message = JSON.parse(messageOutput.body);
-            console.log("Received message:", message);
-            showMessage(message);
-        });
+
+        // Prüfe, ob der Benutzer sich in einem Gruppenchat oder Einzelchat befindet
+        const chatGroupId = document.getElementById('chat-group-id').value || null;
+
+        console.log(chatGroupId);
+
+        if (chatGroupId) {
+            console.log("Subscribing to /topic/messages/group/" + chatGroupId);
+            stompClient.subscribe('/topic/messages/group/' + chatGroupId, function (messageOutput) {
+                var message = JSON.parse(messageOutput.body);
+                console.log(message);
+                showMessage(message);
+            });
+        } else {
+            console.log("Subscribing to /topic/messages/" + senderId);
+            stompClient.subscribe('/topic/messages/' + senderId, function (messageOutput) {
+                var message = JSON.parse(messageOutput.body);
+                showMessage(message);
+            });
+        }
     });
 }
 
@@ -73,6 +85,7 @@ function sendMessage(event) {
 
 // Function to append new message to the chat UI
 function showMessage(message) {
+    console.log("Received message:", message);
     var messageContainer = document.querySelector('.chat-container');
     var newMessage = document.createElement('div');
     newMessage.classList.add('message-box');
@@ -87,13 +100,6 @@ function showMessage(message) {
     newMessage.innerHTML = `<p>${groupPrefix}${message.content}</p><span class="message-time">${formattedTimestamp}</span>`;
     messageContainer.appendChild(newMessage);
     messageContainer.scrollTop = messageContainer.scrollHeight;
-}
-
-function connectToGroupChat(groupId) {
-    stompClient.subscribe(`/topic/messages/group/${groupId}`, function (messageOutput) {
-        const message = JSON.parse(messageOutput.body);
-        showMessage(message);
-    });
 }
 
 function formatCurrentTimestamp() {

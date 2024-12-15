@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.service.ChatService;
+import com.springboot.vitalorganize.service.DirectChatRepository;
 import com.springboot.vitalorganize.service.DummyService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpSession;
@@ -20,17 +21,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Thread.sleep;
 
@@ -39,8 +40,8 @@ import static java.lang.Thread.sleep;
 public class DummyController {
 
     private final DummyService dummyService;
-    private final MessageRepository messageRepository;
     private final SimpMessagingTemplate brokerMessagingTemplate;
+    private final DirectChatRepository directChatRepository;
 
     private UserRepository userRepository;
     private ChatGroupRepository chatGroupRepository;
@@ -112,37 +113,29 @@ public class DummyController {
 
         // Extrahiere den Authentifizierungs-Provider
         String provider = authentication.getAuthorizedClientRegistrationId(); // "google", "discord", "github"
-        System.out.println(provider);
+        System.out.println(user);
 
         String name = user.getAttribute("name"); // Allgemeiner Benutzername
         String email = user.getAttribute("email"); // Allgemeine E-Mail
-        String photoUrl = "";
-
-        // Provider-spezifische Logik
+        int id = 0;
         switch (provider) {
             case "google":
-                photoUrl = user.getAttribute("picture"); // Google Profilbild
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
                 break;
-
             case "discord":
-                String discordId = user.getAttribute("id"); // Discord ID
-                String avatarHash = user.getAttribute("avatar"); // Discord Avatar-Hash
-
-                if (discordId != null && avatarHash != null) {
-                    photoUrl = "https://cdn.discordapp.com/avatars/" + discordId + "/" + avatarHash + ".png";
-                } else {
-                    photoUrl = "https://cdn.discordapp.com/embed/avatars/0.png"; // Standardavatar
-                }
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
                 break;
-
             case "github":
-                name = user.getAttribute("login"); // GitHub Login-Name
-                photoUrl = user.getAttribute("avatar_url"); // GitHub Profilbild
+                String username = user.getAttribute("login");
+                System.out.println(username);
+                email = username + "@github.com";
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
                 break;
-
-            default:
-                throw new IllegalArgumentException("Unbekannter Provider: " + provider);
         }
+
+        UserEntity userEntity = userRepository.findUserEntityById((long) id);
+
+        String photoUrl = userEntity.getProfilePictureUrl();
 
         System.out.println(photoUrl);
 
@@ -249,12 +242,9 @@ public class DummyController {
             @RequestParam(value = "group", required = false) Long groupId,
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication,
-            HttpSession session,
             Model model
     ) {
-
-
-        String provider = authentication.getAuthorizedClientRegistrationId(); // "google", "discord", "github"
+         // "google", "discord", "github"
         String email = user.getAttribute("email"); // Allgemeine E-Mail
         int id = 0;
 
@@ -263,6 +253,7 @@ public class DummyController {
         model.addAttribute("themeCss", themeCss);
         model.addAttribute("lang", lang);
 
+        String provider = authentication.getAuthorizedClientRegistrationId();
         switch (provider) {
             case "google":
                 id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
@@ -287,17 +278,27 @@ public class DummyController {
         System.out.println(username);
 
         List<ChatGroup> chatGroups = chatService.getChatGroups((long) id);
+        System.out.println("chatgroups: " + chatGroups);
         model.addAttribute("chatGroups", chatGroups);
+
+        List<DirectChat> directChats = chatService.getDirectChats((long) id);  // Direkt-Chats
+        model.addAttribute("directChats", directChats);
 
         List<MessageEntity> messages = null;
         UserEntity selectedUser = null;
         ChatGroup selectedGroup = null;
+        DirectChat selectedDirectChat = null;
+        String otherUserName = null;
+        String otherUserPicture= null;
 
         if (groupId != null) {
             selectedGroup = chatGroupRepository.findById(groupId).orElse(null);
             messages = chatService.getGroupMessages(groupId, 0, 50);
         } else if (user2 != null) {
             selectedUser = userRepository.findUserEntityById(user2);
+            otherUserName = selectedUser.getUsername();
+            otherUserPicture = selectedUser.getProfilePictureUrl();
+            selectedDirectChat = chatService.getDirectChat((long) id, user2);  // Hole DirectChat
             messages = chatService.getMessages((long) id, user2, 0, 50);
         }
 
@@ -306,13 +307,23 @@ public class DummyController {
 
         System.out.println(messages);
 
+        List<Object> chatList = new ArrayList<>();
+        chatList.addAll(directChats);
+        chatList.addAll(chatGroups);
+
+        System.out.println("die Chatlist ist: " + chatList);
+
         model.addAttribute("messages", messages);
         model.addAttribute("currentUser", username); // Der aktuelle Benutzer
         model.addAttribute("selectedUser", selectedUser);
         model.addAttribute("selectedGroup", selectedGroup);
-        model.addAttribute("chatParticipants", chatParticipants);
+        model.addAttribute("selectedDirectChat", selectedDirectChat);
+        model.addAttribute("chatList", chatList);
         model.addAttribute("RecipientId", user2);
         model.addAttribute("SenderId", id);
+        model.addAttribute("GroupId", groupId);
+        model.addAttribute("otherUsername", otherUserName);
+        model.addAttribute("otherUserPicture", otherUserPicture);
 
         return "chat";
     }
@@ -342,14 +353,88 @@ public class DummyController {
         if (chatGroupId != null) {
             Long groupId = Long.parseLong(chatGroupId);
             savedMessage = chatService.sendGroupMessage((long) sender, groupId, content);
+            System.out.println("Die gruppenId = " + "/topic/messages/group/" + groupId);
+            System.out.println("message" + savedMessage);
             brokerMessagingTemplate.convertAndSend("/topic/messages/group/" + groupId, savedMessage);
         } else {
             int receiver = Integer.parseInt(RecipientId);
             savedMessage = chatService.sendMessage(sender, receiver, content);
+            System.out.println("HIer war ich auch: " + receiver + " " + content);
+            System.out.println("message" + savedMessage);
             brokerMessagingTemplate.convertAndSend("/topic/messages/" + receiver, savedMessage);
         }
 
         return savedMessage;
     }
+
+    @GetMapping("/public-users")
+    public String showPublicUsers(
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
+            Model model
+    ){
+        String themeCss = "/css/" + theme + "-theme.css";
+        model.addAttribute("themeCss", themeCss);
+        model.addAttribute("lang", lang);
+
+        List<UserEntity> publicUsers = userRepository.findAllByisPublic(true);
+        model.addAttribute("publicUsers", publicUsers);
+        return "public-users";
+    }
+
+    @PostMapping("/create-group")
+    public String createGroup(
+            @RequestParam List<Long> selectedUsers,
+            @RequestParam("chatname") String chatName,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken authentication,
+            Principal principal
+    ){
+        int id=0;
+        String email = user.getAttribute("email"); // Allgemeine E-Mail
+
+
+        String provider = authentication.getAuthorizedClientRegistrationId();
+        switch (provider) {
+            case "google":
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+            case "discord":
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+            case "github":
+                String username = user.getAttribute("login");
+                System.out.println(username);
+                email = username + "@github.com";
+                id = Math.toIntExact(userRepository.findByEmailAndProvider(email, provider).getId());
+                break;
+        }
+
+
+        System.out.println(provider + " " + email + " " + id);
+
+        UserEntity currentUser = userRepository.findUserEntityById((long) id);
+
+
+    if(selectedUsers.size() != 1){
+        System.out.println(chatName + " " + selectedUsers);
+        ChatGroup chatGroup = new ChatGroup();
+        chatGroup.setName(chatName);
+        List<UserEntity> publicUserSet = userRepository.findAllById(selectedUsers);
+        System.out.println(publicUserSet);
+        chatGroup.setUsers(publicUserSet);
+        chatGroupRepository.save(chatGroup);
+    }else{
+        DirectChat directChat = new DirectChat();
+        UserEntity otherUser = userRepository.findUserEntityById(selectedUsers.get(0));
+
+        directChat.setUser1(currentUser);
+        directChat.setUser2(otherUser);
+
+        directChatRepository.save(directChat);
+    }
+        return "redirect:/chat";
+    }
+
 
 }

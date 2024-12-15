@@ -41,22 +41,30 @@
 
     <!--chats -->
     <div class="chat-list">
-      <!-- Iteration über alle Chat-Teilnehmer -->
-      <div th:each="participant : ${chatParticipants}" class="chat-box">
-        <a th:href="@{/chat(user2=${participant.id})}" class="chat-link">
+      <div th:each="chat : ${chatList}" class="chat-box">
+        <!-- Einzelchat -->
+        <a th:if="${chat.getClass().getName() == 'com.springboot.vitalorganize.model.DirectChat'}"
+           th:href="@{/chat(user2=${chat.user2.id})}" class="chat-link">
           <div class="chat-details">
-            <div class="text-head">
-              <!-- Name des Chat-Teilnehmers -->
-              <h4 th:text="${participant.username}">Participant Name</h4>
-              <!-- Zeit der letzten Nachricht (dynamisch einfügen, falls verfügbar) -->
-            </div>
-            <!-- Weitere Inhalte wie Nachricht oder Status -->
+            <h4 th:text="${chat.user2.username}">Participant Name</h4>
+          </div>
+        </a>
+
+        <!-- Gruppenchats -->
+        <a th:if="${chat.getClass().getName() == 'com.springboot.vitalorganize.model.ChatGroup'}"
+           th:href="@{/chat(group=${chat.id})}" class="chat-link">
+          <div class="chat-details">
+            <h4 th:text="${chat.name}">Group Name</h4>
           </div>
         </a>
       </div>
     </div>
 
-
+    <div class="create-button">
+      <button th:onclick="|window.location.href='@{/public-users}'|" class="create-group-btn">
+        Neue Gruppe erstellen
+      </button>
+    </div>
 
   </div>
 
@@ -64,14 +72,18 @@
 
 
 
-  <div class="right-container">
+
+    <div class="right-container">
     <!--header -->
     <div class="header">
       <div class="img-text">
-        <div class="user-img">
-          <img class="dp" src="https://images.pexels.com/photos/2474307/pexels-photo-2474307.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="">
+        <div th:if="${otherUsername != null}" class="user-img">
+          <img class="dp" th:src="${otherUserPicture}" alt="">
         </div>
-        <h4>Leo<br><span>Online</span></h4>
+        <h4 th:if="${otherUsername != null}">
+          <span th:text="${otherUsername}"></span><br>
+          <span>Online</span>
+        </h4>
       </div>
       <div class="nav-icons">
         <li><i class="fa-solid fa-magnifying-glass"></i></li>
@@ -100,8 +112,8 @@
 
     <form class="chatbox-input" id="message-form">
       <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
-      <input type="text" id="current-user-id" th:value="${SenderId}">
-      <input type="text" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
+      <input type="hidden" id="current-user-id" th:value="${SenderId}">
+      <input type="hidden" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
       <input type="hidden" id="chat-group-id" th:value="${GroupId}">
       <button type="submit">
         <i class="fas fa-paper-plane"></i>

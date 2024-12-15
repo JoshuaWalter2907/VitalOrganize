@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "message_entity")
 public class MessageEntity {
 
     @Id
@@ -20,16 +21,20 @@ public class MessageEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "senderId", nullable = false)
+    @JoinColumn(name = "sender_id", nullable = false)
     private UserEntity sender;
 
     @ManyToOne
-    @JoinColumn(name = "recipientId", nullable = true)
+    @JoinColumn(name = "recipient_id", nullable = true)
     private UserEntity recipient;
 
     @ManyToOne
-    @JoinColumn(name = "chat_group_id") // Gruppe, in der die Nachricht gesendet wurde
+    @JoinColumn(name = "chat_group_id", nullable = true) // Gruppe, in der die Nachricht gesendet wurde
     private ChatGroup chatGroup;
+
+    @ManyToOne
+    @JoinColumn(name = "direct_chat_id", nullable = true)  // Verweis auf die DirectChat-Tabelle
+    private DirectChat directChat;  // Verweis auf das DirectChat
 
     @Column(nullable = false)
         private String content;
