@@ -3,12 +3,11 @@ package com.springboot.vitalorganize.controller;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
-import com.springboot.vitalorganize.model.PaymentType;
-import com.springboot.vitalorganize.model.UserRepository;
-import com.springboot.vitalorganize.model.UserEntity;
-import com.springboot.vitalorganize.model.Zahlung;
+import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.service.PaypalService;
+import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +26,19 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.time.LocalDateTime;
 
 @Controller
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class PaypalController {
 
-    private final PaypalService paypalService;
+    private PaypalService paypalService;
+    private UserService userService;
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
+
 
 
 
@@ -48,15 +49,9 @@ public class PaypalController {
             Model model
     ) {
 
-        String themeCss = "/css/" + theme + "-theme.css";
-        model.addAttribute("themeCss", themeCss);
-
-        // Sprache dem Modell hinzufügen
+        model.addAttribute("themeCss", userService.getThemeCss(theme));
         model.addAttribute("lang", lang);
-
-        Double balance = paypalService.getCurrentBalance();
-        System.out.println(balance);
-        model.addAttribute("balance", balance);
+        model.addAttribute("balance", paypalService.getCurrentBalance());
 
 
         return "paypal";
@@ -72,8 +67,8 @@ public class PaypalController {
             @RequestParam("email") String email,
             @AuthenticationPrincipal OAuth2User user,
             HttpSession session
-    ){
-
+    ) {
+        // Daten in die Session speichern
         session.setAttribute("amount", amount);
         session.setAttribute("currency", currency);
         session.setAttribute("description", description);
@@ -82,28 +77,26 @@ public class PaypalController {
         session.setAttribute("method", method);
 
         try {
-            String cancleUrl = "http://localhost:8080/paypal/cancel";
+            String cancelUrl = "http://localhost:8080/paypal/cancel";
             String successUrl = "http://localhost:8080/paypal/success";
-            Payment payment= paypalService.createPayment(
+
+            String approvalUrl = paypalService.handlePaymentCreation(
                     Double.parseDouble(amount),
                     currency,
                     method,
-                    "sale",
                     description,
-                    cancleUrl,
+                    cancelUrl,
                     successUrl
             );
 
-            for(Links links: payment.getLinks()){
-                if(links.getRel().equals("approval_url")){
-                    return new RedirectView(links.getHref());
-                }
-            }
-        }catch (PayPalRESTException e){
-            log.error("error occured" ,e);
+            return new RedirectView(approvalUrl);
+
+        } catch (PayPalRESTException e) {
+            log.error("Error occurred while creating PayPal payment", e);
+            return new RedirectView("/paypal/error");
         }
-        return new RedirectView("/paypal/error");
     }
+
 
     @GetMapping("/paypal/success")
     public RedirectView paypalSuccess(
@@ -112,95 +105,32 @@ public class PaypalController {
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication,
             HttpSession session
-            )
-    {
-        String type = session.getAttribute("type").toString();
+    ) {
+        // Daten aus der Session lesen
+        String type = (String) session.getAttribute("type");
         String amount = (String) session.getAttribute("amount");
-        String currency = session.getAttribute("currency").toString();
-        String description = session.getAttribute("description").toString();
+        String currency = (String) session.getAttribute("currency");
+        String description = (String) session.getAttribute("description");
+        String receiverEmail = (String) session.getAttribute("email");
+        String method = (String) session.getAttribute("method");
+
+        // Benutzerinformationen verarbeiten
         String provider = authentication.getAuthorizedClientRegistrationId();
-        String receiverEmail = session.getAttribute("email").toString();
-        String email = user.getAttribute("email");
-        String method = session.getAttribute("method").toString();
+        String email = paypalService.getEmailForUser(user, provider);
 
+        // Zahlungsabwicklung und Ergebnis erhalten
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(user.getAttribute("email").toString());
-            message.setSubject("Zahlungsbestätigung - PayPal");
-
-            // E-Mail-Inhalt mit professionellem Format
-            message.setText(String.format(
-                    "Sehr geehrte/r %s,\n\n" +
-                            "wir haben Ihre PayPal-Zahlung erhalten. Hier sind die Details Ihrer Transaktion:\n\n" +
-                            "-----------------------------------\n" +
-                            "Zahlungsbetrag: %s %s\n" +
-                            "Zahlungsmethode: %s\n" +
-                            "Transaktionsbeschreibung: %s\n" +
-                            "Transaktionstyp: %s\n" +
-                            "-----------------------------------\n\n" +
-                            "Wir danken Ihnen für Ihre Zahlung. Ihre Transaktion wird nun bearbeitet.\n\n" +
-                            "Falls Sie Fragen haben oder Unterstützung benötigen, wenden Sie sich bitte an unseren Kundenservice.\n\n" +
-                            "Mit freundlichen Grüßen,\n" +
-                            "Ihr VitalOrganize-Team\n" +
-                            "-----------------------------------\n"
-                    ,
-                    user.getAttribute("name").toString(), // Benutzername
-                    amount, currency, method, description, type
-            ));
-
-            System.out.println(message);
-
-            mailSender.send(message);
+            String redirectUrl = paypalService.processPayment(
+                    paymentId, payerId, type, amount, currency, description,
+                    receiverEmail, email, method, provider
+            );
+            return new RedirectView(redirectUrl);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during PayPal success processing", e);
+            return new RedirectView("/paypal/error");
         }
-
-        if (provider.equals("github")) {
-            String username = user.getAttribute("login");
-            System.out.println(username);
-            email = username + "@github.com"; // Dummy-E-Mail erstellen
-            System.out.println(email);
-        }
-
-        UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
-        existingUser.setRole("MEMBER");
-        userRepository.save(existingUser);
-
-        try {
-            Zahlung zahlung = new Zahlung();
-            zahlung.setDate(LocalDateTime.now());
-            zahlung.setReason(description);
-            zahlung.setAmount(Double.valueOf(amount));
-            zahlung.setCurrency(currency);
-            zahlung.setUser(existingUser);
-
-            if("EINZAHLEN".equalsIgnoreCase(type)){
-                zahlung.setType(PaymentType.EINZAHLEN);
-                Payment payment = paypalService.executePayment(paymentId, payerId);
-                if(payment.getState().equals("approved")){
-                    paypalService.addPayment(zahlung);
-                    return new RedirectView("/paypal");
-                }
-            } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
-                double balance = paypalService.getCurrentBalance();
-                if(Double.valueOf(amount) > balance){
-                    return new RedirectView("/paypal/error");
-                }else{
-                    zahlung.setType(PaymentType.AUSZAHLEN);
-                    paypalService.executePayout(receiverEmail, amount,currency);
-                    paypalService.addPayment(zahlung);
-                    return new RedirectView("/paypal");
-                }
-            }
-
-
-        }catch (PayPalRESTException e){
-            log.error("error occured" ,e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return new RedirectView("/paypal");
     }
+
 
     @GetMapping("/paypal/cancel")
     public String paypalCancel(){

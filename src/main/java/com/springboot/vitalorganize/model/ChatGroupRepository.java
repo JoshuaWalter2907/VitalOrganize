@@ -8,6 +8,7 @@ import java.util.Optional;
 public interface ChatGroupRepository extends JpaRepository<ChatGroup, Long> {
 
     List<ChatGroup> findByUsers_Id(Long userId);
+    Optional<ChatGroup> findByUsersInAndName(List<UserEntity> users, String chatName);
 
-    ChatGroup findByid(Long groupId);
+    List<ChatGroup> findByNameContaining(String query);
 }

@@ -17,22 +17,45 @@
 
 
 <div class="main-container">
-  <div class="user-selection-container">
-    <h2>Wähle Benutzer aus</h2>
+  <!-- Sidebar mit Benutzerauswahl -->
+  <div class="sidebar">
+    <div class="header">
+      <h2>Wähle Benutzer aus</h2>
+      <input type="text" placeholder="Nach Namen oder Nummer suchen..." class="search-bar">
+    </div>
+
+    <!-- Benutzerliste mit Gruppierung nach Anfangsbuchstaben -->
     <form id="user-selection-form" method="post" action="/create-group">
-      <div class="user-list">
-        <div th:each="user : ${publicUsers}">
-          <label>
-            <input type="checkbox" name="selectedUsers" th:value="${user.id}">
-            <span th:text="${user.username}">Benutzername</span>
-          </label>
+      <div class="contacts user-list">
+        <div th:each="entry : ${groupedUsers}">
+          <!-- Trennstrich mit dem Anfangsbuchstaben -->
+          <div class="divider">
+            <span th:text="${entry.key}">A</span>
+          </div>
+
+          <!-- Benutzer, die zu diesem Buchstaben gehören -->
+          <div th:each="user : ${entry.value}" class="user-item" th:data-user-id="${user.id}">
+            <label>
+              <input type="checkbox" name="selectedUsers" th:value="${user.id}" class="user-checkbox">
+              <img th:src="@{/images/{profileImg}(profileImg=${user.profilePictureUrl})}" alt="Profilbild">
+              <span th:text="${user.username}">Benutzername</span>
+            </label>
+          </div>
         </div>
       </div>
-      <input type="text" name="chatname">
+
+      <!-- Eingabefeld für den Gruppennamen -->
+      <div class="group-name-container">
+        <input type="text" name="chatname" placeholder="Gruppenname" class="group-name-input">
+      </div>
+
+      <!-- Button zum Erstellen der Gruppe -->
       <button type="submit" class="send-btn">Gruppe erstellen</button>
     </form>
   </div>
 </div>
+
+
 <footer th:replace="fragments/footer:: footer"></footer>
 
 <!-- Einbinden des JavaScript-Files -->

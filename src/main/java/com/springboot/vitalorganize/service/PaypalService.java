@@ -5,19 +5,21 @@ import com.paypal.api.payments.*;
 import com.paypal.api.payments.Currency;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
-import com.springboot.vitalorganize.model.PaymentRepository;
-import com.springboot.vitalorganize.model.PaymentType;
-import com.springboot.vitalorganize.model.Zahlung;
+import com.springboot.vitalorganize.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -25,8 +27,9 @@ import java.util.*;
 public class PaypalService {
 
     public final APIContext apiContext;
-
     private final PaymentRepository paymentRepository;
+    private final UserRepository userRepository;
+    private final JavaMailSender mailSender;
 
     @Value("${paypal.client.id}")
     private static String clientId;
@@ -37,6 +40,25 @@ public class PaypalService {
     @Value("${paypal.api.base-url}")
     private static String paypalBaseUrl;
 
+
+    public String handlePaymentCreation(
+            double amount,
+            String currency,
+            String method,
+            String description,
+            String cancelUrl,
+            String successUrl
+    ) throws PayPalRESTException {
+        Payment payment = createPayment(amount, currency, method, "sale", description, cancelUrl, successUrl);
+
+        for (Links link : payment.getLinks()) {
+            if (link.getRel().equals("approval_url")) {
+                return link.getHref();
+            }
+        }
+
+        throw new PayPalRESTException("Approval URL not found in the payment response.");
+    }
 
     public Payment createPayment(
             double total,
@@ -216,4 +238,82 @@ public class PaypalService {
             throw new PayPalRESTException("Fehler bei der Auszahlung. HTTP Status: " + response.getStatusCode());
         }
     }
+
+    public String getEmailForUser(OAuth2User user, String provider) {
+        if ("github".equals(provider)) {
+            String username = user.getAttribute("login");
+            return username + "@github.com"; // Dummy-E-Mail für GitHub
+        }
+        return user.getAttribute("email");
+    }
+
+    public String processPayment(
+            String paymentId, String payerId, String type, String amount,
+            String currency, String description, String receiverEmail,
+            String email, String method, String provider
+    ) throws Exception {
+        // Benutzer aktualisieren
+        UserEntity user = userRepository.findByEmailAndProvider(email, provider);
+        user.setRole("MEMBER");
+        userRepository.save(user);
+
+        // Zahlung initialisieren
+        Zahlung zahlung = new Zahlung();
+        zahlung.setDate(LocalDateTime.now());
+        zahlung.setReason(description);
+        zahlung.setAmount(Double.valueOf(amount));
+        zahlung.setCurrency(currency);
+        zahlung.setUser(user);
+
+        if ("EINZAHLEN".equalsIgnoreCase(type)) {
+            zahlung.setType(PaymentType.EINZAHLEN);
+            Payment payment = executePayment(paymentId, payerId);
+            if ("approved".equals(payment.getState())) {
+                addPayment(zahlung);
+                sendConfirmationEmail(email, amount, currency, method, description, type);
+                return "/paypal";
+            }
+        } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
+            double balance = getCurrentBalance();
+            if (Double.valueOf(amount) > balance) {
+                return "/paypal/error";
+            } else {
+                zahlung.setType(PaymentType.AUSZAHLEN);
+                executePayout(receiverEmail, amount, currency);
+                addPayment(zahlung);
+                sendConfirmationEmail(email, amount, currency, method, description, type);
+                return "/paypal";
+            }
+        }
+        throw new RuntimeException("Invalid payment type");
+    }
+
+    public void sendConfirmationEmail(
+            String email, String amount, String currency, String method,
+            String description, String type
+    ) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Zahlungsbestätigung - PayPal");
+            message.setText(String.format(
+                    "Sehr geehrte/r Kunde/in,\n\n" +
+                            "wir haben Ihre PayPal-Zahlung erhalten. Hier sind die Details Ihrer Transaktion:\n\n" +
+                            "-----------------------------------\n" +
+                            "Zahlungsbetrag: %s %s\n" +
+                            "Zahlungsmethode: %s\n" +
+                            "Transaktionsbeschreibung: %s\n" +
+                            "Transaktionstyp: %s\n" +
+                            "-----------------------------------\n\n" +
+                            "Mit freundlichen Grüßen,\n" +
+                            "Ihr Team"
+                    ,
+                    amount, currency, method, description, type
+            ));
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 }

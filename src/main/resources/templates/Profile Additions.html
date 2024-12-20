@@ -5,26 +5,21 @@
     <title>Profile Additions</title>
 </head>
 <body>
-    <form action="/profileaddition" method="post">
-        <label for="inputString">Enter a String:</label>
-        <input type="text" id="inputString" name="inputString" required>
-        <label class="switch">
+<h1>Ergänzen Sie Ihr Profil</h1>
+<form action="/profileaddition" method="post">
+    <label for="inputString">Benutzername:</label>
+    <input type="text" id="inputString" name="inputString" required>
+    <br>
+    <label for="birthDate">Geburtsdatum:</label>
+    <input type="date" id="birthDate" name="birthDate" required>
+    <br>
+    <label for="isPublic">Profil öffentlich:</label>
+    <input type="checkbox" id="isPublic" name="isPublic">
+    <br>
+    <button type="submit">Speichern</button>
+</form>
 
-        <!-- Bind den Wert des Switches an das Attribut "isPublic" -->
-        <input type="checkbox" id="isPublic" name="isPublic" th:checked="${user.isPublic}">
-        <span class="slider"></span>
-        </label>
-        <p>
-            Dein Profil ist aktuell:
-            <span th:text="${user.isPublic ? 'Öffentlich' : 'Privat'}"></span>
-        </p>
-
-        <label for="birthDate">Geburtsdatum:</label>
-        <input type="date" id="birthDate" name="birthDate" required />
-
-        <button type="submit">Speichern</button>
-    </form>
-
-
+<!-- Fehlermeldung anzeigen -->
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
 </body>
 </html>

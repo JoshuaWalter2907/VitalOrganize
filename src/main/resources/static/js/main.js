@@ -5,8 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lade das Theme aus dem Cookie, falls vorhanden, ansonsten verwende 'gold' als Standard
     const savedTheme = getCookie('theme') || 'gold';
 
-    // Setze die Theme-Klasse
-    body.className = `${savedTheme}-theme`; // Setzt die entsprechende Klasse auf das Body-Element
+    // Setze das Theme auf das Body-Element
+    body.classList.remove('gold-theme', 'dark-theme'); // Entferne alle möglichen Theme-Klassen
+    body.classList.add(`${savedTheme}-theme`); // Füge die gespeicherte Theme-Klasse hinzu
+
 
     // Event Listener für jedes Theme-Option im Dropdown
     themeLinks.forEach(link => {
@@ -113,18 +115,26 @@ window.addEventListener("scroll", () => {
     lastScrollPosition = currentScrollPosition;
 });
 
-function sendEmail() {
-    console.log("ich war hier");
-    fetch('/api/send-email', {
-        method: 'POST',
-    })
-        .then(response => {
-            if (response.ok) {
-                console.log('E-Mail wurde erfolgreich gesendet!');
-                alert('E-Mail wurde erfolgreich gesendet!');
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.user-item').forEach(item => {
+        item.addEventListener('click', function () {
+            // Toggle die ausgewählte Klasse für visuelle Hervorhebung
+            this.classList.toggle('selected');
+
+            // Hole die ID des Benutzers
+            const userId = this.getAttribute('data-user-id');
+            const selectedUsersInput = document.getElementById('selectedUsers');
+            let selectedUsers = selectedUsersInput.value ? selectedUsersInput.value.split(',') : [];
+
+            // Falls der Benutzer bereits ausgewählt wurde, entferne ihn, ansonsten füge ihn hinzu
+            if (selectedUsers.includes(userId)) {
+                selectedUsers = selectedUsers.filter(id => id !== userId);
             } else {
-                alert('Fehler beim Senden der E-Mail.');
+                selectedUsers.push(userId);
             }
-        })
-        .catch(error => console.error('Error:', error));
-}
+
+            // Aktualisiere das versteckte Eingabefeld mit der neuen Liste der ausgewählten Benutzer
+            selectedUsersInput.value = selectedUsers.join(',');
+        });
+    });
+});
