@@ -115,26 +115,3 @@ window.addEventListener("scroll", () => {
     lastScrollPosition = currentScrollPosition;
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.user-item').forEach(item => {
-        item.addEventListener('click', function () {
-            // Toggle die ausgewählte Klasse für visuelle Hervorhebung
-            this.classList.toggle('selected');
-
-            // Hole die ID des Benutzers
-            const userId = this.getAttribute('data-user-id');
-            const selectedUsersInput = document.getElementById('selectedUsers');
-            let selectedUsers = selectedUsersInput.value ? selectedUsersInput.value.split(',') : [];
-
-            // Falls der Benutzer bereits ausgewählt wurde, entferne ihn, ansonsten füge ihn hinzu
-            if (selectedUsers.includes(userId)) {
-                selectedUsers = selectedUsers.filter(id => id !== userId);
-            } else {
-                selectedUsers.push(userId);
-            }
-
-            // Aktualisiere das versteckte Eingabefeld mit der neuen Liste der ausgewählten Benutzer
-            selectedUsersInput.value = selectedUsers.join(',');
-        });
-    });
-});

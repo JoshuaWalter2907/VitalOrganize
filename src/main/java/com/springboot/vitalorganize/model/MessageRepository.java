@@ -1,14 +1,12 @@
 package com.springboot.vitalorganize.model;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     @Query("SELECT m FROM MessageEntity m WHERE " +
@@ -28,5 +26,11 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
 
     List<MessageEntity> findByChatGroup_Id(Long groupId, Pageable pageable);
 
-    List<MessageEntity> findBySenderIdAndRecipientId(Long senderId, Long recipientId, PageRequest of);
+    @Query("SELECT m FROM MessageEntity m WHERE m.directChat.id = :chatId ORDER BY m.timestamp DESC")
+    List<MessageEntity> findLastMessageForDirectChat(@Param("chatId") Long chatId, Pageable pageable);
+
+    // Für ChatGroup: Holen der letzten Nachricht für eine ChatGroup
+    @Query("SELECT m FROM MessageEntity m WHERE m.chatGroup.id = :groupId ORDER BY m.timestamp DESC")
+    List<MessageEntity> findLastMessageForChatGroup(@Param("groupId") Long groupId, Pageable pageable);
+
 }

@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.vitalorganize.dto.ChatDetail;
 import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
 import com.springboot.vitalorganize.dto.ProfileData;
@@ -10,6 +11,7 @@ import com.springboot.vitalorganize.service.AuthenticationService;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.DirectChatRepository;
 import com.springboot.vitalorganize.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -24,6 +26,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
@@ -142,6 +145,7 @@ public class DummyController {
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
         Long senderId = currentUser.getId();
         String username = currentUser.getUsername();
+        System.out.println(username);
 
         // Dynamische Attribute setzen
         model.addAttribute("themeCss", "/css/" + theme + "-theme.css");
@@ -217,15 +221,51 @@ public class DummyController {
             }
         }
 
+        System.out.println("direct chats: " + directChats);
+
         // Chats und Nachrichten ins Model hinzufügen
-        if(filteredChatList.isEmpty()){
+        if (filteredChatList.isEmpty()) {
             filteredChatList.addAll(directChats);
             filteredChatList.addAll(chatGroups);
         }
-        else{
+        System.out.println("filtered chats: " + filteredChatList);
+        List<ChatDetail> chatDetails = new ArrayList<>();
 
+        for (Object chat : filteredChatList) {
+            String lastMessageContent = "No messages yet";
+            LocalDateTime lastMessageTime = null;
+
+            // Prüfen, ob es sich um einen DirectChat handelt
+            if (chat instanceof DirectChat directChat) {
+                MessageEntity lastMessage = chatService.getLastMessage(directChat.getId());
+                System.out.println(lastMessage + " " + directChat.getId());
+                if (lastMessage != null) {
+                    lastMessageContent = lastMessage.getContent();
+                    lastMessageTime = lastMessage.getTimestamp();
+                }
+
+                // ChatDetail-Objekt für DirectChat erstellen
+                chatDetails.add(new ChatDetail(directChat, lastMessageContent, lastMessageTime));
+
+                // Prüfen, ob es sich um eine ChatGroup handelt
+            } else if (chat instanceof ChatGroup) {
+                ChatGroup chatGroup = (ChatGroup) chat;
+                MessageEntity lastMessage = chatService.getLastGroupMessage(chatGroup.getId());
+                if (lastMessage != null) {
+                    lastMessageContent = lastMessage.getContent();
+                    lastMessageTime = lastMessage.getTimestamp();
+                }
+
+                // ChatDetail-Objekt für ChatGroup erstellen
+                chatDetails.add(new ChatDetail(chatGroup, lastMessageContent, lastMessageTime));
+            }
         }
 
+
+
+
+        for (ChatDetail chatDetail : chatDetails) {
+        }
 
         model.addAttribute("chatGroups", chatGroups);
         model.addAttribute("directChats", directChats);
@@ -234,7 +274,7 @@ public class DummyController {
         model.addAttribute("selectedUser", selectedUser);
         model.addAttribute("selectedGroup", selectedGroup);
         model.addAttribute("selectedDirectChat", selectedDirectChat);
-        model.addAttribute("chatList", filteredChatList);
+        model.addAttribute("chatDetails", chatDetails);
         model.addAttribute("otherUsername", otherUserName);
         model.addAttribute("otherUserPicture", otherUserPicture);
 
@@ -243,7 +283,7 @@ public class DummyController {
 
 
     @MessageMapping("/chat/send")
-    public void sendMessage(@Payload MessageDTO messageDTO) {
+    public void sendMessage (@Payload MessageDTO messageDTO){
         // Überprüfe, ob ein Inhalt vorhanden ist
         if (messageDTO.getContent() == null || messageDTO.getContent().isEmpty()) {
             // Rückgabe einer Fehlerantwort oder Ausnahme
@@ -254,12 +294,15 @@ public class DummyController {
 
         // Prüfen, ob die Nachricht eine Gruppen- oder Direktnachricht ist
         if (messageDTO.getChatGroupId() != null) {
+            UserEntity sender = userRepository.findById(messageDTO.getSenderId()).orElse(null);
             // Senden einer Gruppennachricht
             savedMessage = chatService.sendGroupMessage(messageDTO.getSenderId(), messageDTO.getChatGroupId(), messageDTO.getContent());
+            savedMessage.setSender(sender);
             brokerMessagingTemplate.convertAndSend("/topic/messages/group/" + messageDTO.getChatGroupId(), savedMessage);
         } else if (messageDTO.getRecipientId() != null) {
             // Senden einer Direktnachricht
             savedMessage = chatService.sendMessage(messageDTO.getSenderId(), messageDTO.getRecipientId(), messageDTO.getContent());
+            System.out.println("/topic/messages/" + messageDTO.getRecipientId());
             brokerMessagingTemplate.convertAndSend("/topic/messages/" + messageDTO.getRecipientId(), savedMessage);
         } else {
             // Fehlerbehandlung: keine Empfänger- oder Gruppen-ID
@@ -269,26 +312,39 @@ public class DummyController {
     }
 
     @GetMapping("/public-users")
-    public String showPublicUsers(
+    public String showPublicUsers (
             @RequestParam(value = "theme", defaultValue = "light") String theme,
             @RequestParam(value = "lang", defaultValue = "en") String lang,
+            HttpServletRequest request,
             Model model
     ){
-        Map<Character, List<UserEntity>> groupedUsers = userService.getGroupedPublicUsers();
+        String currentUrl = request.getRequestURI().toString();
+        chatService.preparePublicUsersPage(model, theme, lang);
 
-        model.addAttribute("groupedUsers", groupedUsers);
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
+        model.addAttribute("currentUrl", currentUrl);
+
         return "public-users";
     }
 
     @PostMapping("/create-group")
-    public String createGroup(
-            @RequestParam List<Long> selectedUsers,
+    public String createGroup (
+            @RequestParam("selectedUsers") List < Long > selectedUsers,
             @RequestParam("chatname") String chatName,
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
+            @RequestParam(value = "currentUrl") String currentUrl,
             @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication
-    ) {
+            OAuth2AuthenticationToken authentication,
+            Model model
+    ){
+        System.out.println(currentUrl);
+        chatService.preparePublicUsersPage(model, theme, lang);
+
+        if (selectedUsers.size() > 1 && (chatName == null || chatName.trim().isEmpty())) {
+            model.addAttribute("errorMessage", "Bitte geben Sie einen Gruppennamen ein.");
+            return "public-users"; // Der Name der Thymeleaf-Vorlage
+        }
+
         // Holen des aktuellen Benutzers aus dem UserService
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
 
@@ -300,11 +356,11 @@ public class DummyController {
     }
 
     @PostMapping("/chat/deleteChat")
-    public String deleteChat(
+    public String deleteChat (
             @RequestParam("chat-id") Long chatId,
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication
-    ) {
+    ){
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
 
         // Finde den Chat, entweder eine Gruppe oder ein Direkt-Chat
@@ -317,5 +373,4 @@ public class DummyController {
 
         return "redirect:/chat"; // Weiterleitung zur Chat-Liste oder einer anderen Seite
     }
-
 }

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/chat.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
@@ -19,57 +20,75 @@
 <div class="main-container">
   <div class="left-container">
 
-
-    <!--notification -->
-    <div class="notif-box">
-      <i class="fa-solid fa-bell-slash"></i>
-      <div class="notif-text">
-        <p>Get Notified of New Messages</p>
-        <a href="#">Turn on Desktop Notifications ›</a>
-      </div>
-      <i class="fa-solid fa-xmark"></i>
+    <!-- Chats Header -->
+    <div class="chats-header">
+      <h2>Chats</h2>
+      <button th:onclick="|window.location.href='@{/public-users}'|" class="create-chat-btn">
+        <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
+      </button>
     </div>
 
-    <!--search-container -->
     <!-- Search Container -->
     <div class="search-container">
       <form action="/chat" method="get" class="search-form">
-        <div class="input">
-          <i class="fa-solid fa-magnifying-glass"></i>
+        <div class="input-container">
+          <button type="submit" class="search-button">
+            <i class="fa fa-search"></i> <!-- Such-Icon -->
+          </button>
           <input type="text" name="query" placeholder="Search a chat" th:value="${query}">
         </div>
-        <button type="submit">
-          <i class="create-group-btn"></i>
-        </button>
       </form>
     </div>
 
     <!-- Chat List -->
     <div class="chat-list">
-      <div th:each="chat : ${chatList}" class="chat-box">
+      <div th:each="chatDetail : ${chatDetails}" class="chat-box">
+
         <!-- Einzelchat -->
-        <a th:if="${chat.getClass().getName() == 'com.springboot.vitalorganize.model.DirectChat'}"
-           th:href="@{/chat(user2=${chat.user2.id})}" class="chat-link">
+        <a th:if="${chatDetail.directChat != null}"
+           th:href="@{/chat(user2=${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.id : chatDetail.directChat.user1.id})}"
+           class="chat-link">
           <div class="chat-details">
-            <h4 th:text="${chat.user2.username}">Participant Name</h4>
+            <!-- Benutzerbild (links) -->
+            <div class="user-img">
+              <img th:src="${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.profilePictureUrl : chatDetail.directChat.user1.profilePictureUrl}"
+                   alt="User Image">
+            </div>
+
+            <!-- Benutzername und letzte Nachricht -->
+            <div class="chat-info">
+              <h4 th:text="${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.username : chatDetail.directChat.user1.username}">Participant Name</h4>
+              <p th:text="${chatDetail.lastMessage}">Last message</p>
+            </div>
+
+            <!-- Uhrzeit der letzten Nachricht (rechts) -->
+            <div class="chat-time">
+              <span th:text="${#temporals.format(chatDetail.lastMessageTime, 'HH:mm')}">Time</span>
+            </div>
           </div>
         </a>
 
         <!-- Gruppenchats -->
-        <a th:if="${chat.getClass().getName() == 'com.springboot.vitalorganize.model.ChatGroup'}"
-           th:href="@{/chat(group=${chat.id})}" class="chat-link">
+        <a th:if="${chatDetail.groupChat != null}"
+           th:href="@{/chat(group=${chatDetail.groupChat.id})}" class="chat-link">
           <div class="chat-details">
-            <h4 th:text="${chat.name}">Group Name</h4>
+
+            <div class="user-img">
+              <img th:src="@{/images/GroupIcon.jpg}" alt="User Image">
+            </div>
+            <!-- Gruppenname -->
+            <div class="chat-info">
+              <h4 th:text="${chatDetail.groupChat.name}">Group Name</h4>
+              <p th:text="${chatDetail.lastMessage}">Last message</p>
+            </div>
+
+            <!-- Uhrzeit der letzten Nachricht -->
+            <div class="chat-time">
+              <span th:text="${#temporals.format(chatDetail.lastMessageTime, 'HH:mm')}">Time</span>
+            </div>
           </div>
         </a>
       </div>
-    </div>
-
-
-    <div class="create-button">
-      <button th:onclick="|window.location.href='@{/public-users}'|" class="create-group-btn">
-        Neue Gruppe erstellen
-      </button>
     </div>
 
   </div>
@@ -81,7 +100,7 @@
 
     <div class="right-container">
     <!--header -->
-      <div class="header">
+      <div class="chat-header">
         <div class="img-text">
           <div th:if="${otherUsername != null}" class="user-img">
             <img class="dp" th:src="${otherUserPicture}" alt="">
@@ -106,47 +125,46 @@
                   </svg>
                 </div>
               </div>
-              <span>Delete Item</span>
+              <span>Delete Chat</span>
             </button>
           </form>
         </div>
       </div>
 
     <!--chat-container -->
-      <div class="chat-container" th:classappend="${selectedUser == null && selectedGroup == null ? 'empty-chat' : ''}">
-        <div th:if="${selectedUser != null || selectedGroup != null}">
-          <div th:each="message : ${messages}"
-               th:classappend="${message.sender.username == currentUser ? 'my-message' : 'friend-message'}"
-               class="message-box">
-            <!-- Gruppennachrichten-Prefix anzeigen -->
-            <p>
-                <span th:if="${message.chatGroup != null}"
-                      th:text="'[Group ' + message.chatGroup.id + '] '"></span>
-              <span th:text="${message.content}"></span>
-            </p>
-            <!-- Zeitstempel -->
-            <span class="message-time"
-                  th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
-          </div>
-        </div>
-        <div th:if="${selectedUser == null && selectedGroup == null}">
-          <!-- Eine Nachricht oder Platzhalter anzeigen, wenn kein Benutzer oder keine Gruppe ausgewählt ist -->
-          <p>Bitte wählen Sie einen Benutzer oder eine Gruppe, um zu chatten.</p>
-        </div>
+    <div class="chat-container" th:classappend="${selectedUser == null && selectedGroup == null ? 'empty-chat' : ''}">
+      <div  th:if="${selectedUser != null || selectedGroup != null}"
+            th:each="message : ${messages}"
+            th:classappend="${message.sender.username == currentUser ? 'my-message' : 'friend-message'}"
+            class="message-box">
+
+        <p th:if="${message.chatGroup != null}" class="message-sender" th:text="${message.sender.getUsername()}">Sender Name</p>
+
+        <p>
+          <span th:text="${message.content}"></span>
+        </p>
+        <!-- Zeitstempel -->
+        <span class="message-time" th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
       </div>
+      <div th:if="${selectedUser == null && selectedGroup == null}">
+        <p>Bitte wählen Sie einen Benutzer oder eine Gruppe, um zu chatten.</p>
+      </div>
+    </div>
 
-      <!-- Formular für die Eingabe, sichtbar nur bei ausgewähltem Chat -->
-      <form class="chatbox-input" id="message-form" th:if="${selectedUser != null || selectedGroup != null}">
-        <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
-        <input type="hidden" id="current-user-id" th:value="${SenderId}">
-        <input type="hidden" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
-        <input type="hidden" id="chat-group-id" th:value="${GroupId}">
-        <button type="submit">
-          <i class="fas fa-paper-plane"></i>
-        </button>
+    <div class="text-input">
+      <form class="chatbox-input" id="message-form" th:if="${selectedUser != null || selectedGroup != null}" >
+        <div class="text-input-container">
+          <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
+          <input type="hidden" id="current-user-id" th:value="${SenderId}">
+          <input type="hidden" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
+          <input type="hidden" id="chat-group-id" th:value="${GroupId}">
+          <button type="submit" class="send-button">
+            <i class="fa fa-paper-plane"></i>
+          </button>
+        </div>
       </form>
+    </div>
   </div>
-
 </div>
 <footer th:replace="fragments/footer:: footer"></footer>
 

@@ -33,10 +33,8 @@ public class PaypalController {
     private PaypalService paypalService;
     private UserService userService;
 
-    @Autowired
     private final UserRepository userRepository;
 
-    @Autowired
     private final JavaMailSender mailSender;
 
 

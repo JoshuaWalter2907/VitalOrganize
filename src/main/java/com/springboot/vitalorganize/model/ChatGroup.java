@@ -31,10 +31,12 @@ public class ChatGroup {
             joinColumns = @JoinColumn(name = "chat_group_id"), // Spalte für ChatGroup-ID
             inverseJoinColumns = @JoinColumn(name = "user_id") // Spalte für User-ID
     )
+    @JsonIgnore
     private List<UserEntity> users;
 
 
     @OneToMany(mappedBy = "chatGroup", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<MessageEntity> messages; // Nachrichten in der Gruppe
 
 

@@ -2,16 +2,16 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.*;
 import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -25,6 +25,7 @@ public class ChatService {
     private final ChatGroupRepository chatGroupRepository;
 
     private final DirectChatRepository directChatRepository;
+    private final UserService userService;
 
 
     private Pageable createPageable(int page, int size, String sortBy, Sort.Direction direction) {
@@ -46,11 +47,17 @@ public class ChatService {
         UserEntity recipient = userRepository.findById(recipientId)
                 .orElseThrow(() -> new IllegalArgumentException("Empfänger nicht gefunden"));
 
+        DirectChat directChat = directChatRepository.findByUser1IdAndUser2Id(senderId, recipientId);
+        if(directChat == null) {
+            directChat = directChatRepository.findByUser2IdAndUser1Id(senderId, recipientId);
+        }
+
         MessageEntity message = new MessageEntity();
         message.setSender(sender);
         message.setRecipient(recipient);
         message.setContent(content);
         message.setTimestamp(LocalDateTime.now());
+        message.setDirectChat(directChat);
 
         return messageRepository.save(message);
     }
@@ -93,7 +100,7 @@ public class ChatService {
     }
 
 
-    public Object createChat(List<Long> selectedUsers, String chatName, UserEntity currentUser) {
+    public void createChat(List<Long> selectedUsers, String chatName, UserEntity currentUser) {
         // Wenn mehr als ein Benutzer für die Gruppe ausgewählt wurde
         if (selectedUsers.size() > 1) {
             // Sicherstellen, dass der aktuelle Benutzer (currentUser) in der Liste enthalten ist
@@ -108,14 +115,14 @@ public class ChatService {
             Optional<ChatGroup> existingGroup = chatGroupRepository.findByUsersInAndName(users, chatName);
             if (existingGroup.isPresent()) {
                 // Wenn die Gruppe bereits existiert, gib die bestehende Gruppe zurück
-                return existingGroup.get();
+                existingGroup.get();
             } else {
                 // Wenn keine Gruppe existiert, erstelle eine neue
                 ChatGroup chatGroup = new ChatGroup();
                 chatGroup.setName(chatName);
                 chatGroup.setUsers(users);
 
-                return chatGroupRepository.save(chatGroup);
+                chatGroupRepository.save(chatGroup);
             }
         } else {
             // Wenn nur ein Benutzer ausgewählt wurde, also ein Direkt-Chat erstellt wird
@@ -124,7 +131,7 @@ public class ChatService {
             // Prüfen, ob der Benutzer versucht, einen Direkt-Chat mit sich selbst zu erstellen
             if (selectedUserId.equals(currentUser.getId())) {
                 // Weiterleitung zurück zur Chat-Seite, wenn der Benutzer sich selbst auswählt
-                return "redirect:/chat";
+                return;
             }
 
             // Prüfen, ob bereits ein Direkt-Chat zwischen den beiden Benutzern existiert
@@ -138,14 +145,13 @@ public class ChatService {
 
             if (existingDirectChat != null) {
                 // Wenn der Direkt-Chat bereits existiert, gib ihn zurück
-                return existingDirectChat;
             } else {
                 // Wenn kein Direkt-Chat existiert, erstelle einen neuen
                 DirectChat directChat = new DirectChat();
                 directChat.setUser1(currentUser);
                 directChat.setUser2(otherUser);
 
-                return directChatRepository.save(directChat);
+                directChatRepository.save(directChat);
             }
         }
     }
@@ -184,4 +190,27 @@ public class ChatService {
             throw new IllegalStateException("Du bist nicht berechtigt, diesen Direkt-Chat zu löschen.");
         }
     }
+
+    public MessageEntity getLastMessage(Long id) {
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Order.desc("timestamp")));
+        List<MessageEntity> messages = messageRepository.findLastMessageForDirectChat(id, pageable);
+        MessageEntity message = messages.isEmpty() ? null : messages.get(0);
+        return message;
+    }
+
+    public MessageEntity getLastGroupMessage(Long id) {
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Order.desc("timestamp")));
+        List<MessageEntity> messages = messageRepository.findLastMessageForChatGroup(id, pageable);
+        MessageEntity message = messages.isEmpty() ? null : messages.get(0);
+        return message;
+    }
+
+    public void preparePublicUsersPage(Model model, String theme, String lang) {
+        Map<Character, List<UserEntity>> groupedUsers = userService.getGroupedPublicUsers();
+        model.addAttribute("publicUsers", groupedUsers);
+        model.addAttribute("themeCss", userService.getThemeCss(theme));
+        model.addAttribute("lang", lang);
+    }
+
+
 }

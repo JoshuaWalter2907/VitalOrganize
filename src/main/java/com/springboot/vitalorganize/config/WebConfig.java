@@ -133,9 +133,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     private void handleGitHubLogin(OAuth2AuthenticationToken authentication) {
         // GitHub-spezifische Attribute abrufen
+        System.out.println(authentication);
         String username = authentication.getPrincipal().getAttribute("login"); // GitHub-Benutzername
         String email = authentication.getPrincipal().getAttribute("email"); // GitHub-E-Mail-Adresse
         String picture = authentication.getPrincipal().getAttribute("avatar_url");
+        System.out.println(picture);
 
         if (email == null) {
             email = username + "@github.com"; // Dummy-E-Mail erstellen

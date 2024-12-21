@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,14 +28,6 @@ public class DirectChat {
     private UserEntity user2;
 
     @OneToMany(mappedBy = "directChat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<MessageEntity> messages;
-
-    @Override
-    public String toString() {
-        return "DirectChat{" +
-                "id=" + id +
-                ", user1=" + user1.getUsername() +
-                ", user2=" + user2.getUsername() +
-                '}';
-    }
 }

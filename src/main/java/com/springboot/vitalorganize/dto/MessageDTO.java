@@ -1,5 +1,12 @@
 package com.springboot.vitalorganize.dto;
 
+import com.springboot.vitalorganize.model.UserEntity;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.security.core.userdetails.User;
+
+@Setter
+@Getter
 public class MessageDTO {
     private String content;
     private Long senderId;
@@ -8,35 +15,4 @@ public class MessageDTO {
 
     // Getter und Setter
 
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Long getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(Long senderId) {
-        this.senderId = senderId;
-    }
-
-    public Long getRecipientId() {
-        return recipientId;
-    }
-
-    public void setRecipientId(Long recipientId) {
-        this.recipientId = recipientId;
-    }
-
-    public Long getChatGroupId() {
-        return chatGroupId;
-    }
-
-    public void setChatGroupId(Long chatGroupId) {
-        this.chatGroupId = chatGroupId;
-    }
 }

@@ -17,28 +17,11 @@ body.light-theme{
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
 }
 
-body{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    color: var(--text-color);
-    background-image: var(--background-image);
-    background-attachment: fixed;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    height: 100vh; /* Seite auf die Viewport-Höhe begrenzen */
-    overflow: hidden; /* Scrollen deaktivieren */
-    flex-direction: column; /* Header, Main und Footer vertikal anordnen */
-
+body {
+    overflow-y: hidden;
 }
 
 .main-container {
@@ -51,8 +34,12 @@ body{
 }
 
 .main-container .left-container {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     flex: 0 0 30%;
-    background-color: white;
+    background-color: #6BA3BE;
     overflow-y: auto;
     position: relative;
 }
@@ -61,19 +48,31 @@ body{
     width: 70%;
     height: 100%;
     flex: 1 1 70%;
-    background: #e5ddd5;
+    background: #274D60;
 }
 
-.main-container .right-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+.right-container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    background: url(https://camo.githubusercontent.com/854a93c27d64274c4f8f5a0b6ec36ee1d053cfcd934eac6c63bed9eaef9764bd/68747470733a2f2f7765622e77686174736170702e636f6d2f696d672f62672d636861742d74696c652d6461726b5f61346265353132653731393562366237333364393131306234303866303735642e706e67);
-    opacity: 0.5;
+    background-color: #274D60;
 }
+
+.right-container .simple-text{
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: #aaa;
+}
+
+.right-container input#message-input {
+    background-color: #274D60; /* Gleiche Hintergrundfarbe wie der Container */
+    color: #ffffff; /* Gleiche Textfarbe wie der Container */
+    border: none; /* Entferne den Rand */
+    box-sizing: border-box; /* Damit Padding den Platz nicht überschreitet */
+}
+
 
 
 .user-img {
@@ -84,95 +83,78 @@ body{
     border-radius: 50%;
 }
 
-.dp {
-    position:absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    cursor: pointer;
-}
 
-.nav-icons {
-    display:flex;
-    justify-content: flex-end;
-    padding-left: 110px;
-}
-
-
-.notif-box {
-    position: relative;
-    display: flex;
-    width: 100%;
-    height: 70px;
-    background: #76daff;
-    align-items: center;
-    font-size: 0.8em;
-    text-decoration: none;
-}
-
-.notif-box i {
-    position:relative;
-    left: 13px;
-    background:#fff;
-    padding:10px;
-    width: 42px;
-    height: auto;
-    font-size: 20px;
-    border-radius: 55%;
-    cursor: pointer;
-    color:#76daff;
-}
-
-.notif-box .fa-xmark {
-    position: absolute;
-    left: 260px;
-    text-align:center;
-    background:#76daff;
-    color: #fff;
-}
-
-.notif-text {
-    margin: 25px;
-}
-
-.notif-text a {
-    text-decoration: none;
-    color: #333;
-    font-size: 0.9em;
-}
-
+/* Container für die gesamte Suchleiste */
 .search-container {
-    position:relative;
     width: 100%;
-    height: 40px;
-    background: #f6f6f6;
     display: flex;
+    justify-content: center; /* Zentriert die Suchleiste */
+    padding: 10px; /* Leichter Abstand um die gesamte Suchleiste */
+}
+
+/* Form-Style */
+.search-form {
+    background-color: transparent;
+    display: flex; /* Flexbox für horizontale Anordnung */
+    width: 100%;
+    max-width: 600px; /* Maximale Breite der Suchleiste */
+}
+
+/* Container für Button und Input */
+.input-container {
+    display: flex;
+    align-items: center; /* Vertikale Ausrichtung */
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Leicht schwarzer Hintergrund (mit Transparenz) */
+    border-radius: 30px; /* Schöne Abrundung der Ecken */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+
+/* Button (Lupe) */
+.search-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
+    display: flex;
+    justify-content: center;
     align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: #fff; /* Weiße Farbe für das Icon */
+    border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
+}
+
+
+/* Das Input-Feld */
+.search-form input {
+    width: 100%; /* Input nimmt die gesamte verbleibende Breite ein */
+    padding: 8px 15px; /* Polsterung für das Textfeld */
+    font-size: 14px; /* Schriftgröße */
+    border: none; /* Kein Rand */
+    border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
+    color: white; /* Weiße Schriftfarbe */
+    background-color: transparent; /* Hintergrundfarbe transparent */
+    outline: none; /* Entfernt den Standardfokus-Rahmen */
     z-index: 10;
 }
 
-.search-container .input input {
-    width: 121%;
-    outline: none;
-    border: none;
-    background: #fff;
-    border-radius: 10px;
-    font-size: 12px;
-    padding: 5px 5px 5px 60px;
-    margin: 10px
+/* Stil für das Input-Feld, wenn es fokussiert ist */
+.search-form input:focus {
+    border-color: #4d90fe; /* Blaue Umrandung beim Fokussieren */
 }
 
-.search-container .input i {
-    position: absolute;
-    left: 26px;
-    top: 14px;
-    color:#bbb;
-    font-size: 0.8em;
+/* Optional: Stil für das Icon im Button */
+.search-button i {
+    font-size: 18px; /* Größe des Icons */
+    color: #fff; /* Weiße Farbe für das Icon */
+    z-index: 10;
 }
+
 
 .chat-list {
+    margin-bottom: 15px ;
     position: relative;
     height:calc(100% - 170px);
     overflow-y: auto;
@@ -196,7 +178,7 @@ body{
     align-items:center;
     cursor: pointer;
     padding: 15px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #274D60;
 }
 
 .chat-list .chat-box .img-box {
@@ -266,7 +248,8 @@ img {
 }
 
 .chat-list .chat-box:hover {
-    background: #f5f5f5;
+    background: #032F30;
+    color: #fff;
 }
 
 .chat-list .chat-box .chat-details .text-head .unread {
@@ -274,183 +257,185 @@ img {
 }
 
 
-/* right-container */
-
-
-.right-container .header {
+.right-container .chat-header {
+    padding: 10px;
+    background: #032F30;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.right-container .header .img-text .user-img .dp {
+
+.right-container .chat-header .img-text .user-img .dp {
     position:relative;
-    top: -2px;
-    left: 0px;
     width: 40px;
     height:auto;
-    overflow:hidden;
-    object-fit: cover;
+    object-fit: contain; /* Skalieren, ohne zu beschneiden */
 }
 
-.right-container .header .img-text {
+.right-container .chat-header .img-text {
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
 }
 
-.right-container .header .img-text h4 {
+.right-container .chat-header .img-text h4 {
     font-weight: 500;
     line-height: 1.2em;
     margin-left: 15px;
 }
 
-.right-container .header .img-text h4 span {
+.right-container .chat-header .img-text h4 span {
     font-size: 0.8em;
-    color: #555;
+    color: #ffffff;
 }
 
-.right-container .header .nav-icons {
-    position: relative;
-    margin-right:0px;
-    /*   padding: 5px; */
-}
 
-.right-container .header .nav-icons i {
-    padding: 10px;
-}
-
-.chat-container {
-    position:relative;
-    width: 100%;
-    height: calc(100% - 120px);  /*60+60*/
-    overflow-y: auto;
-    background-color: #ece5dd; /* WhatsApp-Hintergrundfarbe */
-    padding: 20px;
+.chat-container{
     display: flex;
     flex-direction: column;
+    position: relative;
+    width: 100%;
+    height: calc(100% - 120px);  /*60+60*/
+    padding-right: 20px;
     gap: 10px; /* Abstand zwischen Nachrichten */
+    overflow-y: scroll; /* Ermöglicht vertikales Scrollen */
+    scrollbar-width: none; /* Verhindert die Anzeige der Scrollbar in Firefox */
+    -ms-overflow-style: none;  /* Verhindert die Anzeige der Scrollbar in älteren IE-Versionen */
 }
+
 
 .message-box {
     display: flex;
+    flex-direction: column; /* Nachrichten übereinander anordnen */
+    justify-content: flex-start; /* Maximiert den Abstand nach oben */
+    align-items: flex-start; /* Vertikal oben ausrichten */
     position: relative;
-    margin: 5px 0;
+    margin: 5px 0; /* Abstand zwischen den Nachrichten */
     padding: 10px 15px;
-    border-radius: 8px;
-    max-width: 80%; /* Nachrichtenbreite */
-    min-width: 100px;
+    border-radius: 10px; /* Abgerundete Ecken */
+    width: fit-content;
+    max-width: 60%; /* Maximale Breite der Nachricht */
     word-wrap: break-word; /* Lange Wörter umbrechen */
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2); /* Dezenter Schatten */
+    background-color: #f8f8f8; /* Grauer Hintergrund */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Leichte Schatten für ein abgehobenes Aussehen */
 }
 
 
-.message-box p {
-    max-width: 65%;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 0.9em;
+.message-sender {
+    font-weight: lighter;
+    font-size: 0.5rem;
+    margin-bottom: 5px; /* Abstand zwischen Absender und Nachricht */
+    color: #555; /* Dezente Farbe für den Absender */
+    align-self: flex-start; /* Sicherstellen, dass der Absendername linksbündig ist */
 }
 
-.friend-message {
-    align-self: flex-start;
-    text-align: left;
-    border-top-left-radius: 0; /* WhatsApp-ähnliche Form */
-}
-
-/* Ausgehende Nachrichten */
-.my-message {
-    align-self: flex-end;
-    text-align: left;
-    border-top-right-radius: 0; /* WhatsApp-ähnliche Form */
-}
-
-.message-box.my-message p::before {
-    content : '';
-    position: absolute;
-    top: 0;
-    right: -12px;
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(135deg, #dcf8c6 0%, #dcf8c6 50%, transparent 50%, transparent);
-    justify-content: flex-end;
-}
-
+/* Text der Nachricht */
 .message-box p {
     margin: 0;
     padding: 0;
     font-size: 14px;
     line-height: 1.4;
+    color: #333; /* Dunkle Textfarbe für bessere Lesbarkeit */
+    max-width: 100%;
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    flex-grow: 1; /* Der Textbereich wächst, um den verfügbaren Raum zu füllen */
 }
 
-.message-box p span {
-    display: block;
-    margin-top: 5px;
-    font-size: 0.8em;
-    opacity: 0.5;
-}
-
-.my-message {
-    align-self: flex-end; /* Positioniere die Nachricht nach links */
-    background-color: #dcf8c6; /* Grün für eigene Nachrichten */
-    color: black;
-    text-align: left;
-}
-
-.friend-message {
-    align-self: flex-start; /* Positioniere die Nachricht nach rechts */
-    background-color: #f8d7da; /* Grau für fremde Nachrichten */
-    color: black;
-    text-align: right;
-}
-
-.chat-container .my-message i {
-    color: yellow;
-}
-
-.message-box.friend-message p::before {
-    content : '';
+/* Zeitstempel der Nachricht */
+.message-time {
+    font-size: 12px; /* Kleinere Schrift für den Zeitstempel */
+    color: #999; /* Graue Farbe für den Zeitstempel */
     position: absolute;
-    top: 0;
-    left: -12px;
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(225deg, #f8d7da 0%, #f8d7da 50%, transparent 50%, transparent);
+    bottom: -18px; /* Position des Zeitstempels unterhalb der Nachricht */
+    right: 10px; /* Rechtsbündig */
+    white-space: nowrap; /* Verhindert Zeilenumbruch */
 }
 
-.right-container .chatbox-input {
-    flex-shrink: 0; /* Formular nicht skalieren */
+/* Stil für eigene Nachrichten */
+.my-message {
+    background-color: #dcf8c6; /* Grüner Hintergrund für eigene Nachrichten */
+    color: #000; /* Schwarze Textfarbe */
+    align-self: flex-end; /* Positioniert die eigene Nachricht rechts */
+    border-radius: 10px 10px 0 10px; /* Abgerundete Ecken oben und rechts */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    padding-right: 40px;
+}
+
+/* Stil für fremde Nachrichten */
+.friend-message {
+    background-color: #ffffff; /* Weißer Hintergrund für fremde Nachrichten */
+    color: #000; /* Schwarze Textfarbe */
+    align-self: flex-start; /* Positioniert die fremde Nachricht links */
+    border-radius: 10px 10px 10px 0; /* Abgerundete Ecken oben und links */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    padding-right: 40px;
+}
+
+
+/* Container für die gesamte Eingabeleiste */
+.text-input {
+    width: 100%;
     display: flex;
-    border-top: 1px solid #ccc; /* Optische Trennung */
-    padding: 10px;
-    background-color: #fff;
+    justify-content: center; /* Zentriert die Eingabeleiste */
+    padding: 10px; /* Leichter Abstand um die gesamte Eingabeleiste */
 }
 
-.chatbox-input input {
-    flex-grow: 1; /* Eingabefeld ausdehnen */
+.chatbox-input {
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+}
+
+.text-input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Leicht schwarzer Hintergrund (mit Transparenz) */
+    border-radius: 30px; /* Schöne Abrundung der Ecken */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.text-input-container input[type="text"] {
+    flex-grow: 1; /* Das Eingabefeld soll den restlichen Platz einnehmen */
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 10px;
-    margin-right: 10px;
+    font-size: 16px;
+    outline: none; /* Entfernt den Fokus-Rand */
+    background-color: transparent !important;
+}
+
+
+.right-container .send-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: #fff; /* Weiße Farbe für das Icon */
+    border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
+}
+
+.chat-container input {
+    width: 100%; /* Input nimmt die gesamte verbleibende Breite ein */
+    padding: 8px 15px; /* Polsterung für das Textfeld */
+    font-size: 14px; /* Schriftgröße */
+    border: none; /* Kein Rand */
+    border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
+    background-color: transparent; /* Hintergrundfarbe transparent */
+    outline: none; /* Entfernt den Standardfokus-Rahmen */
     z-index: 10;
 }
 
-.chatbox-input button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 10;
-}
 
-.chatbox-input button:hover {
-    background-color: #0056b3;
 
-}
+
 .message-time {
     position: absolute; /* Zeit relativ positionieren */
     bottom: 5px;
@@ -466,16 +451,6 @@ img {
     z-index: 10;
 }
 
-.create-group-btn {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
 .create-group-btn:hover {
     background-color: #0056b3;
 }
@@ -488,33 +463,10 @@ img {
     border-radius: 10px;
 }
 
-.user-list {
-    margin: 20px 0;
-}
-
-.user-list label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
-.send-btn {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.send-btn:hover {
-    background-color: #218838;
-}
 
 .button {
-    --background: #2b3044;
-    --background-hover: #1e2235;
+    --background: #032F31;
+    --background-hover: #032F40;
     --text: #fff;
     --shadow: rgba(0, 9, 61, 0.2);
     --paper: #5c86ff;
@@ -795,77 +747,71 @@ html {
     }
 }
 
-body {
-       min-height: 100vh;
-       display: flex;
-       font-family: "Inter", Arial;
-       justify-content: center;
-       align-items: center;
-       background: #eceffc;
-
-       .twitter {
-           position: fixed;
-           display: block;
-           right: 16px;
-           bottom: 16px;
-           svg {
-               width: 32px;
-               height: 32px;
-               fill: #1da1f2;
-           }
-       }
+h2{
+    text-align: center;
 }
 
-.user-item.selected {
-    background-color: #d3d3d3;
-    color: #fff;
+.user-list {
+    margin: 20px;
 }
 
-.right-container {
+.user-item{
+    margin-bottom: 10px;
+}
+
+.user-label {
     display: flex;
-    flex-direction: column;
-    height: 100%;
+    align-items: center; /* Zentriert das Bild und den Text vertikal */
+    gap: 10px; /* Abstand zwischen Bild und Text */
 }
 
-.chat-container {
-    flex: 1; /* Nimmt den restlichen Platz im Container ein */
-    overflow-y: auto; /* Ermöglicht das Scrollen bei vielen Nachrichten */
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
+.profile-image {
+    width: 40px; /* Größe des Bildes */
+    height: 40px;
+    border-radius: 50%; /* Macht das Bild rund */
+    object-fit: cover; /* Sorgt dafür, dass das Bild richtig zugeschnitten wird */
 }
 
-.chatbox-input {
-    display: none; /* Standardmäßig nicht sichtbar */
-    position: relative;
-    padding: 10px;
-    background-color: #fff;
-    border-top: 1px solid #ddd;
-    margin-top: auto; /* sorgt dafür, dass der Input immer unten bleibt */
-}
-
-.chat-container:not(.empty-chat) + .chatbox-input {
-    display: block; /* Nur anzeigen, wenn ein Chat ausgewählt wurde */
-}
-
-.chatbox-input input[type="text"] {
+.create-group-form input{
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 8px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    color: white;
+    background: transparent;
+    outline: none;
+    z-index: 10;
 }
 
-.chatbox-input button {
-    background-color: #007bff;
+.error-message{
+    margin-top: 5px;
+    font-size: 14px;
+    color: #031716;
+    font-style: italic;
+}
+
+.divider{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom:1px #274D60 solid;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.send-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
     color: white;
     border: none;
-    padding: 10px;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 16px;
 }
 
-.chatbox-input button:hover {
-    background-color: #0056b3;
+.send-btn:hover {
+    background-color: #218838;
 }
 
 .empty-chat {
@@ -877,122 +823,123 @@ body {
     font-size: 18px;
 }
 
-/* Linke Sidebar */
-.sidebar {
-    width: 30%;
-    max-width: 400px;
-    min-width: 300px;
-    background-color: #202c33; /* Sidebar-Hintergrund */
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #3c454c;
+.user-checkbox {
+    display: none; /* Blendet die Checkbox aus */
 }
 
-/* Header der Sidebar */
-.header {
-    padding: 20px;
-    background-color: #2a3942; /* Header-Hintergrund */
-    border-bottom: 1px solid #3c454c;
-}
-
-.header h2 {
-    font-size: 18px;
-    margin: 0 0 10px 0;
-    color: #e9edef;
-}
-
-.header .search-bar {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3c454c;
-    color: #e9edef;
-}
-
-.header .search-bar::placeholder {
-    color: #8696a0;
-}
-
-/* Kontakte-Bereich */
-.contacts {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-.contacts h3 {
-    margin-bottom: 20px;
-    color: #8696a0; /* Hellere Farbe für die Überschrift */
-}
-
-/* Trennstriche für Buchstaben */
-.divider {
-    padding: 10px 0;
-    margin: 10px 0;
-    border-bottom: 1px solid #3c454c;
-    font-size: 14px;
-    color: #8696a0; /* Farbe des Buchstabens */
-}
-
-.divider span {
-    display: block;
-    text-transform: uppercase;
-}
-
-/* Benutzerliste */
-.contacts ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.contacts ul li {
+.user-item {
     display: flex;
     align-items: center;
-    padding: 10px 0;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    padding: 10px;
+    cursor: pointer; /* Zeigt an, dass der Bereich klickbar ist */
 }
 
-.contacts ul li:hover {
-    background-color: #3c454c; /* Hover-Effekt */
+.user-item.selected {
+    background-color: #274D60; /* Hebt ausgewählte Benutzer hervor */
 }
 
-/* Profilbilder */
-.contacts ul li img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+.user-item:hover {
+    background-color: #274D60; /* Ändert die Hintergrundfarbe beim Hover */
+}
+
+.chats-header{
+    display: flex;
+    justify-content: space-between; /* Verteilung der Elemente mit Abstand */
+    align-items: center; /* Vertikale Ausrichtung der Elemente */
+    padding: 2px 20px; /* Ein bisschen Abstand innerhalb des Headers */
+    margin-bottom: 15px;
+}
+.chats-header h2 {
+    margin: 0; /* Entfernt den Standard-Abstand oben und unten */
+    font-size: 24px;
+    line-height: 1;
+}
+
+.chats-header button{
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+.create-chat-btn {
+    background-color: transparent;
+    color: black; /* Weißes Pluszeichen */
+    border: none; /* Kein Rand */
+    border-radius: 50%; /* Runde Form */
+    width: 50px; /* Breite des Buttons */
+    height: 50px; /* Höhe des Buttons */
+    display: flex; /* Flexbox, um das Icon zu zentrieren */
+    justify-content: center; /* Zentriert das Pluszeichen horizontal */
+    align-items: center; /* Zentriert das Pluszeichen vertikal */
+    font-size: 24px; /* Größe des Plus-Icons */
+    cursor: pointer; /* Zeigt an, dass es klickbar ist */
+    transition: background-color 0.3s, transform 0.3s; /* Sanfte Übergänge für Hintergrundfarbe und Transformation */
+
+}
+
+.create-chat-btn:hover {
+    background-color: #0056b3; /* Dunklere Hintergrundfarbe bei Hover */
+    transform: scale(1.1); /* Etwas vergrößern beim Hover für einen interaktiven Effekt */
+}
+
+.create-chat-btn:focus {
+    outline: none; /* Entfernt den Fokusrahmen */
+}
+
+.chat-link {
+    display: block;
+    text-decoration: none;
+}
+
+.chat-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-img {
+    flex-shrink: 0; /* Verhindert, dass das Bild sich verkleinert */
     margin-right: 10px;
-    object-fit: cover; /* Bild skaliert proportional */
 }
 
-/* Benutzernamen */
-.contacts ul li span {
+.user-img img {
+    width: 40px; /* Größe des Benutzerbildes */
+    height: auto; /* Größe des Benutzerbildes */
+    border-radius: 50%;
+}
+
+.chat-info {
+    flex-grow: 1; /* Damit der Chat-Info-Bereich den verfügbaren Platz nutzt */
+    overflow: hidden; /* Verhindert, dass der Text überläuft */
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    text-overflow: ellipsis; /* Schneidet den Text ab und zeigt '...' an, wenn er zu lang ist */
+}
+
+.chat-info h4 {
     font-size: 16px;
-    color: #e9edef;
+    margin: 0;
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    overflow: hidden; /* Verhindert den Überlauf */
+    text-overflow: ellipsis; /* Zeigt '...' an, wenn der Text zu lang ist */
 }
 
-/* Scroll-Leiste für Kontakte */
-.contacts {
-    scrollbar-width: thin;
-    scrollbar-color: #3c454c #202c33;
+.chat-info p {
+    font-size: 14px;
+    color: black;
+    margin: 0;
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    overflow: hidden; /* Verhindert den Überlauf */
+    text-overflow: ellipsis; /* Zeigt '...' an, wenn der Text zu lang ist */
+
+}
+.chat-time {
+    text-align: right;
+    font-size: 12px; /* Verkleinerung der Uhrzeit */
+    color: inherit;
 }
 
-.contacts::-webkit-scrollbar {
-    width: 6px;
+.chat-info h4, .chat-info p {
+    margin-bottom: 5px;
 }
-
-.contacts::-webkit-scrollbar-track {
-    background: #202c33;
-}
-
-.contacts::-webkit-scrollbar-thumb {
-    background-color: #3c454c;
-    border-radius: 10px;
-}
-
-
 
 

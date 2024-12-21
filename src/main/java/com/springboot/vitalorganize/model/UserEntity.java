@@ -54,7 +54,7 @@ public class UserEntity {
     @JoinColumn(name = "direct_chat_id")
     private DirectChat directChat; // Für Einzelchats
 
-    @Column(name = "profile_picture_url")
+    @Column(name = "profile_picture_url", length = 1024)
     private String profilePictureUrl;  // Profilbild-URL
 
 }

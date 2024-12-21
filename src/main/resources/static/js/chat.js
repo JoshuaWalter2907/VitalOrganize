@@ -36,6 +36,7 @@ function connect() {
 
         // Prüfe, ob der Benutzer sich in einem Gruppenchat oder Einzelchat befindet
         const chatGroupId = document.getElementById('chat-group-id').value || null;
+        console.log(senderId);
 
         console.log(chatGroupId);
 
@@ -71,15 +72,14 @@ function sendMessage(event) {
             content: messageInput,
             senderId: senderId,
             recipientId: recipientId,
-            chatGroupId: chatGroupId
+            chatGroupId: chatGroupId,
         };
         console.log("Message to send: ", message);
         stompClient.send("/app/chat/send", {}, JSON.stringify(message)); // Send the message to the server
-
-
-        showMessage(message);
         // Clear the input field after sending
         document.getElementById('message-input').value = '';
+        if(!chatGroupId)
+            showMessage(message);
     }
 }
 
@@ -88,16 +88,30 @@ function showMessage(message) {
     console.log("Received message:", message);
     var messageContainer = document.querySelector('.chat-container');
     var newMessage = document.createElement('div');
+
     newMessage.classList.add('message-box');
-    newMessage.classList.add(message.senderId === document.getElementById('current-user-id').value ? 'my-message' : 'friend-message');
+    newMessage.classList.add(document.getElementById('current-user-id') !== message.senderId ? 'my-message' : 'friend-message');
+
 
     console.log(newMessage);
 
-    const groupPrefix = message.chatGroupId ? `[Group ${message.chatGroupId}] ` : '';
-
     var formattedTimestamp = formatCurrentTimestamp();
 
-    newMessage.innerHTML = `<p>${groupPrefix}${message.content}</p><span class="message-time">${formattedTimestamp}</span>`;
+
+    if (message.recipient === null) {
+        newMessage.innerHTML = `
+        <p class="message-sender">${message.sender.username}</p>
+        <p>
+            <span>${message.content}</span>
+        </p>
+        <span class="message-time">${formattedTimestamp}</span>
+    `;
+    } else {
+        newMessage.innerHTML = `
+            <p>${message.content}</p>
+            <span class="message-time">${formattedTimestamp}</span>
+        `;
+    }
     messageContainer.appendChild(newMessage);
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }

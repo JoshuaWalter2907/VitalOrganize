@@ -8,8 +8,8 @@
 }
 
 body.gold-theme{
-    --background-color: #FFA500;
-    --text-color: #1A237E;
+    --background-color: #0C969C;
+    --text-color: #031716;
     --background-image: url("../images/background.jpg");
 }
 
@@ -30,7 +30,6 @@ body{
     background-position: center;
     background-color: var(--background-color);
     color: var(--text-color);
-    background-image: var(--background-image);
     background-attachment: fixed;
 
 }
@@ -382,19 +381,6 @@ header nav ul li a {
 header nav ul li a:hover {
     color: #A86E2B; /* Braunton für Hover-Effekt */
 }
-
-/*!* Trennlinie unter dem Header *!*/
-/*header::after {*/
-/*    content: '';*/
-/*    display: block;*/
-/*    height: 2px;*/
-/*    background-color: var(--background-color); !* Goldene Linie *!*/
-/*    margin: 10px auto 0;*/
-/*    width: 100vw;*/
-/*    max-width: 100%;*/
-/*    margin-left: 20px;*/
-/*    margin-right: 20px;*/
-/*}*/
 
 /* Allgemeine Stile für den Footer */
 footer {
