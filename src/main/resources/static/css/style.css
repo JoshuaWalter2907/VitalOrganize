@@ -7,6 +7,7 @@
     font-family: "Poppins", sans-serif;
 }
 
+/*
 body.gold-theme{
     --background-color: #0C969C;
     --text-color: #031716;
@@ -18,7 +19,7 @@ body.light-theme{
     --text-color: black;
     --background-image: url("../images/background_B&W.jpg.png");
 }
-
+*/
 
 body{
     display: flex;
@@ -28,10 +29,10 @@ body{
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-color: var(--background-color);
+    /*background-color: var(--background-color);
     color: var(--text-color);
     background-attachment: fixed;
-
+*/
 }
 
 

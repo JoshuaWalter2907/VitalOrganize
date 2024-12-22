@@ -276,6 +276,7 @@ public class PaypalService {
         } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
             double balance = getCurrentBalance();
             if (Double.valueOf(amount) > balance) {
+                System.out.println("Error3");
                 return "/paypal/error";
             } else {
                 zahlung.setType(PaymentType.AUSZAHLEN);

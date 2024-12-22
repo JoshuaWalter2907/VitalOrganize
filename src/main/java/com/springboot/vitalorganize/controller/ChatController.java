@@ -37,8 +37,6 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String chat(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
             @RequestParam(value = "user2", required = false) Long user2,
             @RequestParam(value = "group", required = false) Long groupId,
             @RequestParam(value = "query", required = false) String query,
@@ -52,8 +50,6 @@ public class ChatController {
         System.out.println(username);
 
         // Dynamische Attribute setzen
-        model.addAttribute("themeCss", "/css/" + theme + "-theme.css");
-        model.addAttribute("lang", lang);
         model.addAttribute("currentUser", username);
         model.addAttribute("SenderId", senderId);
 

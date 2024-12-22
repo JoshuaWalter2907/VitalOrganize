@@ -25,8 +25,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.time.LocalDateTime;
 
-@Controller
-@AllArgsConstructor
+ @AllArgsConstructor
 @Slf4j
 public class PaypalController {
 
@@ -41,16 +40,8 @@ public class PaypalController {
 
 
     @GetMapping("/paypal")
-    public String paypal(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            Model model
-    ) {
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
+    public String paypal(Model model) {
         model.addAttribute("balance", paypalService.getCurrentBalance());
-
 
         return "paypal";
     }
@@ -90,6 +81,7 @@ public class PaypalController {
             return new RedirectView(approvalUrl);
 
         } catch (PayPalRESTException e) {
+            System.out.println("Error");
             log.error("Error occurred while creating PayPal payment", e);
             return new RedirectView("/paypal/error");
         }
@@ -125,6 +117,7 @@ public class PaypalController {
             return new RedirectView(redirectUrl);
         } catch (Exception e) {
             log.error("Error during PayPal success processing", e);
+            System.out.println("Error2");
             return new RedirectView("/paypal/error");
         }
     }

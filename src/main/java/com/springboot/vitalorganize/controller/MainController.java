@@ -33,35 +33,19 @@ public class MainController {
 
 
     @RequestMapping("/")
-    public String home(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            Model model
-    ) {
-
+    public String home(Model model) {
         authenticationService.getAuthenticatedUsername()
                 .ifPresent(username -> model.addAttribute("username", username));
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
-
         return "home";
     }
 
     @GetMapping("/login")
-    public String login(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                        @RequestParam(value = "lang", defaultValue = "en") String lang,
-                        Model model) {
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
+    public String login() {
         return "LoginPage";
     }
 
     @GetMapping("/profile")
-    public String profile(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                          @RequestParam(value = "lang", defaultValue = "en") String lang,
-                          @RequestParam(value ="profileId", required = false) Long profileId,
+    public String profile(@RequestParam(value ="profileId", required = false) Long profileId,
                           @AuthenticationPrincipal OAuth2User user,
                           OAuth2AuthenticationToken authentication,
                           Model model) {
@@ -75,10 +59,6 @@ public class MainController {
             model.addAttribute("profile", profileData);
         }else {
             profileData = userService.getUserById(profileId);
-
-            model.addAttribute("themeCss", userService.getThemeCss(theme));
-            model.addAttribute("lang", lang);
-
         }
         model.addAttribute("profile", profileData);
 
@@ -86,8 +66,7 @@ public class MainController {
     }
 
     @GetMapping("/profileaddition")
-    public String profileAdditionGet(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                                     Model model,
+    public String profileAdditionGet(Model model,
                                      @AuthenticationPrincipal OAuth2User user,
                                      OAuth2AuthenticationToken authentication) {
 
@@ -101,7 +80,6 @@ public class MainController {
         // Daten für die View vorbereiten
         model.addAttribute("user", profileData.getUserEntity());
         model.addAttribute("birthDate", profileData.getBirthDate());
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
 
         return "Profile Additions"; // Thymeleaf-Template für die Profilerweiterung
     }

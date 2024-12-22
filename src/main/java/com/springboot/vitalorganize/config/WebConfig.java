@@ -81,7 +81,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
 
-        private void handleFormLogin(String email, String password, Authentication authentication) {
+    private void handleFormLogin(String email, String password, Authentication authentication) {
 
         authentication.setAuthenticated(true);
         // Prüfen, ob Benutzer bereits existiert

@@ -29,7 +29,7 @@ public class UserService {
 
 
     public String getThemeCss(String theme) {
-        return "/css/" + theme + "-theme.css";
+        return "/css/themes/" + theme + ".css";
     }
 
     public UserEntity getProfileData(OAuth2User user, OAuth2AuthenticationToken authentication) {
