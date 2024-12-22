@@ -1,0 +1,131 @@
+/* Basis-Container */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+}
+
+
+.main-container {
+    display: flex;
+    flex-direction: column; /* Elemente werden vertikal gestapelt */
+    align-items: flex-start; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    top: 100px;
+    padding: 20px; /* Innenabstand für den Container */
+    background: #0A7075;
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 40%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    font-family: "Cooper Black", serif;
+    color: #aaa
+}
+
+h1{
+    font-size: 24px;
+}
+
+.Konto-details{
+    margin: 20px
+}
+
+.Konto-details a{
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.Konto-details p{
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    line-break: auto;
+}
+
+.Konto-details p span{
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.input-container-profile{
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.input-box-fixed{
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    padding: 10px;
+    background: rgba(0,0,0,0.1);
+}
+
+
+.input-box-fixed label{
+    display: flex;
+    font-weight: bold;
+    font-size: 12px
+}
+
+.input-box-fixed input{
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #aaa;
+}
+.input-box-fixed input:focus{
+    outline: none;
+    border: none;
+}
+
+.input-box-profile{
+    display: flex;
+    flex-direction: column;
+    border: #aaa 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+
+}
+
+.input-box-profile label{
+    display: flex;
+    font-weight: bold;
+    font-size: 12px
+}
+
+.input-box-profile input{
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #aaa;
+}
+
+.input-box-profile input:focus{
+    outline: none;
+    border: none;
+}
+
+.form-actions{
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #031716;
+    border: none;
+    border-radius: 5px;
+    color: #aaaaaa;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Glatter Übergang */
+}
+
+.form-actions:hover{
+    background-color: #274D60;
+    cursor: pointer;
+}

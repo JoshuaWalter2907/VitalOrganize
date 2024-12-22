@@ -105,9 +105,14 @@
           <div th:if="${otherUsername != null}" class="user-img">
             <img class="dp" th:src="${otherUserPicture}" alt="">
           </div>
+          <div th:if="${otherUsername == null && GroupId != null}" class="user-img">
+            <img class="dp" th:src="@{/images/GroupIcon.jpg}" alt="">
+          </div>
           <h4 th:if="${otherUsername != null}">
             <span th:text="${otherUsername}"></span><br>
-            <span>Online</span>
+          </h4>
+          <h4 th:if="${otherUsername == null && GroupId != null}">
+            <span th:text="${selectedGroup.name}"></span><br>
           </h4>
         </div>
         <div th:if="${otherUsername != null || selectedGroup != null}" class="nav-icons">
@@ -138,9 +143,12 @@
             th:classappend="${message.sender.username == currentUser ? 'my-message' : 'friend-message'}"
             class="message-box">
 
-        <p th:if="${message.chatGroup != null}" class="message-sender" th:text="${message.sender.getUsername()}">Sender Name</p>
+        <p th:if="${message.chatGroup != null}" class="message-sender">
+          <a th:href="@{/profile(profileId=${message.sender.id})}"
+             th:text="${message.sender.getUsername()}">Sender Name</a>
+        </p>
 
-        <p>
+        <p class="message">
           <span th:text="${message.content}"></span>
         </p>
         <!-- Zeitstempel -->

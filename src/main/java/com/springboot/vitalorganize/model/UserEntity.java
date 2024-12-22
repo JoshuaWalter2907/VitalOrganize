@@ -57,4 +57,11 @@ public class UserEntity {
     @Column(name = "profile_picture_url", length = 1024)
     private String profilePictureUrl;  // Profilbild-URL
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private PersonalInformation personalInformation;
+
+    private String twoFactorCode; // Temporärer 2FA-Code
+    private LocalDateTime twoFactorExpiry; // Ablaufzeit des Codes
+
 }

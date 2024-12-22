@@ -287,7 +287,7 @@ img {
 }
 
 .right-container .chat-header .img-text h4 span {
-    font-size: 0.8em;
+    font-size: 15px;
     color: #ffffff;
 }
 
@@ -298,7 +298,7 @@ img {
     position: relative;
     width: 100%;
     height: calc(100% - 120px);  /*60+60*/
-    padding-right: 20px;
+    padding: 5px 20px;
     gap: 10px; /* Abstand zwischen Nachrichten */
     overflow-y: scroll; /* Ermöglicht vertikales Scrollen */
     scrollbar-width: none; /* Verhindert die Anzeige der Scrollbar in Firefox */
@@ -322,25 +322,25 @@ img {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Leichte Schatten für ein abgehobenes Aussehen */
 }
 
-
-.message-sender {
-    font-weight: lighter;
-    font-size: 0.5rem;
-    margin-bottom: 5px; /* Abstand zwischen Absender und Nachricht */
-    color: #555; /* Dezente Farbe für den Absender */
-    align-self: flex-start; /* Sicherstellen, dass der Absendername linksbündig ist */
-}
-
 /* Text der Nachricht */
-.message-box p {
+.message {
     margin: 0;
-    padding: 0;
+    padding-right: 10px;
     font-size: 14px;
     line-height: 1.4;
     color: #333; /* Dunkle Textfarbe für bessere Lesbarkeit */
     max-width: 100%;
     word-wrap: break-word; /* Lange Wörter umbrechen */
     flex-grow: 1; /* Der Textbereich wächst, um den verfügbaren Raum zu füllen */
+}
+
+.message-sender a{
+    font-size: 12px; /* Gleiche Schriftgröße wie der Zeitstempel */
+    color: #999; /* Dezente graue Farbe */
+    margin-bottom: 5px;
+    white-space: nowrap; /* Verhindert Zeilenumbruch */
+    align-self: flex-start;
+    text-decoration: none;
 }
 
 /* Zeitstempel der Nachricht */
@@ -436,7 +436,7 @@ img {
 
 
 
-.message-time {
+.message-time{
     position: absolute; /* Zeit relativ positionieren */
     bottom: 5px;
     right: 10px; /* Zeit am unteren rechten Rand */

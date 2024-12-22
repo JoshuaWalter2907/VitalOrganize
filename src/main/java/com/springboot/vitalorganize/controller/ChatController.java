@@ -1,135 +1,39 @@
 package com.springboot.vitalorganize.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.vitalorganize.dto.ChatDetail;
 import com.springboot.vitalorganize.dto.MessageDTO;
-import com.springboot.vitalorganize.dto.ProfileAdditionData;
-import com.springboot.vitalorganize.dto.ProfileData;
 import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.service.AuthenticationService;
 import com.springboot.vitalorganize.service.ChatService;
-import com.springboot.vitalorganize.service.DirectChatRepository;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
-public class DummyController {
+public class ChatController {
 
     private final UserService userService;
     private final SimpMessagingTemplate brokerMessagingTemplate;
-    private final DirectChatRepository directChatRepository;
-    private final AuthenticationService authenticationService;
 
     private UserRepository userRepository;
     private ChatGroupRepository chatGroupRepository;
 
     private final ChatService chatService;
-
-    @RequestMapping("/")
-    public String home(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            Model model
-    ) {
-
-        authenticationService.getAuthenticatedUsername()
-                .ifPresent(username -> model.addAttribute("username", username));
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
-
-        return "home";
-    }
-
-    @GetMapping("/login")
-    public String login(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                        @RequestParam(value = "lang", defaultValue = "en") String lang,
-                        Model model) {
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
-        return "LoginPage";
-    }
-
-    @GetMapping("/profile")
-    public String profile(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                          @RequestParam(value = "lang", defaultValue = "en") String lang,
-                          @AuthenticationPrincipal OAuth2User user,
-                          OAuth2AuthenticationToken authentication,
-                          Model model) {
-
-        // Benutzer- und Profilinformationen abrufen
-        ProfileData profileData = userService.getProfileData(user, authentication);
-
-        // Model mit den benötigten Daten befüllen
-        model.addAttribute("name", profileData.getName());
-        model.addAttribute("email", profileData.getEmail());
-        model.addAttribute("photo", profileData.getPhotoUrl());
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
-
-        return "user-profile"; // Gibt die View "user-profile.html" zurück
-    }
-
-    @GetMapping("/profileaddition")
-    public String profileAdditionGet(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                                     Model model,
-                                     @AuthenticationPrincipal OAuth2User user,
-                                     OAuth2AuthenticationToken authentication) {
-
-        // Benutzerinformationen und bestehendes Profil abrufen
-        ProfileAdditionData profileData = userService.getProfileAdditionData(user, authentication);
-
-        if (profileData.isProfileComplete()) {
-            return "redirect:/profile"; // Weiterleitung, wenn das Profil vollständig ist
-        }
-
-        // Daten für die View vorbereiten
-        model.addAttribute("user", profileData.getUserEntity());
-        model.addAttribute("birthDate", profileData.getBirthDate());
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-
-        return "Profile Additions"; // Thymeleaf-Template für die Profilerweiterung
-    }
-
-    @PostMapping("/profileaddition")
-    public String profileAddition(@RequestParam("inputString") String inputString,
-                                  @RequestParam(name = "isPublic", required = false) boolean status,
-                                  @RequestParam("birthDate") String birthDate,
-                                  @AuthenticationPrincipal OAuth2User user,
-                                  OAuth2AuthenticationToken authentication,
-                                  Model model) {
-
-        // Profilaktualisierung durchführen
-        boolean usernameExists = userService.updateUserProfile(user, authentication, inputString, status, birthDate);
-
-        // Falls der Benutzername existiert, bleibt der Benutzer auf der Ergänzungsseite
-        if (usernameExists) {
-            model.addAttribute("error", "Der Benutzername existiert bereits. Bitte wählen Sie einen anderen.");
-            return "Profile Additions"; // Thymeleaf-Template für die Profilerweiterung
-        }
-
-        // Weiterleitung zum Profil bei erfolgreicher Aktualisierung
-        return "redirect:/profile";
-    }
 
     @GetMapping("/chat")
     public String chat(
@@ -174,9 +78,6 @@ public class DummyController {
                 }
             }
 
-            // Benutzer, mit denen der aktuelle Benutzer einen Chat hat, dem Modell hinzufügen
-            model.addAttribute("filteredUsers", usersWithChats);
-
             // Optional: Suche nach Chats für die gefilterten Benutzer
             for (UserEntity filteredUser : usersWithChats) {
                 // Suche nach Direktnachrichten mit jedem dieser Benutzer
@@ -185,8 +86,15 @@ public class DummyController {
                     filteredChatList.add(directChat);
                 }
             }
-            System.out.println(filteredChatList);
-            model.addAttribute("chatList", filteredChatList); // Filtered Chat-Liste an das Modell übergeben
+
+            List<ChatGroup> filteredChatGroups = chatGroupRepository.findByNameContaining(query);
+
+            for(ChatGroup chatGroup : filteredChatGroups) {
+                if(chatService.getChatGroups(senderId).contains(chatGroup)) {
+                    filteredChatList.add(chatGroup);
+                }
+            }
+
 
         } else {
 
@@ -323,7 +231,7 @@ public class DummyController {
 
         model.addAttribute("currentUrl", currentUrl);
 
-        return "public-users";
+        return "newChat";
     }
 
     @PostMapping("/create-group")
@@ -342,7 +250,7 @@ public class DummyController {
 
         if (selectedUsers.size() > 1 && (chatName == null || chatName.trim().isEmpty())) {
             model.addAttribute("errorMessage", "Bitte geben Sie einen Gruppennamen ein.");
-            return "public-users"; // Der Name der Thymeleaf-Vorlage
+            return "newChat"; // Der Name der Thymeleaf-Vorlage
         }
 
         // Holen des aktuellen Benutzers aus dem UserService

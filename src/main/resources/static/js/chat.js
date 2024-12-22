@@ -86,35 +86,66 @@ function sendMessage(event) {
 // Function to append new message to the chat UI
 function showMessage(message) {
     console.log("Received message:", message);
+
+    // Container für Nachrichten
     var messageContainer = document.querySelector('.chat-container');
+    if (!messageContainer) {
+        console.error("Chat container not found.");
+        return;
+    }
+
+    // Neues Nachrichten-Element erstellen
     var newMessage = document.createElement('div');
-
     newMessage.classList.add('message-box');
-    newMessage.classList.add(document.getElementById('current-user-id') !== message.senderId ? 'my-message' : 'friend-message');
 
+    // Aktuelle Benutzer-ID abrufen
+    var currentUserId = document.getElementById('current-user-id').value;
 
-    console.log(newMessage);
-
-    var formattedTimestamp = formatCurrentTimestamp();
-
-
+    // Gruppennachrichten vs. Direktnachrichten
     if (message.recipient === null) {
+        console.log("Message is a group message.");
+        console.log(currentUserId + " " + message.sender.id);
+        // Gruppennachricht: Prüfen, ob der Absender der aktuelle Benutzer ist
+        if (String(currentUserId) === String(message.sender.id)) {
+            newMessage.classList.add('my-message'); // Nachricht vom aktuellen Benutzer
+            console.log("my-message")
+        } else {
+            newMessage.classList.add('friend-message'); // Nachricht von einem anderen Benutzer
+            console.log("friend-message")
+        }
+
+        // Gruppennachrichten-HTML
         newMessage.innerHTML = `
-        <p class="message-sender">${message.sender.username}</p>
-        <p>
-            <span>${message.content}</span>
-        </p>
-        <span class="message-time">${formattedTimestamp}</span>
-    `;
+            <p class="message-sender">${message.sender.username}</p>
+            <p>
+                <span>${message.content}</span>
+            </p>
+            <span class="message-time">${formatCurrentTimestamp(message.timestamp || new Date())}</span>
+        `;
     } else {
+        // Direktnachricht: Prüfen, ob der Absender der aktuelle Benutzer ist
+        if (String(currentUserId) === String(message.senderId)) {
+            newMessage.classList.add('my-message'); // Nachricht vom aktuellen Benutzer
+        } else {
+            newMessage.classList.add('friend-message'); // Nachricht von einem anderen Benutzer
+        }
+
+        // Direktnachrichten-HTML
         newMessage.innerHTML = `
-            <p>${message.content}</p>
-            <span class="message-time">${formattedTimestamp}</span>
+            <p>
+                <span>${message.content}</span>
+            </p>
+            <span class="message-time">${formatCurrentTimestamp(message.timestamp || new Date())}</span>
         `;
     }
+
+    // Nachricht zum Container hinzufügen
     messageContainer.appendChild(newMessage);
+
+    // Automatisch nach unten scrollen
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
+
 
 function formatCurrentTimestamp() {
     var now = new Date(); // Aktuelles Datum und Uhrzeit

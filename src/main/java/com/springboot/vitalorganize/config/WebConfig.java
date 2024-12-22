@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.config;
 
+import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,6 +124,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
         } else {
@@ -156,6 +158,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
         } else {
@@ -196,6 +199,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(false);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Discord-Benutzer erstellt: " + email);
         } else {
@@ -204,21 +208,19 @@ public class WebConfig implements WebMvcConfigurer {
         }
     }
 
+    private PersonalInformation createnewPersonalInformation(UserEntity userEntity) {
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        return username -> {
-//            UserEntity userEntity = userRepository.findByUsernameAndProvider(username); // Benutzer aus DB holen
-//            if (userEntity != null) {
-//                return User.withUsername(userEntity.getUsername())
-//                        .password(userEntity.getPassword())
-//                        .roles(userEntity.getRole())
-//                        .build();
-//            } else {
-//                throw new RuntimeException("User not found");
-//            }
-//        };
-//    }
+        PersonalInformation personalInformation = new PersonalInformation();
+        personalInformation.setFirstName(null); // Setze auf null, bis der Benutzer diese Information angibt
+        personalInformation.setLastName(null); // Setze auf null
+        personalInformation.setAddress(null); // Setze auf null
+        personalInformation.setPostalCode(null); // Setze auf null
+        personalInformation.setCity(null); // Setze auf null
+        personalInformation.setRegion(null); // Setze auf null
+        personalInformation.setCountry(null); // Setze auf null
+        personalInformation.setUser(userEntity);
+        return personalInformation;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -1,7 +1,13 @@
 package com.springboot.vitalorganize.service;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Font;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
 import com.springboot.vitalorganize.dto.ProfileData;
+import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.model.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +15,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.io.OutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +32,8 @@ public class UserService {
         return "/css/" + theme + "-theme.css";
     }
 
-    public ProfileData getProfileData(OAuth2User user, OAuth2AuthenticationToken authentication) {
+    public UserEntity getProfileData(OAuth2User user, OAuth2AuthenticationToken authentication) {
+
         // Extrahiere den Authentifizierungs-Provider
         String provider = authentication.getAuthorizedClientRegistrationId();
         String email = user.getAttribute("email");
@@ -45,7 +53,7 @@ public class UserService {
         photoUrl = userEntity.getProfilePictureUrl();
 
         // ProfileData-Objekt zurückgeben
-        return new ProfileData(name, email, photoUrl);
+        return userEntity;
 
     }
 
@@ -145,5 +153,34 @@ public class UserService {
         List<UserEntity> publicUsers = getPublicUsers();
         return publicUsers.stream()
                 .collect(Collectors.groupingBy(user -> user.getUsername().toUpperCase().charAt(0)));
+    }
+
+    public void createPdf(OutputStream out, UserEntity benutzer) throws DocumentException {
+        // Neues Dokument erstellen
+        Document document = new Document();
+        PdfWriter.getInstance(document, out);
+        document.open();
+
+        // Benutzerinformationen in PDF einfügen
+        document.add(new Paragraph("Benutzerinformationen", new Font(Font.HELVETICA, 16, Font.BOLD)));
+        document.add(new Paragraph("Email: " + benutzer.getEmail()));
+        document.add(new Paragraph("Nutzername: " + (benutzer.getUsername() != null ? benutzer.getUsername() : "N/A")));
+        document.add(new Paragraph("Geburtstag: " + (benutzer.getBirthday() != null ? benutzer.getBirthday().toString() : "N/A")));
+
+        if (benutzer.getPersonalInformation() != null) {
+            PersonalInformation personalInfo = benutzer.getPersonalInformation();
+            document.add(new Paragraph("\nPersönliche Informationen", new Font(Font.HELVETICA, 14, Font.BOLD)));
+            document.add(new Paragraph("Vorname: " + (personalInfo.getFirstName() != null ? personalInfo.getFirstName() : "N/A")));
+            document.add(new Paragraph("Nachname: " + (personalInfo.getLastName() != null ? personalInfo.getLastName() : "N/A")));
+            document.add(new Paragraph("Adresse: " + (personalInfo.getAddress() != null ? personalInfo.getAddress() : "N/A")));
+            document.add(new Paragraph("Postleitzahl: " + (personalInfo.getPostalCode() != null ? personalInfo.getPostalCode() : "N/A")));
+            document.add(new Paragraph("Stadt: " + (personalInfo.getCity() != null ? personalInfo.getCity() : "N/A")));
+            document.add(new Paragraph("Region: " + (personalInfo.getRegion() != null ? personalInfo.getRegion() : "N/A")));
+            document.add(new Paragraph("Land: " + (personalInfo.getCountry() != null ? personalInfo.getCountry() : "N/A")));
+        } else {
+            document.add(new Paragraph("\nPersönliche Informationen nicht verfügbar."));
+        }
+
+        document.close();
     }
 }

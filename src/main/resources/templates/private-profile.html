@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/profile.css}">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <title>Profile Page</title>
+</head>
+<body>
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="main-container">
+  <h1>Kontoeinstellungen</h1>
+  <a>Verwalte deine Kontodetails</a>
+
+  <div class="Konto-details">
+    <a>Kontoinformationen</a>
+    <p>
+      ID:
+      <span th:text="${profile.id}"></span>
+    </p>
+    <div class="input-container-profile">
+      <div class="input-box-fixed">
+        <label>Username:</label>
+        <input type="text" id="username" name="username" th:value="${profile.username}" readonly>
+      </div>
+      <div class="input-box-fixed">
+        <label>Email-Adresse:</label>
+        <input type="text" id="email" name="email" th:value="${#strings.substring(profile.email, 0, 1) + '***' +
+                  #strings.substring(profile.email, profile.email.length() - 10)}" readonly>
+      </div>
+    </div>
+  </div>
+  <div class="Konto-details">
+    <a>Persönliche Daten</a>
+    <p>Verwalte deinen Namen und deine Kontaktinformationen.Diese persönlichen Daten sind privat und werden anderen Benutzern nicht angezeigt.</p>
+    <div class="input-container-profile">
+      <div class="input-box-profile">
+        <label>Vorname:</label>
+        <input type="text" id="Sirname" name="Sirname" th:value="${profile.personalInformation.firstName != null ?
+                  #strings.substring(profile.personalInformation.firstName, 0, 1) + '***' +
+                  #strings.substring(profile.personalInformation.firstName, profile.personalInformation.firstName.length() - 1)
+                  : 'Vorname'}"
+               >
+      </div>
+      <div class="input-box-profile">
+        <label>Nachname:</label>
+        <input type="text" id="name" name="name" th:value="${profile.personalInformation.lastName != null?
+                  #strings.substring(profile.personalInformation.lastName, 0, 1) + '***' +
+                  #strings.substring(profile.personalInformation.lastName, profile.personalInformation.lastName.length() - 1)
+                  : 'Nachname'}">
+      </div>
+    </div>
+  </div>
+  <form action="/save-profile" method="post" class="Konto-details">
+    <a>Adresse</a>
+    <div class="input-container-profile">
+      <div class="input-box-profile">
+        <label>Adresszeile 1:</label>
+        <input type="text" id="address" name="address" th:value="${profile.personalInformation.address != null ?
+                profile.personalInformation.address
+                : 'Adresse'}">
+      </div>
+      <div class="input-box-profile">
+        <label>City:</label>
+        <input type="text" id="city" name="city" th:value="${profile.personalInformation.city != null ?
+                profile.personalInformation.city
+                : 'Stadt'}">
+      </div>
+    </div>
+    <div class="input-container-profile">
+      <div class="input-box-profile">
+        <label>Region:</label>
+        <input type="text" id="region" name="region" th:value="${profile.personalInformation.region != null ?
+                profile.personalInformation.region
+                : 'Region'}">
+      </div>
+      <div class="input-box-profile">
+        <label>Postal Code:</label>
+        <input type="text" id="postalCode" name="postalCode" th:value="${profile.personalInformation.postalCode != null ?
+                profile.personalInformation.postalCode
+                : 'Postleitzahl'}">
+      </div>
+    </div>
+    <div>
+      <button type="submit" class="form-actions">Änderungen speichern</button>
+    </div>
+  </form>
+  <div class="Konto-details">
+    <a>Kontoinformationen herunterladen</a>
+    <p>Verwalte deinen Namen und deine Kontaktinformationen.<br> Diese persönlichen Daten sind privat und werden anderen Benutzern nicht angezeigt.</p>
+  </div>
+  <div>
+    <form action="/download-user-info">
+      <button type="submit"> </button>
+    </form>
+
+  </div>
+</div>
+
+
+<footer th:replace="fragments/footer :: footer"></footer>
+<script src="/js/main.js"></script>
+
+</body>
+</html>
