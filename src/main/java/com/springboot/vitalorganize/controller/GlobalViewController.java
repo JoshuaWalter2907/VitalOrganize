@@ -1,53 +1,45 @@
 package com.springboot.vitalorganize.controller;
 
+import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
+@AllArgsConstructor
 public class GlobalViewController {
 
-    @Autowired
-    UserService userService;
+    private final UserService userService;
+
 
     @ModelAttribute
-    public void addGlobalAttributes(@AuthenticationPrincipal OAuth2User user, Model model) {
-        if (user != null) {
-            model.addAttribute("username", user.getAttribute("name")); // Beispielattribut
+    public void addGlobalAttributes(@AuthenticationPrincipal OAuth2User user,
+                                    OAuth2AuthenticationToken authentication,
+                                    Model model,
+                                    HttpServletRequest request
+    ) {
+        String username = null;
+        if(user != null || authentication != null) {
+            UserEntity userEntity = userService.getCurrentUser(user, authentication);
+
+            username = userEntity.getUsername();
+            model.addAttribute("loggedInUser", userEntity);
+        }
+
+
+        model.addAttribute("httpServletRequest", request);
+        System.out.println(request.getRequestURI());
+        if (username != null) {
+            model.addAttribute("username", username); // Beispielattribut
         } else {
             model.addAttribute("username", null);
         }
     }
 
-    @ModelAttribute
-    public void addThemeAttribute(HttpSession session, Model model) {
-        String theme = (String) session.getAttribute("theme");
-
-        // default value if there is no session yet
-        if (theme == null) {
-            theme = "light";
-            session.setAttribute("theme", theme);
-        }
-
-        // gets the css file from the session-attribute "theme"
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-    }
-
-    @ModelAttribute
-    public void addLanguageAttribute(HttpSession session, Model model) {
-        String lang = (String) session.getAttribute("lang");
-
-        // default value if there is no session yet
-        if (lang == null) {
-            lang = "en";
-            session.setAttribute("lang", lang);
-        }
-
-        model.addAttribute("lang", lang);
-    }
 }

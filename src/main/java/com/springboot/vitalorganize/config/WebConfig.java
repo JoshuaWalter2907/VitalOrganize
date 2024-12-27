@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.config;
 
+import com.springboot.vitalorganize.component.UsernameInterceptor;
 import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
@@ -35,13 +36,16 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UsernameInterceptor usernameInterceptor;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
                     // Öffentliche Ressourcen
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/paypal-webhook").permitAll();
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
                     // Geschützte Ressourcen
                     registry.anyRequest().authenticated();
@@ -73,15 +77,18 @@ public class WebConfig implements WebMvcConfigurer {
                 )
                 .logout(logout -> {
                     logout
-                            .logoutUrl("/logout") // Logout-Endpunkt
-                            .logoutSuccessUrl("/") // Nach Logout auf die Startseite umleiten
+                            .logoutUrl("/logout") // Definiert den Logout-Endpunkt
+                            .invalidateHttpSession(true) // Session wird invalidiert
+                            .clearAuthentication(true) // Authentifizierung wird gelöscht
+                            .deleteCookies("JSESSIONID") // Cookies (z. B. Session-Cookie) werden entfernt
+                            .logoutSuccessUrl("/") // Nach dem Logout auf die Startseite umleiten
                             .permitAll();
                 })
                 .build();
     }
 
 
-    private void handleFormLogin(String email, String password, Authentication authentication) {
+        private void handleFormLogin(String email, String password, Authentication authentication) {
 
         authentication.setAuthenticated(true);
         // Prüfen, ob Benutzer bereits existiert
@@ -245,7 +252,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(usernameInterceptor)
+                .addPathPatterns("/**") // Überall anwenden
+                .excludePathPatterns("/profileaddition","/css/**", "/js/**", "/images/**", "/", "/login", "/verify-2fa", "/send-2fa-code", "/logout"); // Ausnahmen
     }
 
     @Bean

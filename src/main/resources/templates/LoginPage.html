@@ -6,7 +6,6 @@
   <title>HomePage</title>
 
   <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" href="#" th:href="@{${themeCss}}">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body>
@@ -71,7 +70,7 @@
     </div>
 </div>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<div th:replace="fragments/footer :: footer"></div>
 
 <!-- JavaScript-Datei ohne th:src -->
 <script src="/js/main.js"></script>

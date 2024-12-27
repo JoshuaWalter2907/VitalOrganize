@@ -1,18 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-
-body.gold-theme{
-    --background-color: #FFA500;
-    --text-color: #1A237E;
-    --background-image: url("../images/background.jpg");
-}
-
-body.light-theme{
-    --background-color: white;
-    --text-color: black;
-    --background-image: url("../images/background_B&W.jpg.png");
-}
-
-
+@import url("../css/themes.css");
 
 * {
     margin: 0;
@@ -26,11 +13,12 @@ body {
 
 .main-container {
     width: 80%;
-    height: calc(100vh - 140px);
+    height: calc(100vh - 240px);
     display: flex;
     flex-direction: row;
     box-shadow: 0 1px 1px  0 rgba(0,0,0,0.5), 0px 2px 5px 0 rgba(0,0,0,0.6);
     overflow: hidden;
+    margin-top: 100px;
 }
 
 .main-container .left-container {
@@ -39,7 +27,7 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     flex: 0 0 30%;
-    background-color: #6BA3BE;
+    background-color: var(--color-light);
     overflow-y: auto;
     position: relative;
 }
@@ -48,14 +36,14 @@ body {
     width: 70%;
     height: 100%;
     flex: 1 1 70%;
-    background: #274D60;
+    background: var(--color-medium-dark);
 }
 
 .right-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
 }
 
 .right-container .simple-text{
@@ -63,12 +51,12 @@ body {
     height: 100%;
     justify-content: center;
     align-items: center;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 .right-container input#message-input {
-    background-color: #274D60; /* Gleiche Hintergrundfarbe wie der Container */
-    color: #ffffff; /* Gleiche Textfarbe wie der Container */
+    background-color: var(--color-medium-dark); /* Gleiche Hintergrundfarbe wie der Container */
+    color: var(--text-color-light); /* Gleiche Textfarbe wie der Container */
     border: none; /* Entferne den Rand */
     box-sizing: border-box; /* Damit Padding den Platz nicht überschreitet */
 }
@@ -122,7 +110,7 @@ body {
     justify-content: center;
     align-items: center;
     font-size: 18px; /* Größe des Icons */
-    color: #fff; /* Weiße Farbe für das Icon */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
     border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
 }
 
@@ -134,21 +122,16 @@ body {
     font-size: 14px; /* Schriftgröße */
     border: none; /* Kein Rand */
     border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
-    color: white; /* Weiße Schriftfarbe */
+    color: var(--text-color-light); /* Weiße Schriftfarbe */
     background-color: transparent; /* Hintergrundfarbe transparent */
     outline: none; /* Entfernt den Standardfokus-Rahmen */
     z-index: 10;
 }
 
-/* Stil für das Input-Feld, wenn es fokussiert ist */
-.search-form input:focus {
-    border-color: #4d90fe; /* Blaue Umrandung beim Fokussieren */
-}
-
 /* Optional: Stil für das Icon im Button */
 .search-button i {
     font-size: 18px; /* Größe des Icons */
-    color: #fff; /* Weiße Farbe für das Icon */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
     z-index: 10;
 }
 
@@ -178,7 +161,11 @@ body {
     align-items:center;
     cursor: pointer;
     padding: 15px;
-    border-bottom: 1px solid #274D60;
+    border-bottom: 1px solid var(--color-medium-dark);
+}
+
+.chat-list .chat-box:hover {
+    background-color: var(--color-medium-dark);
 }
 
 .chat-list .chat-box .img-box {
@@ -204,12 +191,12 @@ body {
 .chat-list .chat-box .chat-details .text-head h4 {
     font-size: 1.1em;
     font-weight: 600;
-    color: #000;
+    color: var(--text-color-dark)
 }
 
 .chat-list .chat-box .chat-details .text-head .time {
     font-size: 0.8em;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 .chat-list .chat-box .chat-details .text-message {
@@ -219,9 +206,9 @@ body {
 }
 
 .chat-list .chat-box .chat-details .text-message p {
-    color: #aaa;
+    color: var(--text-color-light);
     font-size: 0.9em;
-    overlay: hidden;
+    overflow: hidden;
 }
 
 img {
@@ -229,37 +216,10 @@ img {
     object-fit: cover;
 }
 
-.chat-list .chat-box .chat-details .text-message b {
-    background: #06e744;
-    color: #fff;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    /*   text-align: center; */
-    font-size: 0.8em;
-    font-weight: 400;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.chat-list .active {
-    background: #ebebeb;
-}
-
-.chat-list .chat-box:hover {
-    background: #032F30;
-    color: #fff;
-}
-
-.chat-list .chat-box .chat-details .text-head .unread {
-    color: #dcf8c6;
-}
-
 
 .right-container .chat-header {
     padding: 10px;
-    background: #032F30;
+    background: var(--color-slightly-dark);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -288,7 +248,7 @@ img {
 
 .right-container .chat-header .img-text h4 span {
     font-size: 15px;
-    color: #ffffff;
+    color: var(--text-color-light);
 }
 
 
@@ -318,8 +278,6 @@ img {
     width: fit-content;
     max-width: 60%; /* Maximale Breite der Nachricht */
     word-wrap: break-word; /* Lange Wörter umbrechen */
-    background-color: #f8f8f8; /* Grauer Hintergrund */
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Leichte Schatten für ein abgehobenes Aussehen */
 }
 
 /* Text der Nachricht */
@@ -328,7 +286,6 @@ img {
     padding-right: 10px;
     font-size: 14px;
     line-height: 1.4;
-    color: #333; /* Dunkle Textfarbe für bessere Lesbarkeit */
     max-width: 100%;
     word-wrap: break-word; /* Lange Wörter umbrechen */
     flex-grow: 1; /* Der Textbereich wächst, um den verfügbaren Raum zu füllen */
@@ -336,7 +293,7 @@ img {
 
 .message-sender a{
     font-size: 12px; /* Gleiche Schriftgröße wie der Zeitstempel */
-    color: #999; /* Dezente graue Farbe */
+    color: var(--text-color-light); /* Dezente graue Farbe */
     margin-bottom: 5px;
     white-space: nowrap; /* Verhindert Zeilenumbruch */
     align-self: flex-start;
@@ -355,8 +312,8 @@ img {
 
 /* Stil für eigene Nachrichten */
 .my-message {
-    background-color: #dcf8c6; /* Grüner Hintergrund für eigene Nachrichten */
-    color: #000; /* Schwarze Textfarbe */
+    background-color: var(--color-slightly-dark); /* Grüner Hintergrund für eigene Nachrichten */
+    color: var(--text-color-light); /* Schwarze Textfarbe */
     align-self: flex-end; /* Positioniert die eigene Nachricht rechts */
     border-radius: 10px 10px 0 10px; /* Abgerundete Ecken oben und rechts */
     word-wrap: break-word; /* Lange Wörter umbrechen */
@@ -365,8 +322,8 @@ img {
 
 /* Stil für fremde Nachrichten */
 .friend-message {
-    background-color: #ffffff; /* Weißer Hintergrund für fremde Nachrichten */
-    color: #000; /* Schwarze Textfarbe */
+    background-color: var(--color-dark); /* Weißer Hintergrund für fremde Nachrichten */
+    color: var(--text-color-light); /* Schwarze Textfarbe */
     align-self: flex-start; /* Positioniert die fremde Nachricht links */
     border-radius: 10px 10px 10px 0; /* Abgerundete Ecken oben und links */
     word-wrap: break-word; /* Lange Wörter umbrechen */
@@ -401,7 +358,7 @@ img {
 .text-input-container input[type="text"] {
     flex-grow: 1; /* Das Eingabefeld soll den restlichen Platz einnehmen */
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--text-color-light);
     border-radius: 5px;
     font-size: 16px;
     outline: none; /* Entfernt den Fokus-Rand */
@@ -418,7 +375,7 @@ img {
     justify-content: center;
     align-items: center;
     font-size: 18px; /* Größe des Icons */
-    color: #fff; /* Weiße Farbe für das Icon */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
     border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
 }
 
@@ -441,7 +398,7 @@ img {
     bottom: 5px;
     right: 10px; /* Zeit am unteren rechten Rand */
     font-size: 12px; /* Kleinere Schriftgröße */
-    color: #999; /* Dezente Farbe */
+    color: var(--text-color-light); /* Dezente Farbe */
 }
 
 .create-button{
@@ -452,29 +409,29 @@ img {
 }
 
 .create-group-btn:hover {
-    background-color: #0056b3;
+    background-color: #274D60;
 }
 
 .user-selection-container {
     margin: 20px auto;
     padding: 20px;
     max-width: 600px;
-    background: #f8f9fa;
+    background: var(--text-color-light);
     border-radius: 10px;
 }
 
 
 .button {
-    --background: #032F31;
-    --background-hover: #032F40;
-    --text: #fff;
+    --background: var(--color-slightly-dark);
+    --background-hover: var(--color-dark);
+    --text: var(--text-color-light);
     --shadow: rgba(0, 9, 61, 0.2);
-    --paper: #5c86ff;
-    --paper-lines: #fff;
-    --trash: #e1e6f9;
-    --trash-lines: #bbc1e1;
-    --check: #fff;
-    --check-background: #5c86ff;
+    --paper: var(--color-slightly-light);
+    --paper-lines: var(--text-color-light);
+    --trash: var(--text-color-light);
+    --trash-lines: var(--text-color-light);
+    --check: var(--text-color-light);
+    --check-background: var(--color-slightly-light);
     position: relative;
     border: none;
     outline: none;
@@ -778,7 +735,7 @@ h2{
     font-size: 14px;
     border: none;
     border-radius: 0 5px 5px 0;
-    color: white;
+    color: var(--text-color-light);
     background: transparent;
     outline: none;
     z-index: 10;
@@ -787,7 +744,7 @@ h2{
 .error-message{
     margin-top: 5px;
     font-size: 14px;
-    color: #031716;
+    color: var(--color-dark);
     font-style: italic;
 }
 
@@ -795,23 +752,9 @@ h2{
     display: flex;
     justify-content: center;
     align-items: center;
-    border-bottom:1px #274D60 solid;
+    border-bottom:1px var(--color-medium-dark) solid;
     font-size: 24px;
     font-weight: bold;
-}
-
-.send-btn {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.send-btn:hover {
-    background-color: #218838;
 }
 
 .empty-chat {
@@ -819,7 +762,7 @@ h2{
     justify-content: center;
     align-items: center;
     height: 100%;
-    color: #999;
+    color: var(--text-color-light);
     font-size: 18px;
 }
 
@@ -835,11 +778,11 @@ h2{
 }
 
 .user-item.selected {
-    background-color: #274D60; /* Hebt ausgewählte Benutzer hervor */
+    background-color: var(--color-medium-dark); /* Hebt ausgewählte Benutzer hervor */
 }
 
 .user-item:hover {
-    background-color: #274D60; /* Ändert die Hintergrundfarbe beim Hover */
+    background-color: var(--color-medium-dark); /* Ändert die Hintergrundfarbe beim Hover */
 }
 
 .chats-header{
@@ -863,7 +806,7 @@ h2{
 
 .create-chat-btn {
     background-color: transparent;
-    color: black; /* Weißes Pluszeichen */
+    color: var(--color-dark); /* Weißes Pluszeichen */
     border: none; /* Kein Rand */
     border-radius: 50%; /* Runde Form */
     width: 50px; /* Breite des Buttons */
@@ -878,7 +821,8 @@ h2{
 }
 
 .create-chat-btn:hover {
-    background-color: #0056b3; /* Dunklere Hintergrundfarbe bei Hover */
+    background-color: var(--color-medium-dark); /* Dunklere Hintergrundfarbe bei Hover */
+    color: var(--text-color-light);
     transform: scale(1.1); /* Etwas vergrößern beim Hover für einen interaktiven Effekt */
 }
 
@@ -925,7 +869,7 @@ h2{
 
 .chat-info p {
     font-size: 14px;
-    color: black;
+    color: var(--text-color-dark);
     margin: 0;
     white-space: nowrap; /* Verhindert den Zeilenumbruch */
     overflow: hidden; /* Verhindert den Überlauf */

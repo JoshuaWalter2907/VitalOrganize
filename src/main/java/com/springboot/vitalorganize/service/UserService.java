@@ -1,38 +1,37 @@
 package com.springboot.vitalorganize.service;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Font;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfWriter;
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
-import com.springboot.vitalorganize.dto.ProfileData;
-import com.springboot.vitalorganize.model.PersonalInformation;
-import com.springboot.vitalorganize.model.UserEntity;
-import com.springboot.vitalorganize.model.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.springboot.vitalorganize.model.*;
+import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.OutputStream;
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ChatGroupRepository chatGroupRepository;
+    private final DirectChatRepository directChatRepository;
+    private final MessageRepository messageRepository;
 
 
     public String getThemeCss(String theme) {
-        return "/css/themes/" + theme + ".css";
+        return "/css/" + theme + "-theme.css";
     }
 
     public UserEntity getProfileData(OAuth2User user, OAuth2AuthenticationToken authentication) {
+        System.out.println(user);
+        System.out.println(authentication);
 
         // Extrahiere den Authentifizierungs-Provider
         String provider = authentication.getAuthorizedClientRegistrationId();
@@ -73,12 +72,15 @@ public class UserService {
     }
 
     public boolean updateUserProfile(OAuth2User user, OAuth2AuthenticationToken authentication,
-                                     String username, boolean isPublic, String birthDate) {
+                                     String username, boolean isPublic, String birthDate, String mail) {
 
         String provider = authentication.getAuthorizedClientRegistrationId();
         String email = getEmailFromOAuth2User(user, provider);
 
         UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
+
+//        if(provider.equals("github"))
+//            existingUser.setEmail(mail);
 
         if (existingUser == null) {
             throw new IllegalStateException("Benutzer nicht gefunden");
@@ -90,6 +92,7 @@ public class UserService {
         }
 
         // Benutzerprofil aktualisieren
+        existingUser.setSendtoEmail(mail);
         existingUser.setUsername(username);
         existingUser.setPublic(isPublic);
         existingUser.setBirthday(LocalDate.parse(birthDate));
@@ -155,32 +158,142 @@ public class UserService {
                 .collect(Collectors.groupingBy(user -> user.getUsername().toUpperCase().charAt(0)));
     }
 
-    public void createPdf(OutputStream out, UserEntity benutzer) throws DocumentException {
-        // Neues Dokument erstellen
-        Document document = new Document();
-        PdfWriter.getInstance(document, out);
-        document.open();
+    private String generateRandomPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+        StringBuilder password = new StringBuilder();
+        SecureRandom random = new SecureRandom();
 
-        // Benutzerinformationen in PDF einfügen
-        document.add(new Paragraph("Benutzerinformationen", new Font(Font.HELVETICA, 16, Font.BOLD)));
-        document.add(new Paragraph("Email: " + benutzer.getEmail()));
-        document.add(new Paragraph("Nutzername: " + (benutzer.getUsername() != null ? benutzer.getUsername() : "N/A")));
-        document.add(new Paragraph("Geburtstag: " + (benutzer.getBirthday() != null ? benutzer.getBirthday().toString() : "N/A")));
-
-        if (benutzer.getPersonalInformation() != null) {
-            PersonalInformation personalInfo = benutzer.getPersonalInformation();
-            document.add(new Paragraph("\nPersönliche Informationen", new Font(Font.HELVETICA, 14, Font.BOLD)));
-            document.add(new Paragraph("Vorname: " + (personalInfo.getFirstName() != null ? personalInfo.getFirstName() : "N/A")));
-            document.add(new Paragraph("Nachname: " + (personalInfo.getLastName() != null ? personalInfo.getLastName() : "N/A")));
-            document.add(new Paragraph("Adresse: " + (personalInfo.getAddress() != null ? personalInfo.getAddress() : "N/A")));
-            document.add(new Paragraph("Postleitzahl: " + (personalInfo.getPostalCode() != null ? personalInfo.getPostalCode() : "N/A")));
-            document.add(new Paragraph("Stadt: " + (personalInfo.getCity() != null ? personalInfo.getCity() : "N/A")));
-            document.add(new Paragraph("Region: " + (personalInfo.getRegion() != null ? personalInfo.getRegion() : "N/A")));
-            document.add(new Paragraph("Land: " + (personalInfo.getCountry() != null ? personalInfo.getCountry() : "N/A")));
-        } else {
-            document.add(new Paragraph("\nPersönliche Informationen nicht verfügbar."));
+        for (int i = 0; i < 12; i++) { // 12 Zeichen langes Passwort
+            int randomIndex = random.nextInt(characters.length());
+            password.append(characters.charAt(randomIndex));
         }
 
-        document.close();
+        return password.toString();
     }
+
+    @Transactional
+    public void deleteUser(UserEntity user) {
+
+        Long id = user.getId();
+
+        List<ChatGroup> chatGroups = chatGroupRepository.findAllByUserId(id);
+
+        List<Long> chatGroupIds = chatGroups.stream()
+                .map(ChatGroup::getId)
+                .toList();
+
+
+        messageRepository.deleteByRecipient_Id(id);
+        messageRepository.deleteBySender_Id(id);
+        chatGroupRepository.deleteAllByIdIn(chatGroupIds);
+        directChatRepository.deleteById(id);
+        userRepository.deleteById(id);
+
+    }
+
+    @Transactional
+    public void blockUser(Long currentUserId, Long targetUserId) {
+
+        System.out.println("Ich war in der blockUsers methode");
+
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User to block not found"));
+
+
+        if (currentUser.getBlockedUsers().contains(targetUser)) {
+            throw new IllegalStateException("User is already blocked");
+        }
+
+        // Entferne Freundschaften
+        currentUser.getFriends().remove(targetUser);
+        targetUser.getFriends().remove(currentUser);
+
+        // Entferne Freundschaftsanfragen
+        currentUser.getSentFriendRequests().removeIf(request -> request.getReceiver().equals(targetUser));
+        currentUser.getReceivedFriendRequests().removeIf(request -> request.getSender().equals(targetUser));
+        targetUser.getSentFriendRequests().removeIf(request -> request.getReceiver().equals(currentUser));
+        targetUser.getReceivedFriendRequests().removeIf(request -> request.getSender().equals(currentUser));
+
+        // Füge den Benutzer zur Blockierliste hinzu
+        currentUser.getBlockedUsers().add(targetUser);
+
+        // Speichere die Änderungen
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
+    }
+
+    @Transactional
+    public void addFriend(Long currentUserId, Long targetUserId) {
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User to add not found"));
+
+        // Überprüfe, ob eine ausstehende Freundschaftsanfrage bereits existiert (aus der Sicht des Empfängers)
+        boolean existingRequestReceiver = targetUser.getReceivedFriendRequests().stream()
+                .anyMatch(request -> request.getSender().equals(currentUser) && request.getStatus() == FriendRequest.RequestStatus.PENDING);
+
+        // Überprüfe, ob der sendende Benutzer bereits eine ausstehende Anfrage gesendet hat (aus der Sicht des Senders)
+        boolean existingRequestSender = currentUser.getSentFriendRequests().stream()
+                .anyMatch(request -> request.getReceiver().equals(targetUser) && request.getStatus() == FriendRequest.RequestStatus.PENDING);
+
+        if (existingRequestReceiver || existingRequestSender) {
+            // Wenn bereits eine ausstehende Anfrage existiert, tue nichts oder informiere den Benutzer
+            return; // Oder zeige eine Nachricht, dass eine Anfrage bereits gesendet wurde
+        }
+
+        if (targetUser.isPublic()) {
+            // Füge direkt zur Freundesliste hinzu, wenn der Benutzer öffentlich ist
+            currentUser.getFriends().add(targetUser);
+            targetUser.getFriends().add(currentUser);
+        } else {
+            System.out.println("Ich habe eine FriendRequest geschickt");
+            // Sende eine Freundschaftsanfrage, wenn der Benutzer privat ist
+            FriendRequest friendRequest = new FriendRequest();
+            friendRequest.setSender(currentUser);
+            friendRequest.setReceiver(targetUser);
+            friendRequest.setRequestDate(LocalDateTime.now());
+            friendRequest.setStatus(FriendRequest.RequestStatus.PENDING); // Setze den Status auf PENDING
+
+            currentUser.getSentFriendRequests().add(friendRequest);
+        }
+
+        // Speichere die Änderungen
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
+    }
+
+
+    @Transactional
+    public void unfriendUser(Long currentUserId, Long targetUserId) {
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User to unfriend not found"));
+
+        // Entferne die Freundschaft wechselseitig
+        currentUser.getFriends().remove(targetUser);
+        targetUser.getFriends().remove(currentUser);
+
+        // Änderungen speichern
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
+    }
+
+    @Transactional
+    public void unblockUser(Long currentUserId, Long targetUserId) {
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User to unblock not found"));
+
+        // Entferne den Benutzer aus der Blockierliste
+        currentUser.getBlockedUsers().remove(targetUser);
+
+        // Änderungen speichern
+        userRepository.save(currentUser);
+    }
+
 }

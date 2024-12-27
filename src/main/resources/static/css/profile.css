@@ -8,22 +8,192 @@
 
 .main-container {
     display: flex;
+    flex: 1;
+    flex-direction: row; /* Elemente werden vertikal gestapelt */
+    align-items: flex-start; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    box-sizing: border-box;
+    top: 100px;
+    padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
+    background: #0A7075;
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 60%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    font-family: "Cooper Black", serif;
+    color: #aaa;
+}
+
+.left-side{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 25%;
+}
+
+.right-side{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 75%;
+    border-left: 3px solid var(--color-medium-dark);
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.abonements{
+    padding: 20px;
+    margin-left: 20px;
+    background: var(--color-medium-dark);
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.abonements-left{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.abo-image i{
+   font-size: 50px;
+    padding: 10px;
+    margin-right: 10px;
+    color: var(--color-dark);
+    background: var(--color-slightly-light);
+    border-radius: 50%;
+}
+
+.abo-details{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.subscription-status{
+    padding: 3px 15px;
+    background: var(--color-dark);;
+    border-radius: 20px;
+    font-size: 14px
+}
+
+
+
+.subscription-description{
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 18px;
+}
+
+.subscription-organization{
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.subscription-expire{
+    font-size: 14px;
+}
+
+.subscription-time{
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.abonements-right{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100%;
+}
+
+/* Der Button (Hamburger-Menü) */
+.dropdown-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 20px;
+}
+
+/* Die drei horizontalen Striche für das Hamburger-Menü */
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+}
+
+/* Das Dropdown-Menü, das standardmäßig verborgen ist */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    padding: 10px;
+}
+
+/* Das Dropdown-Menü anzeigen, wenn der Button oder Container gehobt wird */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Styling für die Buttons im Menü */
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.dropdown-menu button:hover {
+    background-color: #f1f1f1;
+}
+
+
+.main-container-profile{
+    display: flex;
+    flex: 1;
     flex-direction: column; /* Elemente werden vertikal gestapelt */
     align-items: flex-start; /* Alle Elemente links ausrichten */
     justify-content: flex-start; /* Elemente oben ausrichten */
     position: relative;
+    box-sizing: border-box;
     top: 100px;
     padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
     background: #0A7075;
     gap: 10px; /* Abstand zwischen den Elementen */
-    width: 40%; /* Container nimmt die volle Breite ein */
+    width: 80%; /* Container nimmt die volle Breite ein */
     height: auto; /* Höhe passt sich dem Inhalt an */
+    min-height: 100vh;
     font-family: "Cooper Black", serif;
-    color: #aaa
+    color: #aaa;
 }
 
 h1{
     font-size: 24px;
+    padding: 20px
+}
+
+.special{
+    padding: 20px;
 }
 
 .Konto-details{
@@ -47,6 +217,15 @@ h1{
 .Konto-details p span{
     font-size: 14px;
     font-weight: normal;
+}
+
+.input-container-profile-addition{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .input-container-profile{
@@ -129,3 +308,317 @@ h1{
     background-color: #274D60;
     cursor: pointer;
 }
+
+.fa-input{
+    display: flex;
+    flex-direction: column;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.input-container input{
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: #aaa 1px solid;
+    border-radius: 5px;
+    margin-right: 5px;
+
+    text-align: center;
+    line-height: 40px;
+
+    color: #aaa;
+}
+.input-container input:focus{
+    outline: none;
+}
+
+.profile-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-header form{
+    align-self: flex-end;
+}
+
+.search-button{
+    display: flex;
+    flex-direction: column;
+}
+
+.search-button button {
+    font-size: 48px;      /* Größe des Bearbeitens-Icons */
+    color: #aaa;          /* Farbe des Icons */
+    background: none;
+    border: none;
+}
+
+.search-button button:hover {
+    cursor: pointer;
+    color: black;       /* Farbe bei Hover */
+}
+
+.edit-profile-text {
+    font-size: 12px;      /* Kleinere Schriftgröße */
+    color: #aaa;          /* Farbe des Textes */
+    margin-top: 5px;      /* Abstand zum Button */
+    text-align: center;   /* Text zentrieren */
+}
+
+.main-profile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.userProfile {
+    text-align: center;
+}
+
+.profile-picture {
+    width: 150px;          /* Profilbild-Größe */
+    height: 150px;         /* Profilbild-Größe */
+    border-radius: 50%;    /* Rundes Profilbild */
+    object-fit: cover;     /* Bild passt sich dem Kreis an */
+    border: 3px solid #fff; /* Optional: Weißer Rand */
+}
+
+.username-container {
+    display: flex;
+    align-items: center;  /* Vertikale Ausrichtung der Krone und des Benutzernamens */
+    justify-content: center;  /* Zentriert beide Elemente */
+    margin-top: 10px;
+}
+
+.crown-icon {
+    font-size: 48px;      /* Größe der Krone */
+    color: gold;          /* Farbe der Krone */
+    margin-right: 8px;    /* Abstand zwischen Krone und Benutzername */
+    margin-bottom: 8px;
+}
+
+.username {
+    font-size: 48px;      /* Benutzername-Größe */
+    font-weight: bold;    /* Benutzername fett */
+    color: #aaa;          /* Textfarbe */
+}
+
+.profile-container{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.column {
+    flex: 1;
+    max-width: 25%;
+    margin: 10px;
+    padding: 15px;
+    background-color: #274D60;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.column h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #aaa;
+}
+.column span{
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.column button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #031716;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.column button:hover {
+    background-color: #0C969C;
+}
+
+.column img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.column form{
+    display: inline;
+    margin-left: auto;
+}
+
+
+
+.column ul li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+/* Letztes Listenelement ohne Unterstrich */
+.column ul li:last-child {
+    border-bottom: none;
+}
+
+/* Profilbild */
+.column ul li img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+/* Benutzername */
+.column ul li span {
+    flex-grow: 1;
+    font-size: 1.2em;
+    color: #aaa;
+}
+
+.column ul li span.private {
+    font-size: 8px;
+    color: #aaa;
+    margin-left: 5px;
+}
+
+/* Dropdown-Menü */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #274D60;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: none;
+    z-index: 10;
+    border-radius: 4px;
+    padding: 5px 0;
+}
+
+/* Dropdown-Menü anzeigen, wenn die Dropdown-Klasse aktiv ist */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Buttons im Dropdown-Menü */
+.dropdown-menu form button {
+    display: block;
+    width: 100%;
+    padding: 8px 15px;
+    text-align: left;
+    text-decoration: none;
+    color: #aaa;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover-Effekt für die Buttons */
+.dropdown-menu form button:hover {
+    background-color: #0C969C;
+    color: #111111;
+}
+
+.private{
+    color: #aaa;
+    font-size: 8px;
+    margin-left: 5px;
+}
+
+/* Container für den Schalter */
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Schalter-Design */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Verstecke den Standard-Checkbox-Button */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Das Design des Schiebereglers */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #274D60;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+/* Das Kreis-Element im Schalter */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    border-radius: 50%;
+    left: 4px;
+    bottom: 4px;
+    background-color: #0C969C;
+    transition: 0.4s;
+}
+
+/* Wenn der Schalter aktiviert ist (checked) */
+input:checked + .slider {
+    background-color: #274D60; /* Grün */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Der Text, der "Public" oder "Private" anzeigt */
+.status-text {
+    font-size: 16px;
+    color: #aaa;
+}
+
+/* Wenn der Schalter aktiviert ist, den Text zu "Public" ändern */
+input:checked ~ #status-text {
+    content: "Public";
+    font-weight: bold;
+    color: #274D60;
+}
+
