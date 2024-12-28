@@ -16,15 +16,15 @@
         <div class="dropdown-content">
           <form th:action="@{/change-theme}" method="get">
             <input type="hidden" name="theme" value="blue">
-            <button type="submit" th:text="#{theme.light}">Light</button>
+            <button type="submit">Blue</button>
           </form>
           <form th:action="@{/change-theme}" method="get">
             <input type="hidden" name="theme" value="gold">
-            <button type="submit" th:text="#{theme.dark}">Dark</button>
+            <button type="submit">Gold</button>
           </form>
           <form th:action="@{/change-theme}" method="get">
             <input type="hidden" name="theme" value="red">
-            <button type="submit" th:text="#{theme.golden}">Golden</button>
+            <button type="submit">Red</button>
           </form>
         </div>
       </div>
@@ -42,13 +42,13 @@
 
       <a th:if="${username != null and httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null}"
          th:href="@{/logout}"
-         class="login-button">
+         class="dropdown-button">
         Logout
       </a>
 
       <a th:if="${username != null and !(httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null)}"
          th:href="@{/profile}"
-         class="login-button"
+         class="dropdown-button"
          th:text="#{profile}">
         Profile
       </a>
@@ -56,7 +56,7 @@
 
       <a th:unless="${username != null}"
          th:href="@{/login}"
-         class="login-button"
+         class="dropdown-button"
          th:text="#{login}">
         Login
       </a>

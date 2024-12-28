@@ -2,7 +2,7 @@
 * {
     margin: 0;
     padding: 0;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 
@@ -22,7 +22,6 @@
     gap: 10px; /* Abstand zwischen den Elementen */
     width: 60%; /* Container nimmt die volle Breite ein */
     height: auto; /* Höhe passt sich dem Inhalt an */
-    font-family: "Cooper Black", serif;
     color: var(--text-color-light);
 }
 
@@ -188,7 +187,6 @@
     width: 80%; /* Container nimmt die volle Breite ein */
     height: auto; /* Höhe passt sich dem Inhalt an */
     min-height: 100vh;
-    font-family: "Cooper Black", serif;
     color: var(--text-color-light);
 }
 
