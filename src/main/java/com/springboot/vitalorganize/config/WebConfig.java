@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.config;
 
+import com.springboot.vitalorganize.component.UsernameInterceptor;
 import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -35,13 +37,16 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UsernameInterceptor usernameInterceptor;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
                     // Öffentliche Ressourcen
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/paypal-webhook").permitAll();
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
                     // Geschützte Ressourcen
                     registry.anyRequest().authenticated();
@@ -73,15 +78,18 @@ public class WebConfig implements WebMvcConfigurer {
                 )
                 .logout(logout -> {
                     logout
-                            .logoutUrl("/logout") // Logout-Endpunkt
-                            .logoutSuccessUrl("/") // Nach Logout auf die Startseite umleiten
+                            .logoutUrl("/logout") // Definiert den Logout-Endpunkt
+                            .invalidateHttpSession(true) // Session wird invalidiert
+                            .clearAuthentication(true) // Authentifizierung wird gelöscht
+                            .deleteCookies("JSESSIONID") // Cookies (z. B. Session-Cookie) werden entfernt
+                            .logoutSuccessUrl("/") // Nach dem Logout auf die Startseite umleiten
                             .permitAll();
                 })
                 .build();
     }
 
 
-    private void handleFormLogin(String email, String password, Authentication authentication) {
+        private void handleFormLogin(String email, String password, Authentication authentication) {
 
         authentication.setAuthenticated(true);
         // Prüfen, ob Benutzer bereits existiert
@@ -121,7 +129,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword(""); // Passwort leer für OAuth
             userEntity.setRole("USER"); // Standardrolle
             userEntity.setProvider("google"); // Anbieter auf "discord" setzen
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -155,7 +163,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword(""); // Passwort leer für OAuth
             userEntity.setRole("USER"); // Standardrolle
             userEntity.setProvider("github"); // Anbieter auf "github" setzen
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -196,7 +204,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword("");     // Kein Passwort für OAuth
             userEntity.setRole("USER");
             userEntity.setProvider("discord"); // Standardrolle
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -245,7 +253,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(usernameInterceptor)
+                .addPathPatterns("/**") // Überall anwenden
+                .excludePathPatterns("/profileaddition","/css/**", "/js/**", "/images/**", "/", "/login", "/verify-2fa", "/send-2fa-code", "/logout")
+                .excludePathPatterns("/login/**", "/login**");; // Ausnahmen
     }
 
     @Bean
@@ -255,5 +266,6 @@ public class WebConfig implements WebMvcConfigurer {
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
+
 
 }
