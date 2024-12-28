@@ -339,6 +339,8 @@ header {
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
     border-radius: 5px;
+    top: 100%;
+    left: 0;
 }
 
 .dropdown-content a {
@@ -394,7 +396,7 @@ body {
     width: 20%;
     border-radius: 10px;
     padding: 30px;
-    margin: 40px;
+    margin-top: 200px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung für den Container */
 
 }

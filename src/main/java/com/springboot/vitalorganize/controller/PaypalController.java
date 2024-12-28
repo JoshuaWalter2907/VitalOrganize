@@ -134,13 +134,20 @@ public class PaypalController {
     @PostMapping("/create-subscription")
     public String createSubscription(@AuthenticationPrincipal OAuth2User user,
                                      OAuth2AuthenticationToken authentication,
-                                     RedirectAttributes redirectAttributes) {
+                                     RedirectAttributes redirectAttributes,
+                                     HttpServletRequest request) {
         try {
+
+            String uri = request.getHeader("Referer");
 
             UserEntity userEntity = userService.getCurrentUser(user,authentication);
 
             if(userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getStatus().equals("ACTIVE")) {
                 return "redirect:/profile";
+            }
+
+            if(userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getEndTime().isAfter(LocalDateTime.now())) {
+                return "redirect:" + uri;
             }
             // Der Plan ID ist ein Beispiel, es kann von der Anwendung abhängen
             String planId = "P-1DP07006BV376124WM5XEB6Q";  // Plan ID aus Ihrer PayPal Konfiguration
@@ -172,12 +179,15 @@ public class PaypalController {
             OAuth2AuthenticationToken authentication,
             HttpServletRequest request
     ){
+        String refererUrl = request.getHeader("Referer");
+
+        String uri = request.getRequestURI();
         UserEntity userEntity = userService.getCurrentUser(user,authentication);
 
         boolean success = paypalService.cancelSubscription(userEntity, userEntity.getLatestSubscription().getSubscriptionId());
 
         if(success) {
-            return "redirect:/profile";
+            return "redirect:" + refererUrl;
         }
         return "redirect:/error";
     }
@@ -188,12 +198,14 @@ public class PaypalController {
             OAuth2AuthenticationToken authentication,
             HttpServletRequest request
     ){
+        String refererUrl = request.getHeader("Referer");
+
         UserEntity userEntity = userService.getCurrentUser(user,authentication);
 
         boolean success = paypalService.pauseSubscription(userEntity, userEntity.getLatestSubscription().getSubscriptionId());
 
         if(success) {
-            return "redirect:/profile";
+            return "redirect:" + refererUrl;
         }
         return "redirect:/error";
     }
@@ -201,14 +213,17 @@ public class PaypalController {
     @PostMapping("/resume-subscription")
     public String resumeSubscription(
             @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication
+            OAuth2AuthenticationToken authentication,
+            HttpServletRequest request
     ) {
+        String refererUrl = request.getHeader("Referer");
+
         UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
         boolean success = paypalService.resumeSubscription(userEntity, userEntity.getLatestSubscription().getSubscriptionId());
 
         if (success) {
-            return "redirect:/profile";
+            return "redirect:" + refererUrl;
         }
         return "redirect:/error";
     }

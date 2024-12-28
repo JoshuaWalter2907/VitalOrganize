@@ -30,13 +30,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
+import org.springframework.web.util.UriComponentsBuilder;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
 @AllArgsConstructor
@@ -127,7 +128,7 @@ public class PaypalService {
     public Zahlung addPayment(Zahlung payment) {
         // Letzte Buchung abrufen
         Optional<Zahlung> latestTransaction = paymentRepository.findLatestTransaction();
-
+        System.out.println(latestTransaction);
         double lastBalance = latestTransaction.map(Zahlung::getBalance).orElse(0.0);
 
         // Neuen Kontostand berechnen
@@ -138,6 +139,7 @@ public class PaypalService {
         }
 
         // Neue Buchung speichern
+        System.out.println(payment);
         return paymentRepository.save(payment);
     }
 
@@ -445,7 +447,7 @@ public class PaypalService {
     @Transactional
     public void updateUserSubscriptionStatus(UserEntity user, boolean isSubscribed, String approvalUrl) {
         // Subscription-Status aktualisieren
-        user.setProfilePictureUrl("MEMBER");
+        user.setRole("MEMBER");
 
         // Optional: Subscription-Daten wie ID oder Plan speichern
         userRepository.save(user);  // Änderungen in der Datenbank speichern
@@ -531,7 +533,7 @@ public class PaypalService {
     public String getPayerIdFromSubscription(String subscriptionId) {
         try {
             // 1. OAuth-Token abrufen
-            String accessToken = "A21AAKNBJaArqe6EEZQx1HPGfNuSN7NRK2tpq5BO4NFqvhrSm2GOFYCoWz806mlhsWV3e7_D_cqzV1KDv7TLt77GFrFxIifyg";  // Hole den Access Token
+            String accessToken = getAccessToken();  // Hole den Access Token
 
             // 2. Anfrage-URL mit der Subscription-ID
             String subscriptionUrl = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + subscriptionId;
@@ -814,8 +816,15 @@ public class PaypalService {
         try {
             String accessToken = getAccessToken(); // Zugriffstoken holen
 
+            String startTime = "2023-12-01T00:00:00Z"; // Anfang des Zeitraums
+            String endTime = "2025-12-27T23:59:59Z";   // Ende des Zeitraums
+
             // Erstellen des Endpunkt-URLs
-            String url = PAYPAL_API_URL + "/" + subscriptionId + "/transactions";
+            String url = UriComponentsBuilder.fromHttpUrl(PAYPAL_API_URL + "/" + subscriptionId + "/transactions")
+                    .queryParam("start_time", startTime)
+                    .queryParam("end_time", endTime)
+                    .toUriString();
+
 
             // RestTemplate für HTTP-Anfragen
             RestTemplate restTemplate = new RestTemplate();
@@ -834,9 +843,11 @@ public class PaypalService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 // Wenn erfolgreich, verarbeite die Antwort hier (in diesem Fall JSON als String)
                 String responseBody = response.getBody();
+                System.out.println(responseBody);
 
                 // Um die Antwort als List von Transaction-Objekten zu parsen, könntest du eine JSON-Bibliothek wie Jackson oder Gson verwenden
                 List<TransactionSubscription> transactions = parseTransactions(responseBody);
+
 
                 return transactions;
             } else {
@@ -850,28 +861,26 @@ public class PaypalService {
         }
     }
 
-    // Beispiel-Methode zum Parsen der Antwort und Konvertieren in Transaction-Objekte
     private List<TransactionSubscription> parseTransactions(String jsonResponse) {
-        // Hier könntest du eine JSON-Bibliothek verwenden, um die Antwort zu parsen
-        // Zum Beispiel Jackson:
+        // Erstelle den ObjectMapper und registriere das JavaTimeModule für die Unterstützung von java.time
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Registriert das Modul für Java 8 Zeittypen
+
         try {
-            // Hier musst du ein entsprechendes POJO (Transaction) definieren
+            // Lies die gesamte JSON-Struktur
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
-            // Extrahiere Transaktionen aus dem JSON (dies hängt von der Struktur der Antwort ab)
-            JsonNode transactionsNode = jsonNode.path("transactions"); // Angenommene Antwortstruktur
-            List<TransactionSubscription> transactions = new ArrayList<>();
-            for (JsonNode transactionNode : transactionsNode) {
-                // Erstelle ein Transaction-Objekt und füge es der Liste hinzu
-                TransactionSubscription transaction = objectMapper.treeToValue(transactionNode, TransactionSubscription.class);
-                transactions.add(transaction);
-            }
-            return transactions;
+            // Extrahiere den "transactions"-Knoten
+            JsonNode transactionsNode = jsonNode.path("transactions");
+
+            // Verwende Jacksons Typreferenz für die Liste von TransactionSubscription-Objekten
+            return objectMapper.readerForListOf(TransactionSubscription.class)
+                    .readValue(transactionsNode);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return new ArrayList<>(); // Rückgabe einer leeren Liste im Fehlerfall
         }
     }
+
 
 
 

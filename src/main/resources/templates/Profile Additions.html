@@ -14,7 +14,7 @@
 
 <div th:replace="fragments/header :: header" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
 
-<div class="main-container">
+<div class="wrapper">
     <h1>Ergänzen Sie Ihr Profil</h1>
     <form th:action="${provider != null ? '/send-2fa-code' : '/profileaddition'}" method="post">
         <div class="input-container-profile-addition">
@@ -34,10 +34,6 @@
             <div class="input-box-profile">
                 <label>Geburtsdatum:</label>
                 <input type="date" id="birthDate" name="birthDate" th:value="${birthday != null ? birthday : ''}"   required>
-            </div>
-            <div class="input-box-profile">
-                <label>Profil Öffentlich:</label>
-                <input type="checkbox" id="isPublic" name="isPublic" th:checked="${isPublic != null && isPublic}"  >
             </div>
 
         </div>

@@ -12,11 +12,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public class MainController {
     private final UserRepository userRepository;
     private final PaypalService paypalService;
     private final FriendRequestRepository friendRequestRepository;
+    private final PaymentRepository paymentRepository;
 
 
     @RequestMapping("/")
@@ -220,15 +223,17 @@ public class MainController {
                           @RequestParam(value ="profileId", required = false) Long profileId,
                           @RequestParam(value = "fa", required = false) boolean auth,
                           @RequestParam(value = "tab", defaultValue = "general") String tab,
+                          @RequestParam(value = "kind", defaultValue = "premium")String kind,
                           @AuthenticationPrincipal OAuth2User user,
                           OAuth2AuthenticationToken authentication,
                           Model model,
                           HttpServletRequest request,
-                          HttpSession session
-    ) {
+                          HttpSession session,
+                          ModelMap modelMap) {
 
-        String uri = request.getRequestURI();
-        session.setAttribute("uri", uri);
+        String currentUrl = request.getRequestURI();
+        session.setAttribute("uri", currentUrl);
+        model.addAttribute("url", currentUrl);
 
         UserEntity profileData;
         // Benutzer- und Profilinformationen abrufen
@@ -245,6 +250,9 @@ public class MainController {
 
         }
 
+        List<SubscriptionEntity> subscriptions = profileData.getSubscriptions();
+        Collections.reverse(subscriptions);
+
         boolean isProfilePublic = profileData.isPublic();
         System.out.println("Ist das Profil public: " + isProfilePublic);
 
@@ -252,13 +260,23 @@ public class MainController {
         model.addAttribute("profile", profileData);
         System.out.println(auth);
         model.addAttribute("auth", auth);
+        model.addAttribute("subscriptions", subscriptions);
 
         if ("subscription".equals(tab)) {
             // Abonnement-Informationen anzeigen
-            model.addAttribute("showSubscription", true);
-        } else {
+            model.addAttribute("showSubscription", "subscription");
+        } else if("paymenthistory".equals(tab)) {
             // Allgemeine Informationen anzeigen
-            model.addAttribute("showSubscription", false);
+            model.addAttribute("showSubscription", "paymenthistory");
+        }else {
+            model.addAttribute("showSubscription", "general");
+        }
+
+        if("premium".equals(kind) && profileData.getLatestSubscription() != null) {
+            System.out.println("Ich war hier");
+            model.addAttribute("historysubscription", paypalService.getTransactionsForSubscription(profileData.getLatestSubscription().getSubscriptionId()));
+        }else {
+            model.addAttribute("historysingle", paymentRepository.findAllByUser(profileData));
         }
 
 
@@ -319,7 +337,6 @@ public class MainController {
 
     @PostMapping("/profileaddition")
     public String profileAddition(@RequestParam("inputString") String inputString,
-                                  @RequestParam(name = "isPublic", required = false) boolean status,
                                   @RequestParam("birthDate") String birthDate,
                                   @RequestParam(value = "email", required = false) String email,
                                   @AuthenticationPrincipal OAuth2User user,
@@ -327,7 +344,7 @@ public class MainController {
                                   Model model) {
 
         // Profilaktualisierung durchführen
-        boolean usernameExists = userService.updateUserProfile(user, authentication, inputString, status, birthDate, email);
+        boolean usernameExists = userService.updateUserProfile(user, authentication, inputString, true, birthDate, email);
 
         // Falls der Benutzername existiert, bleibt der Benutzer auf der Ergänzungsseite
         if (usernameExists) {

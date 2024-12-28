@@ -30,11 +30,57 @@
           Abonnements Informationen
         </button>
       </form>
+      <form th:action="@{/profile-edit}" method="get">
+        <input type="hidden" name="tab" value="paymenthistory" /> <!-- Füge ein verborgenes Input-Feld hinzu -->
+        <button type="submit" class="form-actions">
+          Payment History
+        </button>
+      </form>
     </div>
   </div>
-  <div class="right-side" th:if="${showSubscription}">
+
+  <div class="right-side" th:if="${showSubscription == 'paymenthistory'}">
+    <h1>Transaktionen</h1>
+    <div class="payment-history-header">
+      <form action="/profile-edit?tab=paymenthistory&kind=premium" method="get">
+        <button type="submit" class="dropdown-button">
+          Membership
+        </button>
+      </form>
+      <form action="/profile-edit?tab=paymenthistory&kind=Fund" method="get">
+      <button type="submit" class="dropdown-button">
+          Funds
+        </button>
+      </form>
+    </div>
+    <div class="payment-history-container">
+      <div th:if="${historysubscription}">
+        <div th:each="payment : ${historysubscription}" class="payment-history-element">
+          <p th:text="${payment.payerEmail}"></p>
+          <p th:text="${#temporals.format(payment.time, 'dd.MM.yyyy')}"></p>
+          <p th:text="${payment.amountWithBreakdown.grossAmount.value}"></p>
+          <p th:text="${payment.id}"></p>
+          <p th:text="${payment.status}"></p>
+        </div>
+      </div>
+      <div th:if="${historysingle}">
+        <div th:each="payment : ${historysingle}" class="payment-history-element">
+          <p th:text="${history}"></p>
+            <p th:text="${payment.user.username}"></p>
+            <p th:text="${#temporals.format(payment.date, 'dd.MM.yyyy')}"></p>
+            <p th:text="${payment.amount}"></p>
+            <p th:text="${payment.id}"></p>
+            <p th:text="${payment.type}"></p>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div class="right-side" th:if="${showSubscription == 'subscription'}">
     <h1>Abonnements verwalten</h1>
-    <div th:each="subscription : ${profile.subscriptions}" class="abonements">
+    <div th:each="subscription : ${subscriptions}" class="abonements">
       <div class="abonements-left">
         <div class="abo-image">
           <i class="fas fa-crown"></i>
@@ -44,12 +90,14 @@
           <p class="subscription-description">Premium Mitgliedschaft</p>
           <p class="subscription-organization">Vital Organize</p>
           <p th:if="${subscription.status == 'ACTIVE'}" class="subscription-expire">Läuft ab am:<br> <span th:text="${#temporals.format(subscription.endTime, 'dd.MM.yyyy')}" class="subscription-time"></span></p>
+          <p th:if="${subscription.status != 'ACTIVE'}" class="subscription-expire">Premium Mitglied bis:<br> <span th:text="${#temporals.format(subscription.endTime, 'dd.MM.yyyy')}" class="subscription-time"></span></p>
+
         </div>
       </div>
       <div class="abonements-right">
         <p>10.00€/mtl.</p>
 
-        <div class="dropdown">
+        <div class="dropdown" th:if="${subscription.status !='CANCELLED'}">
           <!-- Der Button für das Dropdown-Menü -->
           <button class="dropdown-button">
             <i class="fa fa-bars" aria-hidden="true"></i>
@@ -70,7 +118,7 @@
       </div>
     </div>
   </div>
-  <div class="right-side" th:if="${!showSubscription}">
+  <div class="right-side" th:if="${showSubscription == 'general'}">
     <h1>Kontoeinstellungen</h1>
     <a class="special">Verwalte deine Kontodetails</a>
 
@@ -147,16 +195,18 @@
                 : 'Postleitzahl'}">
           </div>
         </div>
-        <div class="input-container-profile">
+        <div class="input-container-profile"
+             th:classappend="${profile.role == 'USER'} ? 'locked' : ''"
+             th:attrappend="data-tooltip=${profile.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''">
           <div class="switch-container">
             <span class="status-text">Private</span>
             <label class="switch">
-              <input type="checkbox" id="public-private-toggle" name="public-private-toggle" th:checked="${isProfilePublic}">
+              <input type="checkbox" id="public-private-toggle" name="public-private-toggle"
+                     th:checked="${isProfilePublic}" th:disabled="${profile.role == 'USER'}">
               <span class="slider"></span>
             </label>
             <span class="status-text">Public</span>
           </div>
-
         </div>
         <div>
           <button type="submit" class="form-actions">Änderungen speichern</button>

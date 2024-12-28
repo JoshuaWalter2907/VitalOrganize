@@ -23,6 +23,10 @@ public class UserService {
     private final ChatGroupRepository chatGroupRepository;
     private final DirectChatRepository directChatRepository;
     private final MessageRepository messageRepository;
+    private final subscriptionRepository subscriptionRepository;
+    private final PaymentRepository paymentRepository;
+    private final FriendRequestRepository friendRequestRepository;
+    private final PaypalService paypalService;
 
 
     public String getThemeCss(String theme) {
@@ -115,16 +119,18 @@ public class UserService {
     public UserEntity getCurrentUser(OAuth2User user, OAuth2AuthenticationToken authentication) {
         // Provider bestimmen (z. B. google, discord, github)
         String provider = authentication.getAuthorizedClientRegistrationId();
+        System.out.println(provider);
 
         // E-Mail und Benutzer-ID ermitteln
         String email = user.getAttribute("email");
+        System.out.println(email);
         Long id;
-
         switch (provider) {
             case "google":
             case "discord":
                 // Für Google und Discord bleibt die E-Mail unverändert
                 id = userRepository.findByEmailAndProvider(email, provider).getId();
+                System.out.println(id);
                 break;
 
             case "github":
@@ -182,11 +188,17 @@ public class UserService {
                 .map(ChatGroup::getId)
                 .toList();
 
+        if(user.getRole().equals("MEMBER"))
+            paypalService.cancelSubscription(user, user.getLatestSubscription().getSubscriptionId());
+
 
         messageRepository.deleteByRecipient_Id(id);
         messageRepository.deleteBySender_Id(id);
         chatGroupRepository.deleteAllByIdIn(chatGroupIds);
         directChatRepository.deleteById(id);
+        subscriptionRepository.deleteById(id);
+        paymentRepository.updateUserReferencesToNull(id);
+        friendRequestRepository.deleteById(id);
         userRepository.deleteById(id);
 
     }

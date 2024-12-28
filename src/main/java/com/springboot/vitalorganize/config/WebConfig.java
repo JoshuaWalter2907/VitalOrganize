@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -128,7 +129,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword(""); // Passwort leer für OAuth
             userEntity.setRole("USER"); // Standardrolle
             userEntity.setProvider("google"); // Anbieter auf "discord" setzen
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -162,7 +163,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword(""); // Passwort leer für OAuth
             userEntity.setRole("USER"); // Standardrolle
             userEntity.setProvider("github"); // Anbieter auf "github" setzen
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -203,7 +204,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPassword("");     // Kein Passwort für OAuth
             userEntity.setRole("USER");
             userEntity.setProvider("discord"); // Standardrolle
-            userEntity.setPublic(false);
+            userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
@@ -254,7 +255,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(usernameInterceptor)
                 .addPathPatterns("/**") // Überall anwenden
-                .excludePathPatterns("/profileaddition","/css/**", "/js/**", "/images/**", "/", "/login", "/verify-2fa", "/send-2fa-code", "/logout"); // Ausnahmen
+                .excludePathPatterns("/profileaddition","/css/**", "/js/**", "/images/**", "/", "/login", "/verify-2fa", "/send-2fa-code", "/logout")
+                .excludePathPatterns("/login/**", "/login**");; // Ausnahmen
     }
 
     @Bean
@@ -264,5 +266,4 @@ public class WebConfig implements WebMvcConfigurer {
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
-
 }
