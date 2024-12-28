@@ -116,16 +116,12 @@ function showMessage(message) {
 
         // Gruppennachrichten-HTML
         newMessage.innerHTML = `
-            <p class="message-sender">
-                <a href="/profile?profileId=${message.sender.id}" class="sender-link">
-                    ${message.sender.username}
-                </a>
-            </p>
+            <p class="message-sender">${message.sender.username}</p>
             <p>
                 <span>${message.content}</span>
             </p>
             <span class="message-time">${formatCurrentTimestamp(message.timestamp || new Date())}</span>
-        `
+        `;
     } else {
         // Direktnachricht: Prüfen, ob der Absender der aktuelle Benutzer ist
         if (String(currentUserId) === String(message.senderId)) {
