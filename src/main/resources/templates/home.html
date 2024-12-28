@@ -7,7 +7,6 @@
 
   <!-- Korrektes Einbinden des CSS-Files mit allen Themes -->
   <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" th:href="@{${themeCss}}">
 
   <!-- Boxicons Library für Icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -15,47 +14,47 @@
 <body>
 <!-- Einfügen des Headers -->
 <div th:replace="fragments/header :: header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
-
-<!-- Feature Section -->
-<section class="feature-section">
-  <div class="features-container">
-    <div class="feature-card" style="background-image: url('/images/chat-icon.jpg');">
-      <div class="feature-content">
-        <h3>Chat</h3>
-        <p>Chatte mit anderen Nutzern und<br> teile deine Erfahrungen!</p>
-        <a href="/chat" class="cta-button">Jetzt chatten</a>
+<div class="main-container">
+  <section class="feature-section">
+    <div class="features-container">
+      <div class="feature-card" style="background-image: url('/images/chat-icon.jpg');">
+        <div class="feature-content">
+          <h3>Chat</h3>
+          <p>Chatte mit anderen Nutzern und<br> teile deine Erfahrungen!</p>
+          <a href="/chat" class="cta-button">Jetzt chatten</a>
+        </div>
+      </div>
+      <div class="feature-card" style="background-image: url('/images/recipe-icon.jpg');">
+        <div class="feature-content">
+          <h3>Rezepte</h3>
+          <p>Finde tolle Rezepte für jede Gelegenheit.</p>
+          <a href="/rezepte" class="cta-button">Rezepte durchsuchen</a>
+        </div>
+      </div>
+      <div class="feature-card" style="background-image: url('/images/calender-icon.jpg');">
+        <div class="feature-content">
+          <h3>Kalender</h3>
+          <p>Verwalte deine Termine <br>und behalte den Überblick.</p>
+          <a href="/kalender" class="cta-button">Zum Kalender</a>
+        </div>
+      </div>
+      <div class="feature-card" style="background-image: url('/images/statistic-icon.jpg');">
+        <div class="feature-content">
+          <h3>Statistiken</h3>
+          <p>Hol dir wertvolle Einblicke<br> und analysiere deine Daten.</p>
+          <a href="/statistiken" class="cta-button">Statistiken ansehen</a>
+        </div>
+      </div>
+      <div class="feature-card" style="background-image: url('/images/statistic-icon.jpg');">
+        <div class="feature-content">
+          <h3>Einzahlungen</h3>
+          <p>Zahle in den Fund ein<br> und genieße deinen Reichtum</p>
+          <a href="/paypal" class="cta-button">Geld verwalten</a>
+        </div>
       </div>
     </div>
-    <div class="feature-card" style="background-image: url('/images/recipe-icon.jpg');">
-      <div class="feature-content">
-        <h3>Rezepte</h3>
-        <p>Finde tolle Rezepte für jede Gelegenheit.</p>
-        <a href="/rezepte" class="cta-button">Rezepte durchsuchen</a>
-      </div>
-    </div>
-    <div class="feature-card" style="background-image: url('/images/calender-icon.jpg');">
-      <div class="feature-content">
-        <h3>Kalender</h3>
-        <p>Verwalte deine Termine <br>und behalte den Überblick.</p>
-        <a href="/kalender" class="cta-button">Zum Kalender</a>
-      </div>
-    </div>
-    <div class="feature-card" style="background-image: url('/images/statistic-icon.jpg');">
-      <div class="feature-content">
-        <h3>Statistiken</h3>
-        <p>Hol dir wertvolle Einblicke<br> und analysiere deine Daten.</p>
-        <a href="/statistiken" class="cta-button">Statistiken ansehen</a>
-      </div>
-    </div>
-    <div class="feature-card" style="background-image: url('/images/statistic-icon.jpg');">
-      <div class="feature-content">
-        <h3>Einzahlungen</h3>
-        <p>Zahle in den Fund ein<br> und genieße deinen Reichtum</p>
-        <a href="/paypal" class="cta-button">Geld verwalten</a>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
+</div>
 
 <!-- Einfügen des Footers -->
 <footer th:replace="fragments/footer:: footer"></footer>

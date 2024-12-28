@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class ChatService {
 
     private final DirectChatRepository directChatRepository;
     private final UserService userService;
+    private final JavaMailSender javaMailSender;
 
 
     private Pageable createPageable(int page, int size, String sortBy, Sort.Direction direction) {
@@ -205,12 +207,30 @@ public class ChatService {
         return message;
     }
 
-    public void preparePublicUsersPage(Model model, String theme, String lang) {
-        Map<Character, List<UserEntity>> groupedUsers = userService.getGroupedPublicUsers();
+    public void preparePublicUsersPage(Model model, String theme, String lang, Long userId) {
+        List<UserEntity> users = getUsersWithFriendsOrPublic(userId);
+
+        Map<Character, List<UserEntity>> groupedUsers = users.stream()
+                .collect(Collectors.groupingBy(user -> user.getUsername().charAt(0)));
+
         model.addAttribute("publicUsers", groupedUsers);
         model.addAttribute("themeCss", userService.getThemeCss(theme));
         model.addAttribute("lang", lang);
     }
 
+    public List<UserEntity> getUsersWithFriendsOrPublic(Long userId) {
+        UserEntity currentUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Finde alle öffentlichen Benutzer
+        List<UserEntity> publicUsers = userRepository.findAllByisPublic(true);
+
+        // Finde alle Freunde des aktuellen Benutzers
+        List<UserEntity> friends = currentUser.getFriends();
+
+        // Kombiniere die Listen der öffentlichen Benutzer und Freunde
+        publicUsers.addAll(friends);
+
+        // Entferne Duplikate (falls der Benutzer sowohl in der Freundesliste als auch als öffentlich erscheint)
+        return publicUsers.stream().distinct().collect(Collectors.toList());
+    }
 }
