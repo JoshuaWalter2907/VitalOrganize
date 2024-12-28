@@ -6,13 +6,13 @@
   <title>HomePage</title>
 
   <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" href="#" th:href="@{${themeCss}}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
+
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
-<body>
+<body th:class="${theme}">
 
 <div th:replace="fragments/header :: header"></div>
-
 <div class="wrapper">
   <!-- Formular ohne Datenbindung -->
   <form id="login-form" th:action="@{/perform_login}" method="post">
@@ -71,7 +71,7 @@
     </div>
 </div>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<div th:replace="fragments/footer :: footer"></div>
 
 <!-- JavaScript-Datei ohne th:src -->
 <script src="/js/main.js"></script>

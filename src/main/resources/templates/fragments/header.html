@@ -1,25 +1,30 @@
 <header>
-  <div class="header-container">
+  <div class="header-top">
     <div class="header left">
       <a th:href="@{/}" class="dropdown-button" th:text="#{home}">Home</a>
     </div>
+    <div>
+      <form method="post" action="/create-subscription">
+        <button type="submit">Werde ein Premium Mitglied</button>
+      </form>
+    </div>
     <div class="header-right">
 
+      <!-- Theme Dropdown -->
       <div class="dropdown">
         <button class="dropdown-button" th:text="#{theme}">Theme</button>
         <div class="dropdown-content">
-          <!-- Theme selection forms -->
-          <form th:action="@{/change-theme}" method="post">
-            <button type="submit" name="theme" value="light" th:text="#{theme.light}">Light</button>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="blue">
+            <button type="submit" th:text="#{theme.light}">Light</button>
           </form>
-          <form th:action="@{/change-theme}" method="post">
-            <button type="submit" name="theme" value="dark" th:text="#{theme.dark}">Dark</button>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="gold">
+            <button type="submit" th:text="#{theme.dark}">Dark</button>
           </form>
-          <form th:action="@{/change-theme}" method="post">
-            <button type="submit" name="theme" value="golden" th:text="#{theme.golden}">Golden</button>
-          </form>
-          <form th:action="@{/change-theme}" method="post">
-            <button type="submit"  name="theme" value="blue" th:text="#{theme.blue}">Blue</button>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="red">
+            <button type="submit" th:text="#{theme.golden}">Golden</button>
           </form>
         </div>
       </div>
@@ -28,26 +33,27 @@
       <div class="dropdown">
         <button class="dropdown-button" th:text="#{language}">Language</button>
         <div class="dropdown-content">
-          <!-- Language selection forms -->
-          <form th:action="@{/change-lang}" method="post">
-            <button type="submit" name="lang" value="de" th:text="#{language.german}">Deutsch</button>
-          </form>
-          <form th:action="@{/change-lang}" method="post">
-            <button type="submit" name="lang" value="en" th:text="#{language.english}">English</button>
-          </form>
+          <!-- Sprachauswahl mit Links -->
+          <a th:href="@{/ (lang ='de')}" th:text="#{language.german}">Deutsch</a>
+          <a th:href="@{/ (lang ='en')}" th:text="#{language.english}">English</a>
         </div>
       </div>
 
 
-      <!-- Login Button -->
-      <a th:if="${username != null}"
+      <a th:if="${username != null and httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null}"
+         th:href="@{/logout}"
+         class="login-button">
+        Logout
+      </a>
+
+      <a th:if="${username != null and !(httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null)}"
          th:href="@{/profile}"
          class="login-button"
          th:text="#{profile}">
         Profile
       </a>
 
-      <!-- Login Button für nicht eingeloggte Nutzer -->
+
       <a th:unless="${username != null}"
          th:href="@{/login}"
          class="login-button"
@@ -57,4 +63,12 @@
 
     </div>
   </div>
+  <div class="header-bottom">
+    <a th:href="@{/chat}">Chat</a>
+    <a th:href="@{/}">Rezepte</a>
+    <a th:href="@{/}">Kalender</a>
+    <a th:href="@{/}">API</a>
+    <a th:href="@{/chat}">Einzahlungen</a>
+  </div>
+
 </header>
