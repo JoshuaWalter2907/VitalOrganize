@@ -685,6 +685,16 @@ input:checked ~ #status-text {
     pointer-events: none;
 }
 
+.locked[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+}
+
 /* Container für gesperrte Elemente */
 .locked {
     pointer-events: auto; /* Tooltip ist sichtbar */
