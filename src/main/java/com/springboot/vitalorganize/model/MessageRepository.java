@@ -33,7 +33,4 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     @Query("SELECT m FROM MessageEntity m WHERE m.chatGroup.id = :groupId ORDER BY m.timestamp DESC")
     List<MessageEntity> findLastMessageForChatGroup(@Param("groupId") Long groupId, Pageable pageable);
 
-    void deleteByRecipient_Id(Long id);
-
-    void deleteBySender_Id(Long id);
 }
