@@ -61,7 +61,65 @@ public class UserEntity {
     @JsonIgnore
     private PersonalInformation personalInformation;
 
+    @Column(name = "two_factor_code")
     private String twoFactorCode; // Temporärer 2FA-Code
+
+    @Column(name = "two_factor_expiry")
     private LocalDateTime twoFactorExpiry; // Ablaufzeit des Codes
+
+    @Column(name = "sendtoameil", length = 1024, nullable = true)
+    private String sendtoEmail;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<UserEntity> friends = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FriendRequest> receivedFriendRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FriendRequest> sentFriendRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "user_blocked_users",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "blocked_user_id")
+    )
+    private List<UserEntity> blockedUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubscriptionEntity> subscriptions;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
+
+    public SubscriptionEntity getLatestSubscription() {
+        if (subscriptions == null || subscriptions.isEmpty()) {
+            return null; // Keine Subscription vorhanden
+        }
+        // Sortiere nach einer Eigenschaft, z. B. Startzeit oder ID
+        return subscriptions.stream()
+                .max((s1, s2) -> s1.getStartTime().compareTo(s2.getStartTime())) // Nach Startzeit sortieren
+                .orElse(null);
+    }
 
 }
