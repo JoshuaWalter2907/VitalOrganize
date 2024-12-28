@@ -18,12 +18,12 @@
     min-height: 100vh;
     padding: 20px; /* Innenabstand für den Container */
     margin-bottom: 200px;
-    background: #0A7075;
+    background: var(--color-medium-light);
     gap: 10px; /* Abstand zwischen den Elementen */
     width: 60%; /* Container nimmt die volle Breite ein */
     height: auto; /* Höhe passt sich dem Inhalt an */
     font-family: "Cooper Black", serif;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 
@@ -133,14 +133,14 @@
 .bar {
     width: 25px;
     height: 3px;
-    background-color: #333;
+    background-color: var(--text-color-light);
 }
 
 /* Das Dropdown-Menü, das standardmäßig verborgen ist */
 .dropdown-menu {
     display: none;
     position: absolute;
-    background-color: #f9f9f9;
+    background-color: var(--text-color-light);
     min-width: 160px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
@@ -161,8 +161,8 @@
     width: 100%;
     padding: 10px;
     text-align: left;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: var(--text-color-light);
+    border: 1px solid var(--text-color-light);
     cursor: pointer;
     margin-bottom: 5px;
 }
@@ -183,13 +183,13 @@
     top: 100px;
     padding: 20px; /* Innenabstand für den Container */
     margin-bottom: 200px;
-    background: #0A7075;
+    background: var(--color-medium-light);
     gap: 10px; /* Abstand zwischen den Elementen */
     width: 80%; /* Container nimmt die volle Breite ein */
     height: auto; /* Höhe passt sich dem Inhalt an */
     min-height: 100vh;
     font-family: "Cooper Black", serif;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 h1{
@@ -262,7 +262,7 @@ h1{
     background: none;
     border: none;
     font-size: 14px;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 .input-box-fixed input:focus{
     outline: none;
@@ -272,7 +272,7 @@ h1{
 .input-box-profile{
     display: flex;
     flex-direction: column;
-    border: #aaa 1px solid;
+    border: var(--text-color-light) 1px solid;
     border-radius: 5px;
     padding: 10px;
 
@@ -289,7 +289,7 @@ h1{
     background: none;
     border: none;
     font-size: 14px;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 .input-box-profile input:focus{
@@ -300,17 +300,17 @@ h1{
 .form-actions{
     margin-top: 20px;
     padding: 20px;
-    background-color: #031716;
+    background-color: var(--color-dark);
     border: none;
     border-radius: 5px;
-    color: #aaaaaa;
+    color: var(--text-color-light)aaa;
     font-weight: bold;
     font-size: 16px;
     transition: background-color 0.3s ease, color 0.3s ease; /* Glatter Übergang */
 }
 
 .form-actions:hover{
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
     cursor: pointer;
 }
 
@@ -328,14 +328,14 @@ h1{
     width: 40px;
     height: 40px;
     background: transparent;
-    border: #aaa 1px solid;
+    border: var(--text-color-light) 1px solid;
     border-radius: 5px;
     margin-right: 5px;
 
     text-align: center;
     line-height: 40px;
 
-    color: #aaa;
+    color: var(--text-color-light);
 }
 .input-container input:focus{
     outline: none;
@@ -359,19 +359,19 @@ h1{
 
 .search-button button {
     font-size: 48px;      /* Größe des Bearbeitens-Icons */
-    color: #aaa;          /* Farbe des Icons */
+    color: var(--text-color-light);          /* Farbe des Icons */
     background: none;
     border: none;
 }
 
 .search-button button:hover {
     cursor: pointer;
-    color: black;       /* Farbe bei Hover */
+    color: var(--text-color-dark);       /* Farbe bei Hover */
 }
 
 .edit-profile-text {
     font-size: 12px;      /* Kleinere Schriftgröße */
-    color: #aaa;          /* Farbe des Textes */
+    color: var(--text-color-light);          /* Farbe des Textes */
     margin-top: 5px;      /* Abstand zum Button */
     text-align: center;   /* Text zentrieren */
 }
@@ -393,7 +393,7 @@ h1{
     height: 150px;         /* Profilbild-Größe */
     border-radius: 50%;    /* Rundes Profilbild */
     object-fit: cover;     /* Bild passt sich dem Kreis an */
-    border: 3px solid #fff; /* Optional: Weißer Rand */
+    border: 3px solid var(--text-color-light); /* Optional: Weißer Rand */
 }
 
 .username-container {
@@ -413,7 +413,7 @@ h1{
 .username {
     font-size: 48px;      /* Benutzername-Größe */
     font-weight: bold;    /* Benutzername fett */
-    color: #aaa;          /* Textfarbe */
+    color: var(--text-color-light);          /* Textfarbe */
 }
 
 .profile-container{
@@ -430,7 +430,7 @@ h1{
     max-width: 25%;
     margin: 10px;
     padding: 15px;
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -439,7 +439,7 @@ h1{
     margin-bottom: 15px;
     text-align: center;
     font-size: 1.2rem;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 .column span{
     font-weight: bold;
@@ -450,14 +450,14 @@ h1{
     padding: 5px 10px;
     border: none;
     border-radius: 4px;
-    background-color: #031716;
-    color: #aaa;
+    background-color: var(--color-dark);
+    color: var(--text-color-light);
     cursor: pointer;
     font-size: 0.9rem;
 }
 
 .column button:hover {
-    background-color: #0C969C;
+    background-color: var(--color-slightly-light);
 }
 
 .column img{
@@ -503,12 +503,12 @@ h1{
 .column ul li span {
     flex-grow: 1;
     font-size: 1.2em;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 .column ul li span.private {
     font-size: 8px;
-    color: #aaa;
+    color: var(--text-color-light);
     margin-left: 5px;
 }
 
@@ -517,7 +517,7 @@ h1{
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     display: none;
     z-index: 10;
@@ -537,7 +537,7 @@ h1{
     padding: 8px 15px;
     text-align: left;
     text-decoration: none;
-    color: #aaa;
+    color: var(--text-color-light);
     background: none;
     border: none;
     cursor: pointer;
@@ -547,12 +547,12 @@ h1{
 
 /* Hover-Effekt für die Buttons */
 .dropdown-menu form button:hover {
-    background-color: #0C969C;
-    color: #111111;
+    background-color: var(--color-slightly-light);
+    color: var(--text-color-dark);
 }
 
 .private{
-    color: #aaa;
+    color: var(--text-color-light);
     font-size: 8px;
     margin-left: 5px;
 }
@@ -587,7 +587,7 @@ h1{
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
     transition: 0.4s;
     border-radius: 34px;
 }
@@ -601,13 +601,13 @@ h1{
     border-radius: 50%;
     left: 4px;
     bottom: 4px;
-    background-color: #0C969C;
+    background-color: var(--color-slightly-light);
     transition: 0.4s;
 }
 
 /* Wenn der Schalter aktiviert ist (checked) */
 input:checked + .slider {
-    background-color: #274D60; /* Grün */
+    background-color: var(--color-medium-dark); /* Grün */
 }
 
 input:checked + .slider:before {
@@ -617,14 +617,14 @@ input:checked + .slider:before {
 /* Der Text, der "Public" oder "Private" anzeigt */
 .status-text {
     font-size: 16px;
-    color: #aaa;
+    color: var(--text-color-light);
 }
 
 /* Wenn der Schalter aktiviert ist, den Text zu "Public" ändern */
 input:checked ~ #status-text {
     content: "Public";
     font-weight: bold;
-    color: #274D60;
+    color: var(--color-medium-dark);
 }
 
 .payment-history-header{
@@ -676,7 +676,7 @@ input:checked ~ #status-text {
     left: 30%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.8);
-    color: #fff;
+    color: var(--text-color-light);
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 12px;

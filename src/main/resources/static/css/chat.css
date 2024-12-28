@@ -303,7 +303,7 @@ img {
 /* Zeitstempel der Nachricht */
 .message-time {
     font-size: 12px; /* Kleinere Schrift für den Zeitstempel */
-    color: #999; /* Graue Farbe für den Zeitstempel */
+    color: var(--text-color-light); /* Graue Farbe für den Zeitstempel */
     position: absolute;
     bottom: -18px; /* Position des Zeitstempels unterhalb der Nachricht */
     right: 10px; /* Rechtsbündig */
@@ -409,7 +409,7 @@ img {
 }
 
 .create-group-btn:hover {
-    background-color: #274D60;
+    background-color: var(--color-medium-dark);
 }
 
 .user-selection-container {
@@ -618,7 +618,7 @@ img {
         --trash-scale: 1;
         --trash-lines-opacity: 0;
         --trash-line-scale: 0;
-        --icon: #fff;
+        --icon: var(--text-color-light);
         --check-offset: 0;
         --check-opacity: 1;
         --check-scale: 1;

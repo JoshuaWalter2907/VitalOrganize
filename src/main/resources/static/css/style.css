@@ -20,7 +20,7 @@ body{
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-color: #0C969C;
+    background-color: var(--color-slightly-light);
     color: var(--text-color-light);
     background-attachment: fixed;
 
@@ -36,8 +36,8 @@ body{
     top: -25px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
+    background-color: var(--text-color-dark);
+    color: var(--text-color-light);
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 12px;
@@ -63,16 +63,16 @@ body{
     width: 85%;
     height: 40%;
     background: transparent;
-    border: 2px solid rgba(255, 255, 255, .2);
+    border: 2px solid var(--text-color-dark);
     outline: none;
     border-radius: 40px;
     font-size: 16px;
-    color: #fff;
+    color: var(--text-color-light);
     padding: 20px 45px 20px 20px;
 }
 
 .input-box input::placeholder{
-    color: #fff;
+    color: var(--text-color-light);
 }
 
 .input-box i{
@@ -91,12 +91,12 @@ body{
 }
 
 .remember-forgot label input{
-    accent-color: #fff;
+    accent-color: var(--text-color-light);
     margin-right: 3px;
 }
 
 .remember-forgot a{
-    color: #fff;
+    color: var(--text-color-light);
     text-decoration: none;
 }
 
@@ -150,14 +150,14 @@ body{
 .wrapper .btn{
     width: 100%;
     height: 45px;
-    background: #fff;
+    background: var(--text-color-light);
     border: none;
     outline: none;
     border-radius: 40px;
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
     cursor: pointer;
     font-size: 16px;
-    color: #333;
+    color: var(--text-color-dark);
     font-weight: 600;
 }
 
@@ -168,7 +168,7 @@ body{
 }
 
 .register-link p a{
-    color: #fff;
+    color: var(--text-color-light);
     text-decoration: none;
     font-weight: 600;
 }
@@ -195,7 +195,7 @@ header nav ul li {
 
 header nav ul li a {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-light);
     font-weight: 600;
 }
 
@@ -209,11 +209,11 @@ footer {
     flex-shrink: 0;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(to top, #274D60, #0C969C); /* Halbtransparentes Schwarz */
+    background: linear-gradient(to top, var(--color-medium-dark), var(--color-slightly-light)); /* Halbtransparentes Schwarz */
     width: 100%;
     height: 40px;
     position: fixed;
-    color: #aaa;
+    color: var(--text-color-light);
     margin: 0 auto;
     padding: 20px 0;
     bottom: 0;
@@ -234,7 +234,7 @@ footer ul li {
 
 footer ul li a {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-light);
     font-weight: 600;
 }
 
@@ -248,7 +248,7 @@ header {
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-    background: linear-gradient(to bottom, #274D60, #0C969C );
+    background: linear-gradient(to bottom, var(--color-medium-dark), var(--color-slightly-light) );
     width: 100%;
     height: 100px;
     position: fixed;
@@ -381,10 +381,6 @@ header nav ul li a {
     transition: color 0.3s ease-in-out;
 }
 
-/* Hover-Effekt für Links */
-header nav ul li a:hover {
-    color: #A86E2B; /* Braunton für Hover-Effekt */
-}
 
 /* Sicherstellen, dass der Footer nicht den Inhalt überlappt, wenn wenig Inhalt auf der Seite ist */
 body {
@@ -412,7 +408,7 @@ body {
 /* Große Überschrift in der Mitte */
 .section-title {
     font-size: 2.5rem;
-    color: #fff;
+    color: var(--text-color-light);
     position: absolute;
     top: 50%;
     left: 50%;
@@ -440,7 +436,7 @@ body {
     background-position: center; /* Das Bild wird immer zentriert */
     height: 300px; /* Höhe der Karte */
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-color-light);
     text-align: center;
     display: flex;
     justify-content: center;
@@ -486,10 +482,6 @@ body {
     transition: background-color 0.3s ease-in-out;
 }
 
-.cta-button:hover {
-    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
-}
-
 .container{
     display: flex;
     justify-content: center;
@@ -514,21 +506,6 @@ body {
     background-color: rgba(0, 0, 0, 0.2); /* Hintergrundfarbe mit Transparenz */
     border-radius: 10px; /* Abgerundete Ecken */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung für den Container */
-}
-
-.paybutton {
-    font-size: 1.2rem;
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.paybutton:hover {
-    background-color: #0056b3;
 }
 
 /* Verstecktes Formular */
@@ -581,25 +558,10 @@ body {
     top: 35%; /* Zentriere vertikal */
     left: 50%; /* Zentriere horizontal */
     transform: translate(-50%, -50%); /* Exakte Zentrierung */
-    color: white; /* Textfarbe */
+    color: var(--text-color-light); /* Textfarbe */
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Optional: Schatten für bessere Lesbarkeit */
     text-align: center;
 }
-
-.image-text h1 {
-    font-family: "Cooper Black", cursive;
-    font-size: 2rem;
-    margin: 0;
-    color: gold;
-}
-
-.image-text p {
-    font-size: 5rem;
-    margin: 5px 0 0;
-    color: gold;
-
-}
-
 
 
 
