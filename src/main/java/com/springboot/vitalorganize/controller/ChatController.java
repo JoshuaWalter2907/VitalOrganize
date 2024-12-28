@@ -37,6 +37,8 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String chat(
+            @RequestParam(value = "theme", defaultValue = "light") String theme,
+            @RequestParam(value = "lang", defaultValue = "en") String lang,
             @RequestParam(value = "user2", required = false) Long user2,
             @RequestParam(value = "group", required = false) Long groupId,
             @RequestParam(value = "query", required = false) String query,
@@ -50,6 +52,8 @@ public class ChatController {
         System.out.println(username);
 
         // Dynamische Attribute setzen
+        model.addAttribute("themeCss", "/css/" + theme + "-theme.css");
+        model.addAttribute("lang", lang);
         model.addAttribute("currentUser", username);
         model.addAttribute("SenderId", senderId);
 
@@ -219,11 +223,15 @@ public class ChatController {
     public String showPublicUsers (
             @RequestParam(value = "theme", defaultValue = "light") String theme,
             @RequestParam(value = "lang", defaultValue = "en") String lang,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken authentication,
             HttpServletRequest request,
             Model model
     ){
+        UserEntity userEntity = userService.getCurrentUser(user, authentication);
+
         String currentUrl = request.getRequestURI().toString();
-        chatService.preparePublicUsersPage(model, theme, lang);
+        chatService.preparePublicUsersPage(model, theme, lang, userEntity.getId());
 
         model.addAttribute("currentUrl", currentUrl);
 
@@ -241,8 +249,11 @@ public class ChatController {
             OAuth2AuthenticationToken authentication,
             Model model
     ){
+
+        UserEntity currentUser = userService.getCurrentUser(user, authentication);
+
         System.out.println(currentUrl);
-        chatService.preparePublicUsersPage(model, theme, lang);
+        chatService.preparePublicUsersPage(model, theme, lang, currentUser.getId());
 
         if (selectedUsers.size() > 1 && (chatName == null || chatName.trim().isEmpty())) {
             model.addAttribute("errorMessage", "Bitte geben Sie einen Gruppennamen ein.");
@@ -250,7 +261,6 @@ public class ChatController {
         }
 
         // Holen des aktuellen Benutzers aus dem UserService
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
 
         // Erstellen der Gruppe oder DirectChat über den ChatService
         chatService.createChat(selectedUsers, chatName, currentUser);
