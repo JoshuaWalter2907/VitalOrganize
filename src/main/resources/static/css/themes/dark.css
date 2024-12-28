@@ -1,0 +1,23 @@
+body {
+    background-color: #121212; /* Dunkler Hintergrund */
+    color: #E0E0E0; /* Helle Schriftfarbe für guten Kontrast */
+}
+
+a {
+    color: #BB86FC; /* Sanfte lila Farbe für Links */
+}
+
+header {
+    background-color: rgba(51, 51, 51, 0.8); /* Etwas helleres Grau für den Header mit Transparenz */
+    color: #B0B0B0; /* Hellerer Text im Header */
+}
+
+button {
+    background-color: #6200EE; /* Ein kräftiges Blau für Buttons */
+    color: #FFFFFF; /* Weißer Text auf Buttons */
+}
+
+footer {
+    background-color: rgba(51, 51, 51, 0.8); /* Etwas helleres Grau im Footer */
+    color: #B0B0B0; /* Hellerer Text im Footer */
+}

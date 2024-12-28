@@ -1,0 +1,145 @@
+/* Grundlegendes Styling für den Header */
+header {
+    background-color: #1B1B1B; /* Dunkler Hintergrund für den Header */
+    color: #F5F5F5; /* Helle Textfarbe */
+    padding: 10px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
+    width: 100%;
+    position: fixed;  /* Fixiert den Header */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Damit der Inhalt nicht vom Header überlappt wird */
+body {
+    padding-top: 70px; /* Der Header hat eine Höhe von ca. 70px, also wird der Inhalt nach unten verschoben */
+}
+
+/* Header-Container für den Inhalt des Headers */
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Linke Seite des Headers */
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+/* Login Button */
+.login-button {
+    background-color: #D4A441; /* Goldene Farbe */
+    color: #1B1B1B;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.login-button:hover {
+    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
+}
+
+/* Dropdown Menü */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+/* Dropdown Button */
+.dropdown-button {
+    background-color: #1B1B1B; /* Gleiche Hintergrundfarbe wie der Header */
+    color: #D4A441; /* Goldene Schriftfarbe */
+    border: 1px solid #D4A441;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.dropdown-button:hover {
+    background-color: #333333; /* Dunklerer Hintergrund bei Hover */
+}
+
+/* Dropdown Inhalte */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #1B1B1B; /* Gleicher dunkler Hintergrund wie der Header */
+    min-width: 150px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+.dropdown-content a {
+    color: #F5F5F5; /* Weiße Schriftfarbe */
+    padding: 10px 12px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease-in-out;
+    border-bottom: 1px solid #333; /* Trennlinie zwischen Items */
+}
+
+.dropdown-content a:hover {
+    background-color: #333333; /* Hintergrundfarbe bei Hover */
+}
+
+/* Zeige das Dropdown bei Hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Navigation */
+header nav ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+header nav ul li {
+    margin: 0 15px;
+}
+
+/* Links im Header */
+header nav ul li a {
+    color: #D4A441; /* Goldene Farbe für Links */
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+/* Hover-Effekt für Links */
+header nav ul li a:hover {
+    color: #A86E2B; /* Braunton für Hover-Effekt */
+}
+
+/* Trennlinie unter dem Header */
+header::after {
+    content: '';
+    display: block;
+    height: 2px;
+    background-color: #D4A441; /* Goldene Linie */
+    margin: 10px auto 0;
+    width: 80%;
+    max-width: 1000px;
+}
