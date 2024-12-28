@@ -31,7 +31,7 @@ public class Zahlung {
     private String currency;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true) // Verknüpfung mit UserEntity
+    @JoinColumn(name = "user_id", nullable = false) // Verknüpfung mit UserEntity
     private UserEntity user; // Wer
 
     @Enumerated(EnumType.STRING) // Speichert den Enum-Wert als String in der Datenbank
@@ -40,19 +40,5 @@ public class Zahlung {
 
     @Column(nullable = false)
     private double balance;
-
-    @Override
-    public String toString() {
-        return "Zahlung{" +
-                "id=" + id +
-                ", date=" + date +
-                ", amount=" + amount +
-                ", reason='" + reason + '\'' +
-                ", currency='" + currency + '\'' +
-                ", user=" + user.getUsername() + // Hier wird angenommen, dass es eine `getUsername` Methode im `UserEntity` gibt
-                ", type=" + type +
-                ", balance=" + balance +
-                '}';
-    }
 
 }
