@@ -483,9 +483,7 @@ public class PaypalService {
             ResponseEntity<String> response = restTemplate.exchange(PAYPAL_API_URL, HttpMethod.POST, entity, String.class);
 
             // 4. Wenn die Subscription erfolgreich erstellt wurde, die Approval URL extrahieren
-            System.out.println(response.getBody());
             String approvalUrl = extractApprovalUrl(response.getBody());
-            System.out.println("Approval URL: " + approvalUrl);
 
 
             return approvalUrl;

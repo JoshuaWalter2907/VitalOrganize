@@ -4,11 +4,14 @@ import com.springboot.vitalorganize.component.UsernameInterceptor;
 import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.service.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -31,14 +36,15 @@ import java.util.Locale;
 
 
 @Configuration
+@AllArgsConstructor
 @EnableWebSecurity
 public class WebConfig implements WebMvcConfigurer {
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private UsernameInterceptor usernameInterceptor;
+
+    private UserService userService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,6 +55,17 @@ public class WebConfig implements WebMvcConfigurer {
                     registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/paypal-webhook").permitAll();
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
                     // Geschützte Ressourcen
+                    registry.requestMatchers("/chat/**", "/public-users", "/create-group").access((authenticationSupplier, context) -> {
+                        Authentication authentication = authenticationSupplier.get();
+                        if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
+                            OAuth2User oauthUser = (OAuth2User) oauthToken.getPrincipal();
+                            UserEntity user = userService.getCurrentUser(oauthUser, oauthToken);
+                            return new AuthorizationDecision(user.isMember());
+                        }
+                        return new AuthorizationDecision(false); // Zugriff verweigern, wenn kein OAuth2-Token vorhanden ist
+                    });
+
+
                     registry.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -85,9 +102,19 @@ public class WebConfig implements WebMvcConfigurer {
                             .logoutSuccessUrl("/") // Nach dem Logout auf die Startseite umleiten
                             .permitAll();
                 })
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .build();
     }
 
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        // Redirect zur Hauptseite ("/") bei fehlenden Berechtigungen
+        AccessDeniedHandlerImpl accessDeniedHandler = new AccessDeniedHandlerImpl();
+        accessDeniedHandler.setErrorPage("/"); // Seite, zu der der User bei einem AccessDenied-Fehler weitergeleitet wird
+        return accessDeniedHandler;
+    }
 
         private void handleFormLogin(String email, String password, Authentication authentication) {
 

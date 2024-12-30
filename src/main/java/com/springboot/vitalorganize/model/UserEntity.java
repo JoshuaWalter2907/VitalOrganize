@@ -96,7 +96,7 @@ public class UserEntity {
     )
     private List<UserEntity> blockedUsers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<SubscriptionEntity> subscriptions;
 
     @Override
@@ -120,6 +120,13 @@ public class UserEntity {
         return subscriptions.stream()
                 .max((s1, s2) -> s1.getStartTime().compareTo(s2.getStartTime())) // Nach Startzeit sortieren
                 .orElse(null);
+    }
+
+    public boolean isMember(){
+        if(this.getLatestSubscription() == null){
+            return false;
+        }
+        return this.getLatestSubscription().hasActivePrivileges();
     }
 
 }

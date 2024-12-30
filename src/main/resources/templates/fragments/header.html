@@ -5,7 +5,7 @@
     </div>
     <div>
       <form method="post" action="/create-subscription">
-        <button type="submit">Werde ein Premium Mitglied</button>
+        <button type="submit" class="dropdown-button">Werde ein Premium Mitglied für 10€/Monat</button>
       </form>
     </div>
     <div class="header-right">
@@ -64,7 +64,7 @@
     </div>
   </div>
   <div class="header-bottom">
-    <a th:href="@{/chat}">Chat</a>
+    <a th:href="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip">Chat</a>
     <a th:href="@{/}">Rezepte</a>
     <a th:href="@{/}">Kalender</a>
     <a th:href="@{/}">API</a>

@@ -64,20 +64,17 @@ public class PaypalController {
             String approvalUrl = paypalService.createSubscription(planId, userEntity);
 
             if (approvalUrl != null) {
-                // Benutzer in der Datenbank aktualisieren
-                paypalService.updateUserSubscriptionStatus(userEntity, true, approvalUrl);
-
                 // Benutzer zur PayPal-URL weiterleiten
                 redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich erstellt!");
                 return "redirect:" + approvalUrl;  // Weiterleitung zur PayPal-Seite zur Bestätigung
             } else {
                 redirectAttributes.addFlashAttribute("error", "Fehler bei der Erstellung der Subscription.");
-                return "redirect:/error";  // Falls ein Fehler auftritt, zur Fehlerseite weiterleiten
+                return "redirect:/";  // Falls ein Fehler auftritt, zur Fehlerseite weiterleiten
             }
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
-            return "redirect:/error";  // Fehlerbehandlung
+            return "redirect:/";  // Fehlerbehandlung
         }
     }
 
@@ -97,7 +94,7 @@ public class PaypalController {
         if (success) {
             return "redirect:" + refererUrl;
         }
-        return "redirect:/error";
+        return "redirect:/";
     }
 
     @PostMapping("/pause-subscription")
@@ -115,7 +112,7 @@ public class PaypalController {
         if (success) {
             return "redirect:" + refererUrl;
         }
-        return "redirect:/error";
+        return "redirect:/";
     }
 
     @PostMapping("/resume-subscription")
@@ -133,7 +130,7 @@ public class PaypalController {
         if (success) {
             return "redirect:" + refererUrl;
         }
-        return "redirect:/error";
+        return "redirect:/";
     }
 
 
@@ -142,7 +139,8 @@ public class PaypalController {
                                             @RequestParam("token") String token,
                                             RedirectAttributes redirectAttributes,
                                             @AuthenticationPrincipal OAuth2User user,
-                                            OAuth2AuthenticationToken authentication) {
+                                            OAuth2AuthenticationToken authentication
+    ) {
         try {
 
             UserEntity userEntity = userService.getCurrentUser(user, authentication);
@@ -155,9 +153,7 @@ public class PaypalController {
 
             if ("approved".equals(approvalResponse)) {
                 redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich!");
-                System.out.println(userEntity.getRole());
                 userEntity.setRole("MEMBER");
-                System.out.println(userEntity.getRole());
                 userRepository.save(userEntity);
 
                 SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
@@ -176,12 +172,17 @@ public class PaypalController {
                 return "redirect:/profile";  // Weiterleitung auf die Erfolgseite
             } else {
                 redirectAttributes.addFlashAttribute("error", "Fehler bei der Bestätigung der Subscription.");
-                return "redirect:/error";  // Falls die Bestätigung fehlschlägt
+                return "redirect:/";  // Falls die Bestätigung fehlschlägt
             }
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
-            return "redirect:/error";  // Fehlerbehandlung
+            return "redirect:/";  // Fehlerbehandlung
         }
+    }
+
+    @GetMapping("/subscription-cancel")
+    public String handleSubscriptionCancel(){
+        return "redirect:/";
     }
 }
