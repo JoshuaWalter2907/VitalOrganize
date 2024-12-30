@@ -1,0 +1,392 @@
+@import url("../css/themes.css");
+.fund-details{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    margin-right: 40px;
+    margin-bottom: 30px;
+    background-color: var(--color-medium-dark);
+    border-radius: 15px;
+}
+
+.fund-list{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 20px;
+    padding: 10px 40px;
+    background-color: var(--color-medium-dark);
+    border-radius: 15px;
+}
+
+.fund-list a{
+    text-decoration: none;
+    font-size: 18px;
+    color: var(--text-color-light);
+}
+
+.fund-details img{
+    width: 100px;
+    height: auto;
+    background-size: cover;
+    background-position: center;
+}
+
+.fund-details span{
+    color: var(--text-color-light)
+}
+
+.left-side{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 25%;
+    overflow: hidden;
+}
+
+.right-side-funds{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 75%;
+    min-height: 100vh;
+    border-left: 3px solid var(--color-medium-dark);
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.fund-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* Optional, um die gesamte Breite einzunehmen */
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+
+
+.fund-balance{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.fund-image{
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    color: var(--text-color-light);
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.fund-image img{
+    width: 200px;
+    height: auto;
+    background-size: cover;
+    background-position: center;
+}
+
+
+.dropdown-toggle {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Dropdown-Menü */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: transparent;
+    min-width: 300px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    padding: 12px 16px;
+    left: -70%;
+    z-index: 1;
+}
+
+/* Dropdown sichtbar machen bei Hover */
+.dropdown:hover .dropdown-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-actions{
+    width: fit-content;
+}
+
+.search-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Zentriert die Suchleiste */
+    padding: 10px;
+}
+
+/* Form-Style */
+.search-form {
+    background-color: transparent;
+    display: flex; /* Flexbox für horizontale Anordnung */
+    width: 100%;
+    max-width: 600px; /* Maximale Breite der Suchleiste */
+}
+
+/* Container für Button und Input */
+.input-container {
+    display: flex;
+    align-items: center; /* Vertikale Ausrichtung */
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Leicht schwarzer Hintergrund (mit Transparenz) */
+    border-radius: 30px; /* Schöne Abrundung der Ecken */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+
+/* Button (Lupe) */
+.search-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+    border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
+}
+
+
+/* Das Input-Feld */
+.search-form input {
+    width: 100%; /* Input nimmt die gesamte verbleibende Breite ein */
+    padding: 8px 15px; /* Polsterung für das Textfeld */
+    font-size: 14px; /* Schriftgröße */
+    border: none; /* Kein Rand */
+    border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
+    color: var(--text-color-light); /* Weiße Schriftfarbe */
+    background-color: transparent; /* Hintergrundfarbe transparent */
+    outline: none; /* Entfernt den Standardfokus-Rahmen */
+    z-index: 10;
+}
+
+/* Optional: Stil für das Icon im Button */
+.search-button i {
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+    z-index: 10;
+}
+
+.create-chat-btn {
+    background-color: transparent;
+    color: var(--color-dark); /* Weißes Pluszeichen */
+    border: none; /* Kein Rand */
+    border-radius: 50%; /* Runde Form */
+    width: 50px; /* Breite des Buttons */
+    height: 50px; /* Höhe des Buttons */
+    display: flex; /* Flexbox, um das Icon zu zentrieren */
+    justify-content: center; /* Zentriert das Pluszeichen horizontal */
+    align-items: center; /* Zentriert das Pluszeichen vertikal */
+    font-size: 24px; /* Größe des Plus-Icons */
+    cursor: pointer; /* Zeigt an, dass es klickbar ist */
+    transition: background-color 0.3s, transform 0.3s; /* Sanfte Übergänge für Hintergrundfarbe und Transformation */
+
+}
+
+.create-chat-btn:hover {
+    background-color: var(--color-medium-dark); /* Dunklere Hintergrundfarbe bei Hover */
+    color: var(--text-color-light);
+    transform: scale(1.1); /* Etwas vergrößern beim Hover für einen interaktiven Effekt */
+}
+
+.create-chat-btn:focus {
+    outline: none; /* Entfernt den Fokusrahmen */
+}
+
+.create-group-form input{
+    width: 100%;
+    padding: 8px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    color: var(--text-color-light);
+    background: transparent;
+    outline: none;
+    z-index: 10;
+}
+
+.user-list {
+    margin: 20px;
+}
+
+.profile-image {
+    width: 40px; /* Größe des Bildes */
+    height: 40px;
+    border-radius: 50%; /* Macht das Bild rund */
+    object-fit: cover; /* Sorgt dafür, dass das Bild richtig zugeschnitten wird */
+}
+
+/* Standard-Design */
+.user-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    margin:  10px 0;
+    text-decoration: none;
+}
+
+.user-label span{
+    color: var(--text-color-light);
+    font-size: 16px;
+}
+
+.current-fund-members{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Container für alle Benutzer */
+.fund-users-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    width: 100%;
+    align-items: center; /* Zentriert die Inhalte horizontal */
+}
+
+/* Container für den Admin */
+.user-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+/* Bild des Benutzers */
+.profile-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Benutzername */
+.username {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Container für andere Benutzer */
+.other-users-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center; /* Zentriert die Inhalte horizontal */
+}
+
+/* Grid-Layout für die anderen Benutzer */
+.users-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-items: center; /* Zentriert die Elemente innerhalb des Grids */
+    width: 100%;
+}
+
+/* Einzelner Benutzer */
+.user-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Zentriert den Inhalt des Benutzer-Containers */
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+/* Hover-Effekt für Benutzer */
+.user-item:hover {
+    background-color: var(--color-slightly-dark);
+}
+
+/* Optional: Styling für die Überschrift */
+h4 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Container für das Dropdown-Menü */
+.admin-dropdown {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+/* Button für das Dropdown-Menü */
+.dropdown-button-admin {
+    background: transparent; /* Kein Hintergrund */
+    border: none; /* Entfernt den Rand */
+    font-size: 24px; /* Größe des Icons */
+    cursor: pointer;
+    color: var(--text-color-light); /* Farbe des Icons */
+    margin: 20px;
+}
+
+/* Das Dropdown-Menü verstecken */
+.dropdown-menu-admin {
+    display: none;
+    position: absolute;
+    background: var(--color-medium-dark);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
+    margin-top: 5px; /* Abstand nach unten */
+    top: 60%;
+    left: -160%;
+}
+
+/* Dropdown-Items (Links) */
+.dropdown-item-admin {
+    color: var(--text-color-light);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-item-admin:hover {
+    color: var(--text-color-light);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Anzeigen des Dropdown-Menüs, wenn der Button geklickt wird */
+.admin-dropdown:hover .dropdown-menu-admin {
+    display: block;
+}
+
+.payment-history-container-table {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+

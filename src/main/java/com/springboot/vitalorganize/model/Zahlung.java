@@ -41,18 +41,8 @@ public class Zahlung {
     @Column(nullable = false)
     private double balance;
 
-    @Override
-    public String toString() {
-        return "Zahlung{" +
-                "id=" + id +
-                ", date=" + date +
-                ", amount=" + amount +
-                ", reason='" + reason + '\'' +
-                ", currency='" + currency + '\'' +
-                ", user=" + user.getUsername() + // Hier wird angenommen, dass es eine `getUsername` Methode im `UserEntity` gibt
-                ", type=" + type +
-                ", balance=" + balance +
-                '}';
-    }
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Jede Zahlung gehört zu einem Fund
+    @JoinColumn(name = "fund_id", nullable = false) // Verknüpfung zum Fund
+    private FundEntity fund; // Fund, in den die Zahlung getätigt wurde
 
 }

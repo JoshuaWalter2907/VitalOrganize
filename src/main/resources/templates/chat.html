@@ -24,9 +24,11 @@
     <!-- Chats Header -->
     <div class="chats-header">
       <h2>Chats</h2>
-      <button th:onclick="|window.location.href='@{/public-users}'|" class="create-chat-btn">
-        <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
-      </button>
+      <form th:action="@{/public-users}">
+        <button type="submit" class="create-chat-btn">
+          <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
+        </button>
+      </form>
     </div>
 
     <!-- Search Container -->

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -238,6 +240,11 @@ public class MainController {
                           @RequestParam(value = "fa", required = false) boolean auth,
                           @RequestParam(value = "tab", defaultValue = "general") String tab,
                           @RequestParam(value = "kind", defaultValue = "premium")String kind,
+                          @RequestParam(required = false) String username,       // Für "Person suchen"
+                          @RequestParam(required = false) String reason,
+                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datefrom, // Startdatum
+                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateto,   // Enddatum
+                          @RequestParam(required = false) Long amount,         // Für "Amount"
                           @AuthenticationPrincipal OAuth2User user,
                           OAuth2AuthenticationToken authentication,
                           Model model,
@@ -287,10 +294,18 @@ public class MainController {
         }
 
         if("premium".equals(kind) && profileData.getLatestSubscription() != null) {
-            System.out.println("Ich war hier");
-            model.addAttribute("historysubscription", paypalService.getTransactionsForSubscription(profileData.getLatestSubscription().getSubscriptionId()));
+            List<TransactionSubscription> transactions = paypalService.getTransactionsForSubscription(
+                    profileData.getLatestSubscription().getSubscriptionId()
+            );
+            List<TransactionSubscription> filteredTransactions = paypalService.filterTransactions(transactions, username, datefrom, dateto, amount);
+            // Ergebnisse ins Model laden
+            model.addAttribute("historysubscription", filteredTransactions);
+            model.addAttribute("kind", kind);
         }else {
-            model.addAttribute("historysingle", paymentRepository.findAllByUser(profileData));
+            List<Zahlung> payments = paymentRepository.findAllByUser(profileData);
+            List<Zahlung> filteredpayments = paypalService.filterPayments(payments, username, reason, datefrom, dateto, amount);
+            model.addAttribute("historysingle", filteredpayments);
+            model.addAttribute("kind", kind);
         }
 
 

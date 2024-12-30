@@ -29,9 +29,14 @@
 .left-side{
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     width: 25%;
     overflow: hidden;
+}
+
+.form-actions{
+    width: 100%;
+    padding: 10px;
 }
 
 .right-side{
@@ -43,6 +48,47 @@
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
 }
+
+.payment-history-container-table {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+    width: 100%;
+}
+
+
+.cell {
+    padding: 10px;
+    box-sizing: border-box; /* Verhindert, dass Padding die Breite beeinflusst */
+    text-align: center; /* Zentriert Text */
+    word-break: break-all;
+}
+
+.cell.header {
+    font-weight: bold;
+    margin-bottom: -20px;
+}
+
+.cell.input{
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    font-weight: bold;
+    border-bottom: 1px solid var(--text-color-light);
+}
+
+.cell.input:focus{
+    outline: none;
+    background: transparent;
+}
+
+
+
+
 
 .abonements{
     padding: 20px;
@@ -350,9 +396,16 @@ h1{
     align-self: flex-end;
 }
 
-.search-button{
+.search-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
 }
 
 .search-button button {
@@ -656,15 +709,10 @@ input:checked ~ #status-text {
 }
 
 .payment-history-element{
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-around;
+    display: table;
+    width: 100%;
 }
 
-.payment-history-element p{
-    margin: 20px
-}
 
 /* Tooltip-Styles */
 .locked[data-tooltip]:hover::after {

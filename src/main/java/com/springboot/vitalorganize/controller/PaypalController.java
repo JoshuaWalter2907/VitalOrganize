@@ -39,98 +39,6 @@ public class PaypalController {
 
     private final subscriptionRepository subscriptionRepository;
 
-
-
-
-    @GetMapping("/paypal")
-    public String paypal(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            Model model
-    ) {
-
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
-        model.addAttribute("lang", lang);
-        model.addAttribute("balance", paypalService.getCurrentBalance());
-
-
-        return "paypal";
-    }
-
-    @PostMapping("/paypal/create")
-    public RedirectView createPaypal(
-            @RequestParam("method") String method,
-            @RequestParam("amount") String amount,
-            @RequestParam("currency") String currency,
-            @RequestParam("description") String description,
-            @RequestParam("type") String type,
-            @RequestParam("email") String email,
-            @AuthenticationPrincipal OAuth2User user,
-            HttpSession session
-    ) {
-        // Daten in die Session speichern
-        session.setAttribute("amount", amount);
-        session.setAttribute("currency", currency);
-        session.setAttribute("description", description);
-        session.setAttribute("type", type);
-        session.setAttribute("email", email);
-        session.setAttribute("method", method);
-
-        try {
-            String cancelUrl = "http://localhost:8080/paypal/cancel";
-            String successUrl = "http://localhost:8080/paypal/success";
-
-            String approvalUrl = paypalService.handlePaymentCreation(
-                    Double.parseDouble(amount),
-                    currency,
-                    method,
-                    description,
-                    cancelUrl,
-                    successUrl
-            );
-
-            return new RedirectView(approvalUrl);
-
-        } catch (PayPalRESTException e) {
-            log.error("Error occurred while creating PayPal payment", e);
-            return new RedirectView("/paypal/error");
-        }
-    }
-
-
-    @GetMapping("/paypal/success")
-    public RedirectView paypalSuccess(
-            @RequestParam("paymentId") String paymentId,
-            @RequestParam("PayerID") String payerId,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpSession session
-    ) {
-        // Daten aus der Session lesen
-        String type = (String) session.getAttribute("type");
-        String amount = (String) session.getAttribute("amount");
-        String currency = (String) session.getAttribute("currency");
-        String description = (String) session.getAttribute("description");
-        String receiverEmail = (String) session.getAttribute("email");
-        String method = (String) session.getAttribute("method");
-
-        // Benutzerinformationen verarbeiten
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = paypalService.getEmailForUser(user, provider);
-
-        // Zahlungsabwicklung und Ergebnis erhalten
-        try {
-            String redirectUrl = paypalService.processPayment(
-                    paymentId, payerId, type, amount, currency, description,
-                    receiverEmail, email, method, provider
-            );
-            return new RedirectView(redirectUrl);
-        } catch (Exception e) {
-            log.error("Error during PayPal success processing", e);
-            return new RedirectView("/paypal/error");
-        }
-    }
-
     @PostMapping("/create-subscription")
     public String createSubscription(@AuthenticationPrincipal OAuth2User user,
                                      OAuth2AuthenticationToken authentication,
@@ -140,13 +48,13 @@ public class PaypalController {
 
             String uri = request.getHeader("Referer");
 
-            UserEntity userEntity = userService.getCurrentUser(user,authentication);
+            UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
-            if(userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getStatus().equals("ACTIVE")) {
+            if (userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getStatus().equals("ACTIVE")) {
                 return "redirect:/profile";
             }
 
-            if(userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getEndTime().isAfter(LocalDateTime.now())) {
+            if (userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getEndTime().isAfter(LocalDateTime.now())) {
                 return "redirect:" + uri;
             }
             // Der Plan ID ist ein Beispiel, es kann von der Anwendung abhängen
@@ -178,15 +86,15 @@ public class PaypalController {
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication,
             HttpServletRequest request
-    ){
+    ) {
         String refererUrl = request.getHeader("Referer");
 
         String uri = request.getRequestURI();
-        UserEntity userEntity = userService.getCurrentUser(user,authentication);
+        UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
         boolean success = paypalService.cancelSubscription(userEntity, userEntity.getLatestSubscription().getSubscriptionId());
 
-        if(success) {
+        if (success) {
             return "redirect:" + refererUrl;
         }
         return "redirect:/error";
@@ -197,14 +105,14 @@ public class PaypalController {
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication,
             HttpServletRequest request
-    ){
+    ) {
         String refererUrl = request.getHeader("Referer");
 
-        UserEntity userEntity = userService.getCurrentUser(user,authentication);
+        UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
         boolean success = paypalService.pauseSubscription(userEntity, userEntity.getLatestSubscription().getSubscriptionId());
 
-        if(success) {
+        if (success) {
             return "redirect:" + refererUrl;
         }
         return "redirect:/error";
@@ -229,8 +137,6 @@ public class PaypalController {
     }
 
 
-
-
     @GetMapping("/subscription-success")
     public String handleSubscriptionSuccess(@RequestParam("subscription_id") String subscription_id,
                                             @RequestParam("token") String token,
@@ -239,7 +145,7 @@ public class PaypalController {
                                             OAuth2AuthenticationToken authentication) {
         try {
 
-            UserEntity userEntity = userService.getCurrentUser(user,authentication);
+            UserEntity userEntity = userService.getCurrentUser(user, authentication);
             // Erstelle eine Anfrage, um die Subscription zu bestätigen
 
             String payerId = paypalService.getPayerIdFromSubscription(subscription_id);
@@ -278,20 +184,4 @@ public class PaypalController {
             return "redirect:/error";  // Fehlerbehandlung
         }
     }
-
-
-
-
-
-
-    @GetMapping("/paypal/cancel")
-    public String paypalCancel(){
-        return "paypal";
-    }
-
-    @GetMapping("/paypal/error")
-    public String paypalError(){
-        return "paymentError";
-    }
-
 }

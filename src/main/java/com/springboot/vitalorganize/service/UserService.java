@@ -3,6 +3,8 @@ package com.springboot.vitalorganize.service;
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
 import com.springboot.vitalorganize.model.*;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class UserService {
     private final subscriptionRepository subscriptionRepository;
     private final PaymentRepository paymentRepository;
     private final FriendRequestRepository friendRequestRepository;
+
+
     private final PaypalService paypalService;
 
 
@@ -119,18 +123,15 @@ public class UserService {
     public UserEntity getCurrentUser(OAuth2User user, OAuth2AuthenticationToken authentication) {
         // Provider bestimmen (z. B. google, discord, github)
         String provider = authentication.getAuthorizedClientRegistrationId();
-        System.out.println(provider);
 
         // E-Mail und Benutzer-ID ermitteln
         String email = user.getAttribute("email");
-        System.out.println(email);
         Long id;
         switch (provider) {
             case "google":
             case "discord":
                 // Für Google und Discord bleibt die E-Mail unverändert
                 id = userRepository.findByEmailAndProvider(email, provider).getId();
-                System.out.println(id);
                 break;
 
             case "github":

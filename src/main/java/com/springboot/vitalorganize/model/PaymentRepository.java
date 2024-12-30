@@ -21,4 +21,8 @@ public interface PaymentRepository  extends JpaRepository<Zahlung, Long> {
     @Query("UPDATE Zahlung o SET o.user = NULL WHERE o.user.id = :userId")
     void updateUserReferencesToNull(@Param("userId") Long userId);
 
+    @Query("SELECT p FROM Zahlung p ORDER BY p.date DESC LIMIT 1")
+    Optional<Zahlung> findLatestTransactionByFundId(Long id);
+
+    void deleteByFundId(Long id);
 }

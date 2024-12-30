@@ -18,6 +18,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.mail.SimpleMailMessage;
@@ -35,8 +36,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
@@ -52,17 +56,18 @@ public class PaypalService {
     private final PayPalConfig payPalConfig;
 
     private static final String PAYPAL_API_URL = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions";
+    private final FundRepository fundRepository;
+    private final DataSourceTransactionManagerAutoConfiguration dataSourceTransactionManagerAutoConfiguration;
 
 
     public String handlePaymentCreation(
             double amount,
             String currency,
-            String method,
             String description,
             String cancelUrl,
             String successUrl
     ) throws PayPalRESTException {
-        Payment payment = createPayment(amount, currency, method, "sale", description, cancelUrl, successUrl);
+        Payment payment = createPayment(amount, currency, "paypal", "sale", description, cancelUrl, successUrl);
 
         for (Links link : payment.getLinks()) {
             if (link.getRel().equals("approval_url")) {
@@ -125,9 +130,9 @@ public class PaypalService {
     }
 
     @Transactional
-    public Zahlung addPayment(Zahlung payment) {
+    public Zahlung addPayment(Zahlung payment, Long id) {
         // Letzte Buchung abrufen
-        Optional<Zahlung> latestTransaction = paymentRepository.findLatestTransaction();
+        Optional<Zahlung> latestTransaction = paymentRepository.findLatestTransactionByFundId(id);
         System.out.println(latestTransaction);
         double lastBalance = latestTransaction.map(Zahlung::getBalance).orElse(0.0);
 
@@ -268,14 +273,16 @@ public class PaypalService {
     public String processPayment(
             String paymentId, String payerId, String type, String amount,
             String currency, String description, String receiverEmail,
-            String email, String method, String provider
+            String email, String provider, Long id, Long fundId
     ) throws Exception {
+        System.out.println("Hier war ich noch");
         // Benutzer aktualisieren
         UserEntity user = userRepository.findByEmailAndProvider(email, provider);
         if (user.getProvider().equals("github"))
             email = user.getSendtoEmail();
-        user.setRole("MEMBER");
-        userRepository.save(user);
+
+        FundEntity fund = fundRepository.findById(fundId).get();
+        System.out.println(fund);
 
         // Zahlung initialisieren
         Zahlung zahlung = new Zahlung();
@@ -284,25 +291,29 @@ public class PaypalService {
         zahlung.setAmount(Double.valueOf(amount));
         zahlung.setCurrency(currency);
         zahlung.setUser(user);
+        zahlung.setFund(fund);
+
+        System.out.println(zahlung);
 
         if ("EINZAHLEN".equalsIgnoreCase(type)) {
             zahlung.setType(PaymentType.EINZAHLEN);
             Payment payment = executePayment(paymentId, payerId);
             if ("approved".equals(payment.getState())) {
-                addPayment(zahlung);
-                sendConfirmationEmail(email, amount, currency, method, description, type);
-                return "/paypal";
+                addPayment(zahlung, id);
+                sendConfirmationEmail(email, amount, currency, "paypal", description, type);
+                return "/fund";
             }
         } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
             double balance = getCurrentBalance();
             if (Double.valueOf(amount) > balance) {
-                return "/paypal/error";
+                return "/fund/payinto/error";
             } else {
                 zahlung.setType(PaymentType.AUSZAHLEN);
                 executePayout(receiverEmail, amount, currency);
-                addPayment(zahlung);
-                sendConfirmationEmail(email, amount, currency, method, description, type);
-                return "/paypal";
+                System.out.println("Hier war ich auch noch");
+                addPayment(zahlung, id);
+                sendConfirmationEmail(email, amount, currency, "paypal", description, type);
+                return "/fund";
             }
         }
         throw new RuntimeException("Invalid payment type");
@@ -881,7 +892,94 @@ public class PaypalService {
         }
     }
 
+    public List<TransactionSubscription> filterTransactions(
+            List<TransactionSubscription> transactions,
+            String username, // Für Payer Name
+            LocalDate datefrom, // Startdatum
+            LocalDate dateto,   // Enddatum
+            Long amount) {     // Transaktions-ID
 
 
+        List<TransactionSubscription> filteredTransactions = transactions.stream()
+                .peek(transaction -> System.out.println("Vor Filterung: " + transaction))
+                .filter(transaction -> {
+                    boolean condition = username == null || username.isEmpty() ||
+                            (transaction.getPayerEmail() != null &&
+                                    transaction.getPayerEmail().toLowerCase().contains(username.toLowerCase()));
+                    System.out.println("Username-Filter (" + transaction.getPayerEmail() + "): " + condition);
+                    return condition;
+                })
+                .filter(transaction -> {
+                    boolean condition = datefrom == null ||
+                            (transaction.getTime() != null && !transaction.getTime().toLocalDate().isBefore(datefrom));
+                    System.out.println("DateFrom-Filter (" + transaction.getTime() + "): " + condition);
+                    return condition;
+                })
+                .filter(transaction -> {
+                    boolean condition = dateto == null ||
+                            (transaction.getTime() != null && !transaction.getTime().toLocalDate().isAfter(dateto));
+                    System.out.println("DateTo-Filter (" + transaction.getTime() + "): " + condition);
+                    return condition;
+                })
+                .filter(transaction -> {
+                    boolean condition = amount == null ||
+                            (transaction.getAmountWithBreakdown() != null &&
+                                    transaction.getAmountWithBreakdown().getGrossAmount() != null &&
+                                    Double.parseDouble(transaction.getAmountWithBreakdown().getGrossAmount().getValue()) >= amount);
+                    System.out.println("Amount-Filter (" + transaction.getAmountWithBreakdown() + "): " + condition);
+                    return condition;
+                })
+                .peek(transaction -> System.out.println("Nach allen Filtern: " + transaction))
+                .collect(Collectors.toList());
 
+        System.out.println("Gefilterte Transaktionen: " + filteredTransactions);
+        return filteredTransactions;
+    }
+
+
+    public List<Zahlung> filterPayments(List<Zahlung> payments,
+                                        String username,
+                                        String reason,
+                                        LocalDate datefrom,
+                                        LocalDate dateto,
+                                        Long amount
+    ) {
+        List<Zahlung> filteredPayments = payments.stream()
+                        .filter(payment -> {
+                            boolean condition = username == null || username.isEmpty() ||
+                                    (payment.getUser().getUsername()) != null &&
+                                            payment.getUser().getUsername().toLowerCase().contains(username.toLowerCase());
+                            System.out.println("Username-Filter (" + payment.getUser().getUsername() + "): " + condition);
+                            return condition;
+                        })
+                        .filter(payment -> {
+                            boolean condition = reason == null || reason.isEmpty() ||
+                                    (payment.getReason() != null &&
+                                            payment.getReason().toLowerCase().contains(reason.toLowerCase()));
+                            System.out.println("Reason-Filter (" + payment.getReason() + "): " + condition);
+                            return condition;
+                        })
+                        .filter(payment -> {
+                            boolean condition = datefrom == null ||
+                                    (payment.getDate() != null && !payment.getDate().toLocalDate().isBefore(datefrom));
+                            System.out.println("DateFrom-Filter (" + payment.getDate() + "): " + condition);
+                            return condition;
+                        })
+                        .filter(payment -> {
+                            boolean condition = dateto == null ||
+                                    (payment.getDate() != null && !payment.getDate().toLocalDate().isAfter(dateto));
+                            System.out.println("DateTo-Filter (" + payment.getDate() + "): " + condition);
+                            return condition;
+                        })
+                        .filter(payment -> {
+                            boolean condition = amount == null ||
+                                    (payment.getAmount() != null &&
+                                            payment.getAmount() >= amount);
+                            System.out.println("Amount-Filter (" + payment.getAmount() + "): " + condition);
+                            return condition;
+                        })
+                .collect(Collectors.toList());
+
+        return filteredPayments;
+    }
 }

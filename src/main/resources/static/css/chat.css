@@ -887,4 +887,11 @@ h2{
     margin-bottom: 5px;
 }
 
+.right-container .simple-text{
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-light);
+}
 

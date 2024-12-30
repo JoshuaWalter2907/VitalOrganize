@@ -59,7 +59,6 @@ public class GlobalViewController {
 
 
         model.addAttribute("httpServletRequest", request);
-        System.out.println(request.getRequestURI());
         if (username != null) {
             model.addAttribute("username", username); // Beispielattribut
         } else {
