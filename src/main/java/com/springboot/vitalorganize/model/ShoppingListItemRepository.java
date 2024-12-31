@@ -12,10 +12,9 @@ import java.util.List;
 public interface ShoppingListItemRepository extends JpaRepository<ShoppingListItemEntity, Long> {
 
     @Query("SELECT new com.springboot.vitalorganize.dto.ShoppingListData(" +
-            "i.id, i.name, s.purchaseAmount, i.price, i.amount, i.unit, (s.purchaseAmount * i.price)) " +
+            "i.id, i.name, COALESCE(s.purchaseAmount, 0), COALESCE(i.price, 0), i.amount, i.unit, COALESCE(s.calculatedPrice, 0))" +
             "FROM ShoppingListItemEntity s " +
-            "INNER JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +
-            "WHERE s.userId = :userId")
-    List<ShoppingListData> findShoppingListByUserId(
-            @Param("userId") Long userId);
+            "RIGHT JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +
+            "WHERE i.userId = :userId AND i.onShoppingList = true")
+    List<ShoppingListData> findShoppingListByUserId(@Param("userId") Long userId);
 }

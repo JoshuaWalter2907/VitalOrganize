@@ -40,16 +40,16 @@ public class ShoppingListService {
         IngredientEntity existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
 
         if(existingIngredient != null) {
-            // ingredient already exists on the ingredient list of the user
+            // ingredient already exists on the ingredient list of the user but not on the shopping list
             ingredientId = existingIngredient.getId();
 
             if(existingIngredient.isOnShoppingList()) {
-                // ingredient already exists on the shopping list of the user
+                // ingredient already exists on both the ingredient and the shopping list
                 redirectAttributes.addFlashAttribute("error", "shoppingList.error.alreadyOnList");
                 return;
             }
         } else {
-            // ingredient has to be added to the ingredient list of the user
+            // ingredient is neither on the ingredient nor the shopping list
             boolean success = ingredientListService.addIngredient(userId, name, redirectAttributes);
 
             // error when trying to add a new ingredient
@@ -59,10 +59,10 @@ public class ShoppingListService {
 
             // get the id of the new ingredient
             ingredientId = ingredientRepository.findByUserIdAndName(userId, name).getId();
-
-            // mark new ingredient as onShoppingList
-            ingredientListService.toggleOnShoppingList(ingredientId);
         }
+        // mark new ingredient as onShoppingList
+        ingredientListService.toggleOnShoppingList(ingredientId);
+
         item.setIngredientId(ingredientId);
 
         shoppingListItemRepository.save(item);

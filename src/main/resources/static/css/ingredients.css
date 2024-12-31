@@ -35,7 +35,15 @@
     align-items: center;
 }
 
-.add-ingredient input {
+.add-ingredient input{
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.edit-amount {
     width: 80%;
     padding: 10px;
     font-size: 16px;
@@ -49,18 +57,17 @@
     justify-content: center;
     background-color: #4CAF50;
     color: white;
-    padding: 10px 15px;
+    padding: 0 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    width: 30px;
-    height: 30px;
 }
 
 /* Layout für den Inhalt innerhalb eines Listeneintrags (nebeneinander) */
 .item-name,
 .item-category,
-.item-price {
+.item-price,
+.item-amount{
     flex: 1;
     padding: 5px 10px;
 }
@@ -72,6 +79,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    margin-left: 15px;
 }
 
 .item-favourite button,
@@ -81,10 +89,3 @@
     cursor: pointer;
 }
 
-/* Fav- und Delete-Icons */
-.favourite-icon,
-.not-favourite-icon,
-.delete-icon {
-    width: 24px;
-    height: 24px;
-}

@@ -2,24 +2,22 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
 import com.springboot.vitalorganize.model.IngredientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class IngredientListService {
 
     private final IngredientRepository ingredientRepository;
-
-    @Autowired
-    public IngredientListService(IngredientRepository ingredientRepository) {
-        this.ingredientRepository = ingredientRepository;
-    }
+    private final SpoonacularService spoonacularService;
 
     // Methode zum Hinzufügen einer Zutat
+    // limited to 100 api calls per day
     public boolean addIngredient(
             Long userId,
             String name,
@@ -30,18 +28,23 @@ public class IngredientListService {
             return false;
         }
 
-        /*
-        //TODO LATER: API CALL TO GET THE REST OF THE INFO
-        boolean apiResultFound = false;
-        if(!apiResultFound) {
+        Map<String, Object> ingredientData;
+        try {
+            ingredientData = spoonacularService.getIngredientData(name);
+        } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", "ingredient.error.notFound");
             return false;
-        }*/
+        }
 
         IngredientEntity ingredient = new IngredientEntity();
         ingredient.setUserId(userId);
         ingredient.setName(name);
+
         // set other stuff taken from api
+        ingredient.setCategory((String) ingredientData.get("category"));
+        ingredient.setAmount((double) ingredientData.get("amount"));
+        ingredient.setUnit((String) ingredientData.get("unit"));
+        ingredient.setPrice((double) ingredientData.get("estimatedCostInEuros"));
 
         // save the ingredient
         ingredientRepository.save(ingredient);

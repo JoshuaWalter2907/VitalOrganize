@@ -8,7 +8,6 @@
   <!-- Einbinden des CSS-->
   <link rel="stylesheet" th:href="@{/css/ingredients.css}">
   <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" th:href="@{${themeCss}}">
 
   <!-- Boxicons Library für Icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -21,25 +20,25 @@
   <div class="list-item">
     <h3 th:text="#{shoppingList.title}">Shopping List</h3>
     <div style="display: flex; align-items: center;">
-        <div th:if="${error}" class="error-message-container" style="display: flex; align-items: center; margin-right: 10px;">
-            <div th:text="#{${error}}" class="error-message" style="color: red; font-size: 0.9em;"></div>
+        <div th:if="${error}" class="error-message-container" style="display: flex; align-items: center; margin-right: 10px">
+            <div th:text="#{${error}}" class="error-message" style="margin-left: 10px"></div>
 
             <!-- Delete error button (X icon) -->
             <form th:action="@{/shoppingList}" method="get" class="delete-error-form">
                 <button type="submit" class="delete-error-button" style="background: none; border: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
                         <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
                     </svg>
                 </button>
             </form>
         </div>
-        <form th:action="@{/shoppingList/add}" method="post" class="add-shopping-list-item">
+        <form th:action="@{/shoppingList/add}" method="post" class="add-ingredient" style="display: flex; align-items: center;">
             <label for="ingredientName"></label>
-            <input id="ingredientName" name="ingredientName" type="text" placeholder="Name" required>
+            <input id="ingredientName" name="ingredientName" type="text" placeholder="Zutat hinzufuegen" required>
             <button type="submit" class="add-button" style="background: none; border: none;">
                 <span class="add-icon">
                     <!-- Add Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
                         <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="green"></path>
                     </svg>
                 </span>
@@ -47,31 +46,103 @@
         </form>
     </div>
   </div>
-    <!-- Column Titles for the ShoppingList -->
-  <div class="list-item">
-    <span class="item-name" style="font-weight: bold;" th:text="#{shoppingListItem.name}"></span>
-    <span class="item-category" style="font-weight: bold;" th:text="#{shoppingListItem.purchaseAmount}"></span>
-    <span class="item-price" style="font-weight: bold;" th:text="#{shoppingListItem.calculatedPrice}"></span>
-  </div>
 
-  <!-- ShoppingList Rows -->
-  <div th:each="shoppingListItem : ${shoppingListItems}" class="list-item">
-    <span th:text="${shoppingListItem.name}" class="item-name"></span>
-    <span th:text="${shoppingListItem.purchaseAmount} + ${shoppingListItem.unit}" class="item-category"></span>
-    <form th:action="@{/shoppingList/editAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" class="add-ingredient">
-      <label for="newAmount"></label>
-      <input id="newAmount" name="newAmount" type="text" th:placeholder="#{shoppingListItem.amount.new}" required>
-      <button type="submit" class="add-button" style="background: none; border: none;">
-        <span class="add-icon">
-             <!-- Edit-Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
-            </svg>
+    <!-- Column Titles for the ShoppingList -->
+    <div class="list-item" style="display: flex; align-items: center; justify-content: space-between;">
+        <span class="item-name" style="font-weight: bold;" th:text="#{shoppingListItem.name}"></span>
+        <span class="item-amount" style="font-weight: bold; display: flex; align-items: center;">
+            <span th:text="#{shoppingListItem.purchaseAmount}" style="margin-right: 10px"></span>
+            <form method="post" style="display: flex; flex: 2; gap: 10px; visibility: hidden; pointer-events: none;">
+                <!-- Input Field -->
+                <input name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0; font-size: 14px; text-align: center; visibility: hidden; pointer-events: none;" required>
+                <!-- Edit Icon Button -->
+                <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
+                    <span class="add-icon">
+                        <!-- Edit Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
         </span>
-      </button>
-    </form>
-    <span th:text="${shoppingListItem.calculatedPrice} + '€'" class="item-price"></span>
-  </div>
+        <span class="item-price" style="font-weight: bold;" th:text="#{shoppingListItem.calculatedPrice}"></span>
+        <form class="item-delete" style="flex: 0; visibility: hidden; pointer-events: none;">
+            <button type="submit" class="delete-button" style="background: none; border: none; padding: 0; margin: 0;">
+            <span class="delete-icon">
+                <!-- Delete Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                </svg>
+            </span>
+            </button>
+        </form>
+    </div>
+
+    <!-- ShoppingList Rows -->
+    <div th:each="shoppingListItem : ${shoppingListItems}" class="list-item" style="display: flex; align-items: center; justify-content: space-between;">
+        <span th:text="${shoppingListItem.name}" class="item-name"></span>
+        <span class="item-amount" style="display: flex; align-items: center;">
+            <span th:text="${shoppingListItem.purchaseAmount} + ${shoppingListItem.unit}" style="margin-right: 10px"></span>
+            <form th:action="@{/shoppingList/editAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" style="display: flex; gap: 10px;">
+            <label for="newAmount" style="display: none;"></label>
+                <!-- Input Field -->
+            <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0px;  font-size: 14px; text-align: center;" required>
+                <!-- Edit Icon Button -->
+            <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
+            <span class="add-icon">
+                <!-- Edit Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                    <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
+                </svg>
+            </span>
+            </button>
+        </form>
+        </span>
+        <span th:text="${shoppingListItem.calculatedPrice} + '€'" class="item-price"></span>
+        <form th:action="@{/shoppingList/delete/{id}(id=${shoppingListItem.ingredientId})}" method="post" th:title="#{shoppingListItem.delete}" class="item-delete" style="flex: 0;">
+            <button type="submit" class="delete-button" style="background: none; border: none; padding: 0; margin: 0;">
+            <span class="delete-icon">
+                <!-- Delete Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                    <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                </svg>
+            </span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Last row -->
+    <div class="list-item" style="display: flex; align-items: center; justify-content: space-between; padding-top: 30px;">
+        <span th:text="#{shoppingList.totalPrice} + ':'" class="item-name" style="font-weight: bold; flex: 1;"></span>
+        <span class="item-amount" style="display: flex; align-items: center;">
+            <span style="margin-right: 10px"></span>
+            <form class="invisible-element" method="post" style="display: flex; flex: 2; gap: 10px;">
+                <input name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 5px;  font-size: 14px; text-align: center;" required>
+                    <!-- Edit Icon Button -->
+                <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
+                <span class="add-icon">
+                    <!-- Edit Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
+                    </svg>
+                </span>
+                </button>
+            </form>
+        </span>
+        <span class="item-price" th:text="${totalPrice} + '€'"></span>
+        <form class="item-delete" style="flex: 0;">
+            <button type="submit" class="delete-button, invisible-element" style="background: none; border: none; padding: 0; margin: 0;">
+            <span class="delete-icon">
+                <!-- Delete Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                </svg>
+            </span>
+            </button>
+        </form>
+    </div>
+
 </div>
 
 <!-- Footer einfügen -->

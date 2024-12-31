@@ -439,6 +439,11 @@ header nav ul li a {
     transition: color 0.3s ease-in-out;
 }
 
+.error-message-container{
+    color: darkred;
+    background-color: indianred;
+    border-radius: 5px;
+}
 
 /* Sicherstellen, dass der Footer nicht den Inhalt überlappt, wenn wenig Inhalt auf der Seite ist */
 body {
@@ -610,7 +615,10 @@ body {
     display: block;
 }
 
-
+.invisible-element{
+    visibility: hidden;
+    pointer-events: none;
+}
 .image-text {
     position: absolute;
     top: 35%; /* Zentriere vertikal */
