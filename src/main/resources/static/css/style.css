@@ -9,6 +9,25 @@
     font-family: 'Poppins', sans-serif;
 }
 
+.main-container-homepage{
+    display: flex;
+    flex: 1;
+    flex-direction: column; /* Elemente werden vertikal gestapelt */
+    align-items: center; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    box-sizing: border-box;
+    top: 100px;
+    min-height: 100vh;
+    padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
+    background: var(--color-medium-light);
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 80%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    color: var(--text-color-light);
+}
+
 
 body{
     display: flex;
@@ -601,10 +620,17 @@ body {
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Optional: Schatten für bessere Lesbarkeit */
     text-align: center;
 }
-h1, h2 {
+h1{
+    color: var(--text-color-light);
+}
+h3{
+    font-size: 40px;
     color: var(--text-color-light);
 }
 
+h2{
+    color: var(--text-color-light);
+}
 /* Container für alle Endpoints */
 .endpoint-container {
     display: flex;
@@ -645,9 +671,30 @@ h1, h2 {
     margin-top: 10px;
 }
 
-.response {
-    margin-top: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
+.container-left{
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+.content-symbol{
+    flex: 0 0 10%;
+}
+
+.content {
+    flex: 0 0 60%; /* Der Textbereich nimmt 70% der Breite ein */
+}
+
+.homepage-image {
+    flex: 0 0 30%; /* Das Bild nimmt 30% der Breite ein */
+}
+
+.homepage-image img {
+    width: 100%; /* Macht das Bild responsive und sorgt dafür, dass es den gesamten verfügbaren Platz einnimmt */
+    height: auto; /* Beibehaltung der Proportionen des Bildes */
 }
 
 /* Sicherstellen, dass auf kleinen Bildschirmen die Endpoints untereinander angezeigt werden */
