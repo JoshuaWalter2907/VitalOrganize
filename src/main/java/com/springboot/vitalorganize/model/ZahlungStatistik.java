@@ -19,8 +19,7 @@ public class ZahlungStatistik {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Automatisches Löschen der Statistik bei Fund-Löschung    @JsonIgnore
     @JoinColumn(name = "fund_id", nullable = false) // Verknüpfung zum Fund
     private FundEntity fund;
 

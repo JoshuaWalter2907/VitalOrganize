@@ -44,7 +44,8 @@
   <div class="right-side-funds">
     <div th:if="${!error}">
       <div th:if="${myfunds == null}" class="fund-empty">
-        <p>Bitte wählen Sie einen Fund aus</p>
+        <p th:if="${delete == null}">Bitte wählen Sie einen Fund aus</p>
+        <p th:if="${delete != null}">Bitte löschen sie erst alle Funds</p>
       </div>
       <div class="fund-users-container" th:if="${myfunds != null}">
         <!-- Admin anzeigen -->
@@ -211,7 +212,7 @@
              th:if="${payment.user == loggedInUser || myfunds.admin == loggedInUser}"
              class="payment-history-container-table">
           <div class="row">
-            <div th:text="${payment.user.username}" class="cell" style="width: 20%;"></div>
+            <div th:text="${payment.user != null ? payment.user.username : 'Deleted User'}" class="cell" style="width: 20%;"></div>
             <div th:utext="${payment.reason + ' <br>(' + payment.type + ')'}" class="cell" style="width: 30%;"></div>
             <div th:text="${#temporals.format(payment.date, 'dd.MM.yyyy')}" class="cell" style="width: 25%;"></div>
             <div th:text="${payment.amount}" class="cell" style="width: 13%;"></div>

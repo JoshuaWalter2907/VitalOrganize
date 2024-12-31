@@ -48,7 +48,8 @@ public class FundController {
             @RequestParam(required = false) String reason,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datefrom, // Startdatum
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateto,   // Enddatum
-            @RequestParam(required = false) Long amount
+            @RequestParam(required = false) Long amount,
+            @RequestParam(name="delete", required = false) Boolean delete
 
             ) {
 
@@ -63,6 +64,9 @@ public class FundController {
                     .collect(Collectors.toList());
         }
 
+        if(delete != null) {
+            model.addAttribute("delete", delete);
+        }
 
         if(id != null) {
             FundEntity fundEntity = fundRepository.findById(id).get();

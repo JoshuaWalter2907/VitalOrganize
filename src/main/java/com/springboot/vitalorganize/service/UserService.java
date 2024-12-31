@@ -31,6 +31,7 @@ public class UserService {
 
 
     private final PaypalService paypalService;
+    private final FundRepository fundRepository;
 
 
     public String getThemeCss(String theme) {
@@ -179,7 +180,21 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(UserEntity user) {
+    public Boolean deleteUser(UserEntity user) {
+
+        List<FundEntity> funds = fundRepository.findByAdmin(user);
+        if(!funds.isEmpty()) {
+            return false;
+        }
+
+        List<FundEntity> memberfunds = fundRepository.findAll();
+        memberfunds = memberfunds.stream()
+                .filter(f -> f.getUsers().contains(user))
+                .toList();
+
+        for(FundEntity f : memberfunds) {
+            f.getUsers().remove(user);
+        }
 
         Long id = user.getId();
 
@@ -202,6 +217,7 @@ public class UserService {
         friendRequestRepository.deleteById(id);
         userRepository.deleteById(id);
 
+        return true;
     }
 
     @Transactional

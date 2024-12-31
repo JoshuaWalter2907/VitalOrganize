@@ -944,12 +944,13 @@ public class PaypalService {
     ) {
         List<Zahlung> filteredPayments = payments.stream()
                         .filter(payment -> {
+                            String usernameToCheck = (payment.getUser() != null) ? payment.getUser().getUsername() : "Deleted User";
                             boolean condition = username == null || username.isEmpty() ||
-                                    (payment.getUser().getUsername()) != null &&
-                                            payment.getUser().getUsername().toLowerCase().contains(username.toLowerCase());
-                            System.out.println("Username-Filter (" + payment.getUser().getUsername() + "): " + condition);
+                                    usernameToCheck.toLowerCase().contains(username.toLowerCase());
+                            System.out.println("Username-Filter (" + usernameToCheck + "): " + condition);
                             return condition;
                         })
+
                         .filter(payment -> {
                             boolean condition = reason == null || reason.isEmpty() ||
                                     (payment.getReason() != null &&

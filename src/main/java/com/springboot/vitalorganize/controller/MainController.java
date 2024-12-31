@@ -532,8 +532,10 @@ public class MainController {
 
         UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
 
-        userService.deleteUser(userEntity);
+        Boolean allDone = userService.deleteUser(userEntity);
 
+        if(!allDone)
+            return "redirect:/fund?delete=true";
         return "redirect:/logout";
     }
 
