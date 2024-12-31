@@ -1,5 +1,7 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,5 +34,6 @@ public class FundEntity {
     private UserEntity admin;
 
     @OneToMany(mappedBy = "fund",cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Zahlung> payments;
 }

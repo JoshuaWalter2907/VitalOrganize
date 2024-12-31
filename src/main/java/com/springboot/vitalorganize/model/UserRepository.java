@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findAllByisPublic(boolean isPublic);
 
     List<UserEntity> findByUsernameContainingIgnoreCase(String query);
+
+    UserEntity findByToken(String token);
 }

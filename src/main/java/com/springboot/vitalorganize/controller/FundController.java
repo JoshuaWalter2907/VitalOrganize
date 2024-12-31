@@ -232,17 +232,19 @@ public class FundController {
     @PostMapping("/create-fund")
     public String createFund(
             @RequestParam(name = "fundname") String fundname,
-            @RequestParam(name = "selectedUsers") List<Long> userId,
+            @RequestParam(name = "selectedUsers", required = false) List<Long> userId,
             @ModelAttribute(name = "loggedInUser") UserEntity loggedInUser
             ){
 
-        List<UserEntity> users = userRepository.findAllById(userId);
         FundEntity fund = new FundEntity();
         fund.setName(fundname);
         fund.setAdmin(loggedInUser);
         fund.getUsers().add(loggedInUser);
-        for(UserEntity user : users) {
-            fund.getUsers().add(user);
+        if(userId != null){
+            List<UserEntity> users = userRepository.findAllById(userId);
+            for(UserEntity user : users) {
+                fund.getUsers().add(user);
+            }
         }
         fundRepository.save(fund);
 

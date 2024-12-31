@@ -28,6 +28,10 @@ public class UsernameInterceptor implements HandlerInterceptor {
                              HttpServletResponse response,
                              Object handler) throws Exception {
 
+        if(request.getRequestURI().startsWith("/api")) {
+            return true;
+        }
+
         // Überprüfe, ob die Authentifizierung im SecurityContext vorhanden ist
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

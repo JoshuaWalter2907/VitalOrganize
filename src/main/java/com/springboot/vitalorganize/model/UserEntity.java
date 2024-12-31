@@ -99,6 +99,9 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<SubscriptionEntity> subscriptions;
 
+    @Column(length = 1024)
+    private String token;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

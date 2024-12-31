@@ -54,6 +54,11 @@ public class MainController {
         return "home";
     }
 
+    @GetMapping("/api-docs")
+    public String apiDocs(Model model) {
+        return "api-docs";
+    }
+
     @GetMapping("/change-theme")
     public String changeTheme(HttpServletRequest request) {
         // Speichere das ausgewählte Thema in der Session

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Profile Page</title>
+</head>
+<body th:class="${theme}">
+
+<header th:replace="fragments/header :: header"></header>
+<div class="main-container-profile">
+    <h1>API Dokumentation</h1>
+    <p>Willkommen zur API-Dokumentation für das ZahlungStatistik-System. Hier erklären wir, wie du mit den verschiedenen Endpunkten interagieren kannst.</p>
+
+    <div class="endpoint-container">
+
+        <!-- Endpoint 1 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>1. Erstellen einer ZahlungStatistik</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Erstellt eine neue ZahlungStatistik mit den angegebenen Parametern.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>POST /api?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+{
+    "id": 123,
+    "fundId": 1,
+    "startDate": "2023-01-01",
+    "endDate": "2023-12-31",
+    "totalAmount": 10000.0,
+    "averageAmount": 500.0,
+    "paymentCount": 20,
+    "currency": "EUR"
+}
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 2 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>2. Alle FundStatistiken abrufen</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Gibt alle Funds zurück, auf die der Benutzer Zugriff hat.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>GET /api/all/fund</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+[
+    {
+        "id": 1,
+        "name": "Fund A"
+    },
+    {
+        "id": 2,
+        "name": "Fund B"
+    }
+]
+                </pre>
+            </div>
+        </div>
+        <!-- Endpoint 3 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>3. Alle ZahlungStatistiken abrufen</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Gibt eine Liste aller ZahlungStatistiken zurück.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>GET /api/all/statistics</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+[
+    {
+        "id": 123,
+        "fundId": 1,
+        "startDate": "2023-01-01",
+        "endDate": "2023-12-31",
+        "totalAmount": 10000.0,
+        "averageAmount": 500.0,
+        "paymentCount": 20,
+        "currency": "EUR"
+    }
+]
+                </pre>
+            </div>
+        </div>
+        <!-- Endpoint 1: Read by ID -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>4. ZahlungStatistik nach ID abrufen</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Ruft eine ZahlungStatistik anhand der angegebenen ID ab.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>GET /api/statistics/123</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+{
+    "id": 123,
+    "fundId": 1,
+    "startDate": "2023-01-01",
+    "endDate": "2023-12-31",
+    "totalAmount": 10000.0,
+    "averageAmount": 500.0,
+    "paymentCount": 20,
+    "currency": "EUR"
+}
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 2: Update or Create -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>5. ZahlungStatistik erstellen oder aktualisieren</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Aktualisiert eine bestehende ZahlungStatistik oder erstellt eine neue, wenn keine Statistik mit der angegebenen ID existiert.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>PUT /api/statistics/123?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort (Update):</strong>
+                <pre>
+{
+    "id": 123,
+    "fundId": 1,
+    "startDate": "2023-01-01",
+    "endDate": "2023-12-31",
+    "totalAmount": 11000.0,
+    "averageAmount": 550.0,
+    "paymentCount": 20,
+    "currency": "EUR"
+}
+                </pre>
+                <strong>Beispiel Antwort (Create):</strong>
+                <pre>
+{
+    "id": 124,
+    "fundId": 1,
+    "startDate": "2023-01-01",
+    "endDate": "2023-12-31",
+    "totalAmount": 10000.0,
+    "averageAmount": 500.0,
+    "paymentCount": 20,
+    "currency": "EUR"
+}
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 3: Delete -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>6. ZahlungStatistik löschen</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Löscht eine ZahlungStatistik anhand der angegebenen ID.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>DELETE /api/statistics/123</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+HTTP/1.1 204 No Content
+                </pre>
+            </div>
+        </div>
+
+    </div>
+
+    <h2>Fehlerbehandlung</h2>
+    <div class="endpoint-container">
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2>Falsche Anfrage</h2>
+            </div>
+            <div class="description">
+                <p><strong>Beschreibung:</strong> Wenn eine falsche Anfrage gestellt wird, wie eine nicht definierte Route, gibt der Server einen Fehler zurück.</p>
+            </div>
+            <div class="example">
+                <strong>Beispiel Anfrage:</strong>
+                <pre>GET /api/nonexistent</pre>
+            </div>
+            <div class="response">
+                <strong>Beispiel Antwort:</strong>
+                <pre>
+HTTP/1.1 400 Bad Request
+{
+    "error": "Invalid endpoint or bad request"
+}
+                </pre>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+<script src="/js/main.js"></script>
+
+</body>
+</html>

@@ -601,6 +601,59 @@ body {
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Optional: Schatten für bessere Lesbarkeit */
     text-align: center;
 }
+h1, h2 {
+    color: var(--text-color-light);
+}
 
+/* Container für alle Endpoints */
+.endpoint-container {
+    display: flex;
+    flex-wrap: wrap;  /* Zeilenumbruch erlauben */
+    gap: 20px;        /* Abstand zwischen den Endpunkten */
+    justify-content: space-between; /* Abstand gleichmäßig verteilen */
+}
 
+/* Einzelner Endpoint */
+.endpoint {
+    flex-basis: 48%;     /* Jedes Element nimmt maximal 48% der Breite des Containers ein */
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.endpoint-header {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.description, .example, .response {
+    margin: 15px 0;
+}
+
+.example, .response {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.example {
+    margin-top: 10px;
+}
+
+.response {
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Sicherstellen, dass auf kleinen Bildschirmen die Endpoints untereinander angezeigt werden */
+@media (max-width: 768px) {
+    .endpoint {
+        flex-basis: 100%;  /* Auf kleinen Bildschirmen 100% der Breite */
+    }
+}
 

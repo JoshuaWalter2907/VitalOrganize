@@ -1,12 +1,13 @@
 package com.springboot.vitalorganize.config;
 
+import com.springboot.vitalorganize.component.ApiAuthenticationFilter;
 import com.springboot.vitalorganize.component.UsernameInterceptor;
 import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.model.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,13 +26,14 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.Locale;
 
 
@@ -51,10 +53,11 @@ public class WebConfig implements WebMvcConfigurer {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    // Öffentliche Ressourcen
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/paypal-webhook").permitAll();
+                    // Weitere öffentlich zugängliche Endpunkte
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/api/**", "/api").permitAll();
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
-                    // Geschützte Ressourcen
+
+                    // Geschützte Endpunkte
                     registry.requestMatchers("/chat/**", "/public-users", "/create-group").access((authenticationSupplier, context) -> {
                         Authentication authentication = authenticationSupplier.get();
                         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
@@ -65,7 +68,7 @@ public class WebConfig implements WebMvcConfigurer {
                         return new AuthorizationDecision(false); // Zugriff verweigern, wenn kein OAuth2-Token vorhanden ist
                     });
 
-
+                    // Alle anderen Endpunkte erfordern eine Authentifizierung
                     registry.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2Login -> oauth2Login
@@ -73,39 +76,37 @@ public class WebConfig implements WebMvcConfigurer {
                         .successHandler((request, response, authentication) -> {
                             // Prüfen, ob das Authentication-Objekt ein OAuth2AuthenticationToken ist
                             if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
-                                String provider = oauth2Token.getAuthorizedClientRegistrationId(); // z.B. "google", "discord", "github"
-
+                                String provider = oauth2Token.getAuthorizedClientRegistrationId();
                                 if ("discord".equals(provider)) {
                                     handleDiscordLogin(oauth2Token); // Discord-spezifische Logik
                                     response.sendRedirect("/profileaddition");
                                 } else if ("google".equals(provider)) {
                                     handleGoogleLogin(oauth2Token); // Google-spezifische Logik
                                     response.sendRedirect("/profileaddition");
-                                }else if("github".equals(provider)) {
+                                } else if("github".equals(provider)) {
                                     handleGitHubLogin(oauth2Token);
                                     response.sendRedirect("/profileaddition");
-
                                 } else {
                                     response.sendRedirect("/profile");
                                 }
                             } else {
                                 response.sendRedirect("/");
                             }
-                        })
-                )
+                        }))
                 .logout(logout -> {
                     logout
-                            .logoutUrl("/logout") // Definiert den Logout-Endpunkt
-                            .invalidateHttpSession(true) // Session wird invalidiert
-                            .clearAuthentication(true) // Authentifizierung wird gelöscht
-                            .deleteCookies("JSESSIONID") // Cookies (z. B. Session-Cookie) werden entfernt
-                            .logoutSuccessUrl("/") // Nach dem Logout auf die Startseite umleiten
+                            .logoutUrl("/logout")
+                            .invalidateHttpSession(true)
+                            .clearAuthentication(true)
+                            .deleteCookies("JSESSIONID")
+                            .logoutSuccessUrl("/")
                             .permitAll();
                 })
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(accessDeniedHandler()))
                 .build();
     }
+
 
 
     @Bean
@@ -144,10 +145,8 @@ public class WebConfig implements WebMvcConfigurer {
 
 
     private void handleGoogleLogin(OAuth2AuthenticationToken authentication) {
-        String username = authentication.getPrincipal().getAttribute("username");
         String email = authentication.getPrincipal().getAttribute("email");
         String picture = authentication.getPrincipal().getAttribute("picture");
-
         UserEntity userEntity = userRepository.findByEmailAndProvider(email, "google");
         if (userEntity == null) {
             userEntity = new UserEntity();
@@ -159,6 +158,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
@@ -193,6 +193,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Benutzer erstellt: " + email);
@@ -234,6 +235,7 @@ public class WebConfig implements WebMvcConfigurer {
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
+            userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
             userRepository.save(userEntity);
             System.out.println("Neuer Discord-Benutzer erstellt: " + email);
@@ -292,6 +294,28 @@ public class WebConfig implements WebMvcConfigurer {
         messageSource.setBasename("languages/translation");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
+    }
+
+    public static String generateAccessToken() {
+        // Erstelle eine SecureRandom Instanz
+        SecureRandom secureRandom = new SecureRandom();
+
+        // Byte-Array zur Speicherung des Tokens
+        byte[] tokenBytes = new byte[32];
+
+        // Fülle das Byte-Array mit zufälligen Werten
+        secureRandom.nextBytes(tokenBytes);
+
+        // Konvertiere das Byte-Array in eine Base64-kodierte Zeichenkette
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiAuthenticationFilter> loggingFilter() {
+        FilterRegistrationBean<ApiAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new ApiAuthenticationFilter(userRepository)); // Füge den Filter hinzu
+        registrationBean.addUrlPatterns("/api/**"); // Filter für alle /api/**-Anfragen aktivieren
+        return registrationBean;
     }
 
 
