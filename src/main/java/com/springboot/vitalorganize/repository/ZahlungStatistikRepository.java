@@ -1,5 +1,7 @@
-package com.springboot.vitalorganize.model;
+package com.springboot.vitalorganize.repository;
 
+import com.springboot.vitalorganize.model.FundEntity;
+import com.springboot.vitalorganize.model.ZahlungStatistik;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

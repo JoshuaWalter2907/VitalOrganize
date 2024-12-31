@@ -2,7 +2,7 @@ package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.model.FundEntity;
 import com.springboot.vitalorganize.model.ZahlungStatistik;
-import com.springboot.vitalorganize.model.ZahlungStatistikRepository;
+import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import com.springboot.vitalorganize.service.ZahlungStatistikService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController

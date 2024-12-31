@@ -14,6 +14,10 @@ import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import com.springboot.vitalorganize.config.PayPalConfig;
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.repository.FundRepository;
+import com.springboot.vitalorganize.repository.PaymentRepository;
+import com.springboot.vitalorganize.repository.SubscriptionRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
@@ -51,13 +55,31 @@ public class PaypalService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
-    private final subscriptionRepository subscriptionRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     private final PayPalConfig payPalConfig;
 
     private static final String PAYPAL_API_URL = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions";
     private final FundRepository fundRepository;
     private final DataSourceTransactionManagerAutoConfiguration dataSourceTransactionManagerAutoConfiguration;
+
+
+    public String createPaypalPayment(
+            double amount,
+            String type,
+            String description,
+            String email,
+            Long fundid,
+            Long userId
+    ) throws PayPalRESTException {
+        String currency = "EUR";
+        // PayPal-Zahlung erstellen
+        String cancelUrl = "http://localhost:8080/fund/payinto/cancel";
+        String successUrl = "http://localhost:8080/fund/payinto/success";
+
+        // Aufruf der Methode zur Erstellung der Zahlung
+        return handlePaymentCreation(amount, currency, description, cancelUrl, successUrl);
+    }
 
 
     public String handlePaymentCreation(
@@ -981,4 +1003,7 @@ public class PaypalService {
 
         return filteredPayments;
     }
+
+
+
 }

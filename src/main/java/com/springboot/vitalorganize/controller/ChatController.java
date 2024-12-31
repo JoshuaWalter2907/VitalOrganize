@@ -3,6 +3,8 @@ package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.dto.ChatDetail;
 import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.repository.ChatGroupRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -167,12 +169,6 @@ public class ChatController {
                 // ChatDetail-Objekt für ChatGroup erstellen
                 chatDetails.add(new ChatDetail(chatGroup, lastMessageContent, lastMessageTime));
             }
-        }
-
-
-
-
-        for (ChatDetail chatDetail : chatDetails) {
         }
 
         model.addAttribute("chatGroups", chatGroups);

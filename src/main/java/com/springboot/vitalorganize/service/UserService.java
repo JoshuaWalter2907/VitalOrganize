@@ -2,16 +2,14 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.repository.*;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +23,7 @@ public class UserService {
     private final ChatGroupRepository chatGroupRepository;
     private final DirectChatRepository directChatRepository;
     private final MessageRepository messageRepository;
-    private final subscriptionRepository subscriptionRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final PaymentRepository paymentRepository;
     private final FriendRequestRepository friendRequestRepository;
 
@@ -78,36 +76,6 @@ public class UserService {
 
         boolean isProfileComplete = existingUser != null && !existingUser.getUsername().isEmpty();
         return new ProfileAdditionData(existingUser, isProfileComplete);
-    }
-
-    public boolean updateUserProfile(OAuth2User user, OAuth2AuthenticationToken authentication,
-                                     String username, boolean isPublic, String birthDate, String mail) {
-
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = getEmailFromOAuth2User(user, provider);
-
-        UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
-
-//        if(provider.equals("github"))
-//            existingUser.setEmail(mail);
-
-        if (existingUser == null) {
-            throw new IllegalStateException("Benutzer nicht gefunden");
-        }
-
-        // Überprüfen, ob der Benutzername bereits existiert
-        if (userRepository.existsByUsername(username)) {
-            return true; // Benutzername existiert
-        }
-
-        // Benutzerprofil aktualisieren
-        existingUser.setSendtoEmail(mail);
-        existingUser.setUsername(username);
-        existingUser.setPublic(isPublic);
-        existingUser.setBirthday(LocalDate.parse(birthDate));
-
-        userRepository.save(existingUser);
-        return false; // Benutzername wurde erfolgreich gesetzt
     }
 
     private String getEmailFromOAuth2User(OAuth2User user, String provider) {

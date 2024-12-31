@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.component;
 
 import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -14,14 +15,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
+@AllArgsConstructor
 public class UsernameInterceptor implements HandlerInterceptor {
 
-    @Autowired
     private final UserService userService;
-
-    public UsernameInterceptor(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request,

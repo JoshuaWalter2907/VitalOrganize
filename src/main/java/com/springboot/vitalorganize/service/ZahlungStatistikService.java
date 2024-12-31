@@ -1,12 +1,13 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.repository.FundRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
+import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service

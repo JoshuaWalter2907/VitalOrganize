@@ -57,7 +57,7 @@ public class UserEntity {
     @Column(name = "profile_picture_url", length = 1024)
     private String profilePictureUrl;  // Profilbild-URL
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private PersonalInformation personalInformation;
 

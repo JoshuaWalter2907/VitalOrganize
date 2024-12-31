@@ -1,6 +1,10 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.repository.ChatGroupRepository;
+import com.springboot.vitalorganize.repository.DirectChatRepository;
+import com.springboot.vitalorganize.repository.MessageRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

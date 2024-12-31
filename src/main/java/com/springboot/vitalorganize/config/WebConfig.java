@@ -3,7 +3,7 @@ package com.springboot.vitalorganize.config;
 import com.springboot.vitalorganize.component.ApiAuthenticationFilter;
 import com.springboot.vitalorganize.component.UsernameInterceptor;
 import com.springboot.vitalorganize.model.PersonalInformation;
-import com.springboot.vitalorganize.model.UserRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
@@ -17,8 +17,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
@@ -117,39 +115,15 @@ public class WebConfig implements WebMvcConfigurer {
         return accessDeniedHandler;
     }
 
-        private void handleFormLogin(String email, String password, Authentication authentication) {
-
-        authentication.setAuthenticated(true);
-        // Prüfen, ob Benutzer bereits existiert
-        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "local");
-
-        if (userEntity == null) {
-            // Benutzer erstellen, falls nicht vorhanden
-            userEntity = new UserEntity();
-            userEntity.setEmail(email);
-            userEntity.setPassword(passwordEncoder().encode(password)); // Passwort verschlüsseln
-            userEntity.setRole("USER"); // Standardrolle
-            userEntity.setProvider("local"); // Anbieter auf "local" setzen
-            userEntity.setPublic(false);
-            userEntity.setBirthday(LocalDate.of(1900, 1, 1));
-            userRepository.save(userEntity);
-
-            System.out.println("Neuer Benutzer erstellt: " + email);
-        } else {
-            System.out.println("Benutzer existiert bereits: " + email);
-        }
-
-        // Hinweis: Zusätzliche Logik kann hier hinzugefügt werden, wie z.B. Logging oder Auditing
-    }
-
-
-
     private void handleGoogleLogin(OAuth2AuthenticationToken authentication) {
+        System.out.println("google login wurde gestartet");
+        String username = authentication.getPrincipal().getAttribute("username");
         String email = authentication.getPrincipal().getAttribute("email");
         String picture = authentication.getPrincipal().getAttribute("picture");
         UserEntity userEntity = userRepository.findByEmailAndProvider(email, "google");
         if (userEntity == null) {
             userEntity = new UserEntity();
+            userEntity.setUsername(username);
             userEntity.setEmail(email);
             userEntity.setUsername("");
             userEntity.setPassword(""); // Passwort leer für OAuth
@@ -258,12 +232,6 @@ public class WebConfig implements WebMvcConfigurer {
         personalInformation.setUser(userEntity);
         return personalInformation;
     }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
 
     @Bean
     public LocaleResolver localeResolver() {
