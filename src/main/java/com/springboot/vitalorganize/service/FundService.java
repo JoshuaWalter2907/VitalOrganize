@@ -18,7 +18,6 @@ import java.util.List;
 public class FundService {
 
     private final FundRepositoryService fundRepositoryService;
-    private final PaymentRepositoryService paymentRepositoryService;
     private final UserRepositoryService userRepositoryService;
     private final PaypalService paypalService;
 
@@ -31,8 +30,7 @@ public class FundService {
             String reason,
             LocalDate dateFrom,
             LocalDate dateTo,
-            Long amount,
-            Boolean delete
+            Long amount
     ) {
         boolean error = false;
 
@@ -44,12 +42,11 @@ public class FundService {
                     .toList();
         }
 
-        List<Zahlung> filteredPayments = new ArrayList<>();
+        List<Payment> filteredPayments = new ArrayList<>();
         FundEntity myFund = null;
 
         if (id != null) {
-            FundEntity fund = fundRepositoryService.findFundById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Fund with ID " + id + " not found"));
+            FundEntity fund = fundRepositoryService.findFundById(id);
             if (!fund.getUsers().contains(user)) {
                 error = true;
             } else {
@@ -80,8 +77,7 @@ public class FundService {
 
 
     public void processFundDeletion(Long fundId) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId)
-                .orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + fundId + " nicht gefunden"));
+        FundEntity fund = fundRepositoryService.findFundById(fundId);
         fundRepositoryService.deleteFund(fund);
     }
 
@@ -101,27 +97,7 @@ public class FundService {
 
 
     public FundEntity getFund(Long fundId) {
-        return fundRepositoryService.findFundById(fundId)
-                .orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + fundId + " nicht gefunden"));
-    }
-
-    @Transactional
-    public boolean deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId)
-                .orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + fundId + " nicht gefunden"));
-
-        // Sicherstellen, dass der loggedInUser der Admin des Funds ist
-        if (!isUserAdminOfFund(loggedInUser, fund)) {
-            return false;
-        }
-
-        if (balance != null) {
-            paymentRepositoryService.deletePaymentsByFundId(fundId);
-            fundRepositoryService.deleteFund(fund);
-            return true;
-        }
-
-        return false;
+        return fundRepositoryService.findFundById(fundId);
     }
 
     private boolean isUserAdminOfFund(UserEntity user, FundEntity fund) {
@@ -131,8 +107,7 @@ public class FundService {
 
     @Transactional
     public void editFund(Long fundId, List<Long> userIds, String name, UserEntity loggedInUser) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId)
-                .orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + fundId + " nicht gefunden"));
+        FundEntity fund = fundRepositoryService.findFundById(fundId);
 
         // Benutzer finden und hinzufügen
         List<UserEntity> users = userRepositoryService.findUsersByIds(userIds);
@@ -149,6 +124,19 @@ public class FundService {
 
     public double getLatestFundBalance(FundEntity fund) {
         return fundRepositoryService.getLatestBalanceForFund(fund);
+    }
+
+    @Transactional
+    public boolean deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
+        FundEntity fund = fundRepositoryService.findFundById(fundId);
+
+        // Hier könnten Sie weitere Berechtigungsprüfungen vornehmen (z. B. ob der Benutzer Admin ist)
+        if (!isUserAdminOfFund(loggedInUser, fund)) {
+            throw new SecurityException("Nicht autorisiert, um den Fund zu löschen.");
+        }
+
+        fundRepositoryService.deleteFund(fund);
+        return true;
     }
 
 }

@@ -15,4 +15,8 @@ public class SubscriptionRepositoryService {
     public void saveSubscription(SubscriptionEntity subscriptionEntity) {
         subscriptionRepository.save(subscriptionEntity);
     }
+
+    public void deleteById(Long id) {
+        subscriptionRepository.deleteById(id);
+    }
 }

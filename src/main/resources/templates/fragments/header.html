@@ -3,7 +3,7 @@
     <div class="header left">
       <a th:href="@{/}" class="dropdown-button" th:text="#{home}">Home</a>
     </div>
-    <div>
+    <div th:if="${loggedInUser != null && !loggedInUser.isMember()}">
       <form method="post" action="/create-subscription">
         <button type="submit" class="dropdown-button">Werde ein Premium Mitglied für 10€/Monat</button>
       </form>

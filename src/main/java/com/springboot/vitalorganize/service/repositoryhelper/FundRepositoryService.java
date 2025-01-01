@@ -1,9 +1,10 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
 import com.springboot.vitalorganize.model.FundEntity;
+import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.repository.FundRepository;
 import com.springboot.vitalorganize.repository.PaymentRepository;
-import com.springboot.vitalorganize.model.Zahlung;
+import com.springboot.vitalorganize.model.Payment;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,8 +21,9 @@ public class FundRepositoryService {
         this.paymentRepository = paymentRepository;
     }
 
-    public Optional<FundEntity> findFundById(Long fundId) {
-        return fundRepository.findById(fundId);
+    public FundEntity findFundById(Long fundId) {
+        return fundRepository.findById(fundId)
+                .orElseThrow(() -> new IllegalArgumentException("Fund with ID " + fundId + " not found"));
     }
 
     public List<FundEntity> findFundsByUserId(Long userId) {
@@ -41,7 +43,7 @@ public class FundRepositoryService {
         paymentRepository.deleteByFundId(fundId);
     }
 
-    public List<Zahlung> findPaymentsByFundId(Long fundId) {
+    public List<Payment> findPaymentsByFundId(Long fundId) {
         FundEntity fund = fundRepository.findById(fundId).orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + fundId + " nicht gefunden"));
         return fund.getPayments();
     }
@@ -54,5 +56,11 @@ public class FundRepositoryService {
     }
 
 
+    public List<FundEntity> findByAdmin(UserEntity user) {
+        return fundRepository.findByAdmin(user);
+    }
 
+    public List<FundEntity> findALl() {
+        return fundRepository.findAll();
+    }
 }

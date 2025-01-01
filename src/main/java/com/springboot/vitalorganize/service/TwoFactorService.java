@@ -17,20 +17,17 @@ import java.util.Random;
 @AllArgsConstructor
 public class TwoFactorService {
 
+    private final SenderService senderService;
     private UserRepositoryService userRepositoryService;
-
-    private PaypalService paypalService;
     private UserService userService;
 
     public void generateAndSendCode(UserEntity userEntity, String email) {
-        // Generiere den 6-stelligen Code
         String code = String.format("%06d", new Random().nextInt(999999));
         userEntity.setTwoFactorCode(code);
         userEntity.setTwoFactorExpiry(LocalDateTime.now().plusMinutes(5));
         userRepositoryService.saveUser(userEntity);
 
-        // Sende den Code per E-Mail (oder SMS, falls implementiert)
-        paypalService.sendEmail(email, "Your 2FA Code", "Your code is: " + code);
+        senderService.sendEmail(email, "Your 2FA Code", "Your code is: " + code);
     }
 
     public boolean verifyCode(OAuth2User user, OAuth2AuthenticationToken auth2AuthenticationToken,

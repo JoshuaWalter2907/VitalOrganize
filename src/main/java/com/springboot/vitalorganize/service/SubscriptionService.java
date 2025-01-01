@@ -41,8 +41,7 @@ public class SubscriptionService {
 
     public boolean pauseSubscription(UserEntity userEntity) {
         // Geschäftslogik für das Pausieren der Subscription
-        String subscriptionId = userEntity.getLatestSubscription().getSubscriptionId();
-        return paypalService.pauseSubscription(userEntity, subscriptionId);
+        return paypalService.pauseSubscription(userEntity);
     }
 
     public boolean resumeSubscription(UserEntity userEntity) {

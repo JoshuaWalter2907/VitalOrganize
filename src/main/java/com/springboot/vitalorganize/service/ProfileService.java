@@ -2,7 +2,6 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.dto.ProfileRequest;
 import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +37,7 @@ public class ProfileService {
 
     public List<UserEntity> getPotentialFriends(UserEntity currentUser) {
         List<UserEntity> blockedUsers = currentUser.getBlockedUsers();
-        List<UserEntity> allUsers = userRepositoryService.findUsersByIds(List.of()); // Hol alle Benutzer aus dem RepositoryService
+        List<UserEntity> allUsers = userRepositoryService.findAllUsers(); // Hol alle Benutzer aus dem RepositoryService
 
         return allUsers.stream()
                 .filter(u -> !u.equals(currentUser)) // Sich selbst ausschließen
@@ -92,8 +90,8 @@ public class ProfileService {
         return null;  // Alternativ: kann auch eine Liste von Zahlungen zurückgeben
     }
 
-    public List<Zahlung> getFilteredPayments(UserEntity profileData, String username, String reason, LocalDate datefrom, LocalDate dateto, Long amount) {
-        List<Zahlung> payments = paymentRepositoryService.findPaymentsByUser(profileData);
+    public List<Payment> getFilteredPayments(UserEntity profileData, String username, String reason, LocalDate datefrom, LocalDate dateto, Long amount) {
+        List<Payment> payments = paymentRepositoryService.findPaymentsByUser(profileData);
         return paypalService.filterPayments(payments, username, reason, datefrom, dateto, amount);
     }
 
@@ -130,11 +128,9 @@ public class ProfileService {
     public void updateUserProfile(UserEntity userEntity, ProfileRequest profileRequest) {
         PersonalInformation personalInformation = userEntity.getPersonalInformation();
 
-        if ("on".equals(profileRequest.getPublicPrivateToggle())) {
-            userEntity.setPublic(true);
-        } else {
-            userEntity.setPublic(false);
-        }
+        System.out.println(profileRequest.getPublicPrivateToggle());
+
+        userEntity.setPublic("on".equals(profileRequest.getPublicPrivateToggle()));
 
         personalInformation.setAddress(profileRequest.getAddress());
         personalInformation.setCity(profileRequest.getCity());

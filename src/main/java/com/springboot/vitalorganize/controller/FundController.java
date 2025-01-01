@@ -32,12 +32,9 @@ public class FundController {
 
     private final FundService fundService;
     private final UserService userService;
-
-
     private final PaypalService paypalService;
+
     private final FundRepository fundRepository;
-    private final UserRepository userRepository;
-    private final PaymentRepository paymentRepository;
 
     @GetMapping()
     public String fund(
@@ -51,14 +48,12 @@ public class FundController {
             @RequestParam(required = false) String reason,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datefrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateto,
-            @RequestParam(required = false) Long amount,
-            @RequestParam(name = "delete", required = false) Boolean delete
-    ) {
+            @RequestParam(required = false) Long amount) {
         UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
 
         // Delegiere Logik an FundService
         FundDetailsDto fundDetails = fundService.getFundDetails(
-                currentUser, id, query, username, reason, datefrom, dateto, amount, delete);
+                currentUser, id, query, username, reason, datefrom, dateto, amount);
 
         // Model-Daten für View setzen
         model.addAttribute("loggedInUser", currentUser);
@@ -66,7 +61,6 @@ public class FundController {
         model.addAttribute("myfunds", fundDetails.getMyFund());
         model.addAttribute("fundpayments", fundDetails.getFilteredPayments());
         model.addAttribute("balance", fundDetails.getBalance());
-        model.addAttribute("delete", delete);
         model.addAttribute("show", show);
         model.addAttribute("error", fundDetails.getError());
 
@@ -161,19 +155,15 @@ public class FundController {
         Long fundId = (Long) session.getAttribute("fundid");
         Boolean delete = (Boolean) session.getAttribute("delete");
 
-        // Benutzerinformationen verarbeiten
         String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = paypalService.getEmailForUser(user, provider);
+        String email = userService.getEmailForUser(user, provider);
 
-        // Zahlungsabwicklung und Ergebnis erhalten
         try {
-            // Den Service aufrufen, um die Zahlung zu verarbeiten
             paypalService.processPayment(
                     paymentId, payerId, type, amount, currency, description,
                     receiverEmail, email, provider, userId, fundId
             );
 
-            // Falls die Löschoperation aktiviert ist, den Fund und die Zahlungen löschen
             if (delete != null && delete) {
                 fundService.processFundDeletion(fundId);
             }
@@ -218,16 +208,12 @@ public class FundController {
             @RequestParam(name = "query", required = false) String query,
             Model model
     ) {
-        // Hole den aktuellen Benutzer
         UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
 
-        // Hole den Fund basierend auf der fundId
         FundEntity fund = fundService.getFund(fundId);
 
-        // Hole die gefilterten Freunde basierend auf der Anfrage
         List<UserEntity> filteredFriends = fundService.getFilteredFriends(userEntity, query);
 
-        // Daten ins Model hinzufügen
         model.addAttribute("fund", fund);
         model.addAttribute("id", fundId);
         model.addAttribute("friends", filteredFriends);
@@ -245,25 +231,18 @@ public class FundController {
             HttpSession session,
             Model model
     ) {
-        // Setze das "delete" Attribut in der Session
         session.setAttribute("delete", true);
 
-        // Versuche den Fund zu löschen und überprüfe, ob der Benutzer der Admin ist
         boolean deleted = fundService.deleteFund(id, loggedInUser, balance);
 
-        // Wenn der Fund gelöscht wurde, leite weiter
         if (deleted) {
             return "redirect:/fund";
         }
 
-        // Andernfalls, gib den aktuellen Fund und die Balance im Model zurück
-        FundEntity fund = fundRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Fund mit ID " + id + " nicht gefunden"));
-
+        FundEntity fund = fundService.getFund(id);
         model.addAttribute("id", id);
         model.addAttribute("balance", fundService.getLatestFundBalance(fund));
 
-        // Zur "delete-fund" View weiterleiten
         return "delete-fund";
     }
 
@@ -275,13 +254,10 @@ public class FundController {
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication
     ) {
-        // Hole den aktuell angemeldeten Benutzer
         UserEntity loggedInUser = userService.getCurrentUser(user, authentication);
 
-        // Bearbeite den Fund über den Service
         fundService.editFund(id, users, name, loggedInUser);
 
-        // Weiterleitung zur Fund-Seite nach dem Bearbeiten
         return "redirect:/fund";
     }
 
