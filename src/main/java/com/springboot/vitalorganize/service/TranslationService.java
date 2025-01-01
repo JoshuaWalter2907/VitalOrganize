@@ -33,13 +33,11 @@ public class TranslationService {
                     .bodyToMono(String.class);
 
             String response = responseMono.block();
-
+            System.out.println(response);
             JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
 
             return jsonObject.get("translation").getAsString();
         } catch (Exception e) {
-            // Log error and handle exception
-            e.printStackTrace();
             return "Translation failed: " + e.getMessage();
         }
     }

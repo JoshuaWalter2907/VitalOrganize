@@ -25,6 +25,11 @@ public class IngredientListService {
             RedirectAttributes redirectAttributes){
 
         String englishName = translationService.translateQuery(name, "de", "en");
+        if(englishName.startsWith("Translation failed:")){
+            // on translation fail (500 character api limit reached), try it with the original name, might be in english already
+            englishName = name;
+        }
+
         if(ingredientRepository.findByUserIdAndName(userId, name) != null ||
         ingredientRepository.findByUserIdAndName(userId, englishName) != null){
             redirectAttributes.addFlashAttribute("error", "ingredient.error.alreadyOnList");
