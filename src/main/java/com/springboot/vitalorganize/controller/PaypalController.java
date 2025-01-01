@@ -1,14 +1,9 @@
 package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.model.*;
-
-import com.springboot.vitalorganize.repository.SubscriptionRepository;
-import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.service.PaypalService;
 import com.springboot.vitalorganize.service.SubscriptionService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;

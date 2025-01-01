@@ -28,7 +28,6 @@ public class ShoppingListService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    // add a shoppingList item
     public void addItem(
             Long userId,
             String name,
@@ -40,27 +39,21 @@ public class ShoppingListService {
         IngredientEntity existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
 
         if(existingIngredient != null) {
-            // ingredient already exists on the ingredient list of the user
             ingredientId = existingIngredient.getId();
 
             if(existingIngredient.isOnShoppingList()) {
-                // ingredient already exists on the shopping list of the user
                 redirectAttributes.addFlashAttribute("error", "shoppingList.error.alreadyOnList");
                 return;
             }
         } else {
-            // ingredient has to be added to the ingredient list of the user
             boolean success = ingredientListService.addIngredient(userId, name, redirectAttributes);
 
-            // error when trying to add a new ingredient
             if(!success) {
                 return;
             }
 
-            // get the id of the new ingredient
             ingredientId = ingredientRepository.findByUserIdAndName(userId, name).getId();
 
-            // mark new ingredient as onShoppingList
             ingredientListService.toggleOnShoppingList(ingredientId);
         }
         item.setIngredientId(ingredientId);
@@ -69,9 +62,7 @@ public class ShoppingListService {
     }
 
     public void deleteItem(Long id) {
-        // keeps the item on the ingredient list but toggles onShoppingList status
         ingredientListService.toggleOnShoppingList(id);
-        // deletes the item from the shoppingList
         shoppingListItemRepository.deleteById(id);
     }
 

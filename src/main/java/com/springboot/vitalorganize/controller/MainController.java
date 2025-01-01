@@ -1,12 +1,7 @@
 package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.service.AuthenticationService;
-import com.springboot.vitalorganize.service.PaypalService;
-import com.springboot.vitalorganize.service.TwoFactorService;
-import com.springboot.vitalorganize.service.UserService;
+import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,9 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 
@@ -27,10 +19,8 @@ public class MainController {
 
     private final UserService userService;
     private final AuthenticationService authenticationService;
-    private final UserRepository userRepository;
-    private final PaypalService paypalService;
     private final TwoFactorService twoFactorService;
-
+    private final SenderService senderService;
 
 
     @RequestMapping("/")
@@ -89,8 +79,10 @@ public class MainController {
         }
 
         UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
+        if(email == null) {
+            email = userEntity.getEmail();
+        }
 
-        // Prüfe, ob die E-Mail vorhanden ist, ansonsten nimm die vom Benutzer
         if (userEntity.getProvider().equals("github") && userEntity.getSendtoEmail() != null) {
             email = userEntity.getSendtoEmail();
         }
@@ -110,10 +102,14 @@ public class MainController {
     ) {
         String uri = (String) session.getAttribute("uri");
 
+        UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
+
         boolean isVerified = twoFactorService.verifyCode(user, auth2AuthenticationToken, digits, session);
 
         if (isVerified) {
+            session.setAttribute("2fa_verified", true);
             if ("/profile-edit".equals(uri)) {
+                senderService.createPdf(userEntity);
                 return "redirect:/profile-edit";
             } else if ("/profileaddition".equals(uri)) {
                 return "forward:/profileaddition";

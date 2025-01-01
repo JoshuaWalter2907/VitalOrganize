@@ -30,4 +30,23 @@ public class UserRepositoryService {
         return userRepository.findAll();
     }
 
+    public List<UserEntity> findPublicUsers(boolean isPublic) {
+        return userRepository.findAllByisPublic(isPublic);
+    }
+
+    public List<UserEntity> findByUsernameContaining(String query) {
+        return userRepository.findByUsernameContainingIgnoreCase(query);
+    }
+
+    public UserEntity findByEmailAndProvider(String email, String provider) {
+        return userRepository.findByEmailAndProvider(email, provider);
+    }
+
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    public UserEntity findByToken(String accessToken) {
+        return userRepository.findByToken(accessToken);
+    }
 }

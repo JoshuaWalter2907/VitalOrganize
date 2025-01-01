@@ -24,11 +24,14 @@
     <h2>Wähle Benutzer aus</h2>
     <form id="user-selection-form" method="post" action="/create-group" class="create-group-form">
       <div class="user-list">
-        <div th:each="entry : ${publicUsers}">
+        <!-- Schleife durch die Gruppen der Benutzer -->
+        <div th:each="group : ${groupedUsers}">
+          <!-- Gruppentitel: Der Anfangsbuchstabe -->
           <div class="divider">
-            <span th:text="${entry.key}"></span>
+            <span th:text="${group.key}">A</span>
           </div>
-          <div th:each="user : ${entry.value}" class="user-item" th:data-user-id="${user.id}">
+          <!-- Benutzer in der Gruppe -->
+          <div th:each="user : ${group.value}" class="user-item" th:data-user-id="${user.id}">
             <label class="user-label">
               <input type="checkbox" name="selectedUsers" th:value="${user.id}" class="user-checkbox">
               <img th:src="${user.getProfilePictureUrl()}" alt="UserImage" class="profile-image">
@@ -39,7 +42,7 @@
       </div>
       <div class="search-container">
         <div class="input-container">
-          <input type="text" name="chatname" placeholder="Gruppenname">
+          <input type="text" name="chatName" placeholder="Gruppenname">
           <button type="submit" class="search-button">
             <i class="fa fa-paper-plane"></i>
           </button>

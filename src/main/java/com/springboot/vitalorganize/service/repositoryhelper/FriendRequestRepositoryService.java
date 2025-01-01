@@ -23,4 +23,8 @@ public class FriendRequestRepositoryService {
         return friendRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Friend request not found"));
     }
+
+    public void deleteById(Long id) {
+        friendRequestRepository.deleteById(id);
+    }
 }

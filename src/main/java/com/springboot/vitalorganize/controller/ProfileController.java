@@ -3,9 +3,6 @@ package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.dto.ProfileAdditionData;
 import com.springboot.vitalorganize.dto.ProfileRequest;
 import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.repository.FriendRequestRepository;
-import com.springboot.vitalorganize.repository.PaymentRepository;
-import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -139,50 +136,43 @@ public class ProfileController {
 
 
     @GetMapping("/profile-edit")
-    public String profile(ProfileRequest profileRequest, @AuthenticationPrincipal OAuth2User user,
+    public String profile(ProfileRequest profileRequest,
+                          @RequestParam(value = "fa", required = false) boolean auth,
+                          @AuthenticationPrincipal OAuth2User user,
                           OAuth2AuthenticationToken authentication, Model model, HttpServletRequest request,
                           HttpSession session) {
 
-        // Setzen der aktuellen URI in der Sitzung
         String currentUrl = request.getRequestURI();
         session.setAttribute("uri", currentUrl);
         model.addAttribute("url", currentUrl);
 
-        // Profil- und Abonnementdaten abrufen
         UserEntity profileData = profileService.getProfileData(profileRequest.getProfileId(), user, authentication);
 
-        // Abonnement-Daten und weitere Informationen
         List<SubscriptionEntity> subscriptions = profileService.getSubscriptions(profileData);
         model.addAttribute("subscriptions", subscriptions);
-
-        // Profilinformationen
         model.addAttribute("profile", profileData);
-
-        // Überprüfen, ob das Profil öffentlich ist
         model.addAttribute("isProfilePublic", profileData.isPublic());
+        model.addAttribute("auth", auth);
 
-        // Filterdaten für Premium oder Zahlungen
         if ("premium".equals(profileRequest.getKind())) {
             List<TransactionSubscription> transactions = profileService.getTransactionHistory(profileData, profileRequest.getKind(),
                     profileRequest.getUsername(), profileRequest.getDatefrom(), profileRequest.getDateto(), profileRequest.getAmount());
             model.addAttribute("historysubscription", transactions);
         } else {
-            List<Zahlung> payments = profileService.getFilteredPayments(profileData, profileRequest.getUsername(), profileRequest.getReason(),
+            List<Payment> payments = profileService.getFilteredPayments(profileData, profileRequest.getUsername(), profileRequest.getReason(),
                     profileRequest.getDatefrom(), profileRequest.getDateto(), profileRequest.getAmount());
             model.addAttribute("historysingle", payments);
         }
 
-        // Tab-Logik
         String showSubscription = profileService.determineTab(profileRequest.getTab());
         model.addAttribute("showSubscription", showSubscription);
 
-        return "private-profile"; // Gibt die View "private-profile.html" zurück
+        return "private-profile";
     }
 
 
     @GetMapping("/profileaddition")
-    public String profileAdditionGet(@RequestParam(value = "theme", defaultValue = "light") String theme,
-                                     @RequestParam(name = "nousername", required = false) boolean nousername,
+    public String profileAdditionGet(@RequestParam(name = "nousername", required = false) boolean nousername,
                                      @RequestParam(value = "fa", required = false) boolean auth,
                                      Model model,
                                      @AuthenticationPrincipal OAuth2User user,
@@ -225,7 +215,6 @@ public class ProfileController {
         // Daten für die View vorbereiten
         model.addAttribute("user", profileData.getUserEntity());
         model.addAttribute("birthDate", profileData.getBirthDate());
-        model.addAttribute("themeCss", userService.getThemeCss(theme));
         model.addAttribute("auth", auth);
 
 
@@ -254,7 +243,7 @@ public class ProfileController {
     }
 
     @PostMapping("/save-profile")
-    public String saveProfile(@ModelAttribute("profileRequest") ProfileRequest profileRequest,
+    public String saveProfile(ProfileRequest profileRequest,
                               @AuthenticationPrincipal OAuth2User user,
                               OAuth2AuthenticationToken auth2AuthenticationToken) {
 

@@ -1,9 +1,11 @@
 package com.springboot.vitalorganize.controller;
 
+import com.springboot.vitalorganize.dto.ZahlungStatistikRequest;
 import com.springboot.vitalorganize.model.FundEntity;
 import com.springboot.vitalorganize.model.ZahlungStatistik;
 import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import com.springboot.vitalorganize.service.ZahlungStatistikService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,12 +16,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class ZahlungStatistikController {
 
-    @Autowired
     private ZahlungStatistikService zahlungStatistikService;
-    @Autowired
-    private ZahlungStatistikRepository zahlungStatistikRepository;
 
 
     // Create
@@ -41,7 +41,7 @@ public class ZahlungStatistikController {
     public ResponseEntity<List<FundEntity>> getAllFundStatistik(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader
     ) {
-        return ResponseEntity.ok(zahlungStatistikService.getAllFunds(extractAccessToken(authorizationHeader)));
+        return ResponseEntity.ok(zahlungStatistikService.getAllFunds(zahlungStatistikService.extractAccessToken(authorizationHeader)));
     }
     // Read all
     @GetMapping("/all/statistics")
@@ -61,23 +61,10 @@ public class ZahlungStatistikController {
     @PutMapping("/statistics/{id}")
     public ResponseEntity<ZahlungStatistik> createOrUpdateZahlungStatistik(
             @PathVariable Long id,
-            @RequestParam Long fundId,
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
+            @RequestBody ZahlungStatistikRequest request) {
 
-        // Prüfen, ob eine ZahlungStatistik für die gegebene ID existiert
-        ZahlungStatistik existing = zahlungStatistikRepository.findById(id)
-                .orElse(null); // Falls keine existiert, wird null zurückgegeben.
-
-        if (existing != null) {
-            // Falls eine existierende Statistik gefunden wird, können wir sie aktualisieren.
-            existing = zahlungStatistikService.updateZahlungStatistik(id, fundId, startDate, endDate);
-            return ResponseEntity.ok(existing);
-        } else {
-            // Wenn keine Statistik vorhanden ist, erstellen wir eine neue
-            ZahlungStatistik created = zahlungStatistikService.createZahlungStatistikWithMinimalInput(fundId, startDate, endDate);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        }
+        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(id, request);
+        return ResponseEntity.ok(result);
     }
 
     // Delete
@@ -85,14 +72,6 @@ public class ZahlungStatistikController {
     public ResponseEntity<Void> deleteZahlungStatistik(@PathVariable Long id) {
         zahlungStatistikService.deleteZahlungStatistik(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private String extractAccessToken(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7); // Entfernt "Bearer " und gibt den Token zurück
-        } else {
-            throw new IllegalArgumentException("Authorization header must be in the form 'Bearer <token>'");
-        }
     }
 
     @RequestMapping("/**")  // Fängt alle Anfragen ab, die nicht zu den oben definierten passen
