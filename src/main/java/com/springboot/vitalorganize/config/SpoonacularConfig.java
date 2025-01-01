@@ -11,16 +11,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class SpoonacularConfig {
 
     @Value("${spoonacular.apikey}")
-    private String apiKey;
+    private String spoonacularApiKey;
+
+    @Value("${translate.apikey}")
+    private String translateApiKey;
 
     @Bean
     public WebClient webClient() {
         return WebClient.builder().build();
-    }
-
-
-
-    public String getApiKey() {
-        return apiKey;
     }
 }

@@ -53,9 +53,8 @@ public class ShoppingListService {
             }
 
             ingredientId = ingredientRepository.findByUserIdAndName(userId, name).getId();
-
-            ingredientListService.toggleOnShoppingList(ingredientId);
         }
+        ingredientListService.toggleOnShoppingList(ingredientId);
         item.setIngredientId(ingredientId);
 
         shoppingListItemRepository.save(item);

@@ -1,10 +1,10 @@
 package com.springboot.vitalorganize.service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.springboot.vitalorganize.config.SpoonacularConfig;
 import lombok.AllArgsConstructor;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,7 +28,7 @@ public class SpoonacularService {
     }
 
     public int getIngredientId(String query) throws IllegalArgumentException {
-        String apiKey = spoonacularConfig.getApiKey();
+        String apiKey = spoonacularConfig.getSpoonacularApiKey();
 
         // fetch the first result that matches the query and return the id
         String apiUrl = "https://api.spoonacular.com/food/ingredients/search?query=" + query + "&number=1&apiKey=" + apiKey;
@@ -62,7 +62,7 @@ public class SpoonacularService {
     }
 
     public Map<String, Object> getIngredientInformation(int id) {
-        String apiKey = spoonacularConfig.getApiKey();
+        String apiKey = spoonacularConfig.getSpoonacularApiKey();
         String apiUrl = "https://api.spoonacular.com/food/ingredients/" + id + "/information?amount=100&unit=g&currency=USD&apiKey=" + apiKey;
 
         // Fetch and parse the response directly
@@ -92,17 +92,12 @@ public class SpoonacularService {
 
         // Convert cost to EUR
         double estimatedCostInEuros = convertUsCentsToEuros(estimatedCostInCents);
-        System.out.println(1);
+
         // round cost to 2 digits
         estimatedCostInEuros = (double) Math.round(estimatedCostInEuros * 100) /100;
-        System.out.println(2);
+
         // round amount to whole number
         amount = Math.round(amount);
-        System.out.println(3);
-
-        System.out.println("Category: " + category);
-        System.out.println("Amount: " + amount + unit);
-        System.out.println("Estimated Cost: " + estimatedCostInEuros + "€");
 
         // return a result map
         return Map.of(

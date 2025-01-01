@@ -15,6 +15,7 @@ public class IngredientListService {
 
     private final IngredientRepository ingredientRepository;
     private final SpoonacularService spoonacularService;
+    private final TranslationService translationService;
 
     // Methode zum Hinzufügen einer Zutat
     // limited to 100 api calls per day
@@ -23,14 +24,16 @@ public class IngredientListService {
             String name,
             RedirectAttributes redirectAttributes){
 
-        if(ingredientRepository.findByUserIdAndName(userId, name) != null){
+        String englishName = translationService.translateQuery(name, "de", "en");
+        if(ingredientRepository.findByUserIdAndName(userId, name) != null ||
+        ingredientRepository.findByUserIdAndName(userId, englishName) != null){
             redirectAttributes.addFlashAttribute("error", "ingredient.error.alreadyOnList");
             return false;
         }
 
         Map<String, Object> ingredientData;
         try {
-            ingredientData = spoonacularService.getIngredientData(name);
+            ingredientData = spoonacularService.getIngredientData(englishName);
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", "ingredient.error.notFound");
             return false;
@@ -38,7 +41,8 @@ public class IngredientListService {
 
         IngredientEntity ingredient = new IngredientEntity();
         ingredient.setUserId(userId);
-        ingredient.setName(name);
+        // turns name uppercase
+        ingredient.setName(englishName.substring(0, 1).toUpperCase() + englishName.substring(1));
 
         // set other stuff taken from api
         ingredient.setCategory((String) ingredientData.get("category"));
