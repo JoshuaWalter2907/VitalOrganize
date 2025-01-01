@@ -153,10 +153,12 @@ public class ProfileController {
         model.addAttribute("profile", profileData);
         model.addAttribute("isProfilePublic", profileData.isPublic());
         model.addAttribute("auth", auth);
+        model.addAttribute("kind", profileRequest.getKind());
 
         if ("premium".equals(profileRequest.getKind())) {
             List<TransactionSubscription> transactions = profileService.getTransactionHistory(profileData, profileRequest.getKind(),
                     profileRequest.getUsername(), profileRequest.getDatefrom(), profileRequest.getDateto(), profileRequest.getAmount());
+            System.out.println(transactions);
             model.addAttribute("historysubscription", transactions);
         } else {
             List<Payment> payments = profileService.getFilteredPayments(profileData, profileRequest.getUsername(), profileRequest.getReason(),

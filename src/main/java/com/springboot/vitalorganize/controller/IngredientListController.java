@@ -1,36 +1,39 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
+import com.springboot.vitalorganize.model.IngredientRepository;
 import com.springboot.vitalorganize.service.IngredientListService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.MessageSource;
+import com.springboot.vitalorganize.service.ShoppingListService;
+import com.springboot.vitalorganize.service.UserService;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 @Controller
+@AllArgsConstructor
 @RequestMapping("/ingredients")
 public class IngredientListController {
 
-    @Autowired
+    private final IngredientRepository ingredientRepository;
     private IngredientListService ingredientService;
 
-    @Qualifier("messageSource")
-    @Autowired
-    private MessageSource messageSource;
+    private UserService userService;
+    private ShoppingListService shoppingListService;
 
     // loads the main ingredients page
     @GetMapping
     public String listIngredients(Model model,
-                                  HttpSession session) {
-        Long user_id = (Long) session.getAttribute("user_id");
+                                  @AuthenticationPrincipal OAuth2User user,
+                                  OAuth2AuthenticationToken token) {
+        Long user_id  = userService.getCurrentUser(user, token).getId();
+
         List<IngredientEntity> ingredients = ingredientService.getAllIngredients(user_id);
         model.addAttribute("ingredients", ingredients);
 
@@ -41,9 +44,11 @@ public class IngredientListController {
     @PostMapping("/add")
     public String addIngredient(
             @RequestParam(value = "newIngredient") String name,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        Long user_id = (Long) session.getAttribute("user_id");
+            RedirectAttributes redirectAttributes,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken token) {
+        Long user_id  = userService.getCurrentUser(user, token).getId();
+
         ingredientService.addIngredient(user_id, name, redirectAttributes);
 
         return "redirect:/ingredients";
@@ -65,8 +70,20 @@ public class IngredientListController {
 
     // toggles the onShoppingList status
     @PostMapping("/onShoppingList/{id}")
-    public String toggleOnShoppingList(@PathVariable("id") Long id) {
-        ingredientService.toggleOnShoppingList(id);
+    public String toggleOnShoppingList(@PathVariable("id") Long id,
+                                       RedirectAttributes redirectAttributes,
+                                       @AuthenticationPrincipal OAuth2User user,
+                                       OAuth2AuthenticationToken token) {
+
+        IngredientEntity ingredient = ingredientRepository.findById(id).orElseThrow();
+
+        if(!ingredient.isOnShoppingList()){
+            Long user_id  = userService.getCurrentUser(user, token).getId();
+            shoppingListService.addItem(user_id, ingredient.getName(), redirectAttributes);
+        } else {
+            shoppingListService.deleteItem(id);
+        }
+
         return "redirect:/ingredients";
     }
 

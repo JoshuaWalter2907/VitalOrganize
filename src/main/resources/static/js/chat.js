@@ -163,26 +163,3 @@ function formatCurrentTimestamp() {
 
     return hours + ':' + minutes; // Rückgabe im Format "HH:mm"
 }
-
-// Set up the form submit event handler
-document.getElementById('message-form').addEventListener('submit', sendMessage);
-
-// Connect to WebSocket server when the page loads
-window.onload = connect;
-
-document.querySelectorAll('.button').forEach(button => button.addEventListener('click', e => {
-    // Stelle sicher, dass der Button nicht schon die 'delete' Klasse hat
-    if (!button.classList.contains('delete')) {
-        button.classList.add('delete'); // Füge die 'delete' Klasse hinzu
-        setTimeout(() => button.classList.remove('delete'), 3200); // Entferne sie nach 3,2 Sekunden
-    }
-
-    // Verhindere das Standardverhalten (Formularabsenden) und sende das Formular explizit
-    e.preventDefault();
-
-    // Finde das Formular, das den Button enthält und sende es ab
-    const form = button.closest('form'); // Sucht das nächstgelegene 'form' Element
-    if (form) {
-        setTimeout(() => form.submit(), 3000);    }
-}));
-
