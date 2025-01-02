@@ -93,13 +93,7 @@
         </a>
       </div>
     </div>
-
   </div>
-
-
-
-
-
 
     <div class="right-container">
     <!--header -->
@@ -121,7 +115,7 @@
         <div th:if="${otherUsername != null || selectedGroup != null}" class="nav-icons">
           <form th:action="@{/chat/deleteChat}" method="post">
             <input type="hidden" th:name="chat-id" th:value="${chatId}">
-            <button type="submit" class="button">
+            <button type="submit" class="search-button">
               <span>Delete Chat</span>
             </button>
           </form>
@@ -152,7 +146,7 @@
     </div>
 
     <div class="text-input">
-      <form class="chatbox-input" id="message-form" th:if="${selectedUser != null || selectedGroup != null}" >
+      <form class="chatbox-input" id="message-form" th:if="${selectedUser != null || selectedGroup != null}" th:action="@{/chat/send}" method="post">
         <div class="text-input-container">
           <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
           <input type="hidden" id="current-user-id" th:value="${SenderId}">

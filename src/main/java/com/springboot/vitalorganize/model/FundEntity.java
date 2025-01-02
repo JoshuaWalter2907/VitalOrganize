@@ -21,6 +21,7 @@ public class FundEntity {
     private String name;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(
             name = "fund_users",
             joinColumns = @JoinColumn(name = "fund_id"),
@@ -29,6 +30,7 @@ public class FundEntity {
     private List<UserEntity> users = new ArrayList<>();
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "admin_id")
     private UserEntity admin;
 

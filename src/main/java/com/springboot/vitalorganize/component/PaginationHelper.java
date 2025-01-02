@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+//Klasse zur Unterstützung bei verschiedenen Sortierungen innerhalb der anderen Klassen
 @Component
 public class PaginationHelper {
     public Pageable createPageable(int page, int size, String sortBy, Sort.Direction direction) {

@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class SubscriptionEntity {
 
     // Verknüpfung mit UserEntity (One-to-One Beziehung)
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 

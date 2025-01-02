@@ -47,20 +47,13 @@ public class ApiAuthenticationFilter extends OncePerRequestFilter {
                 handleUnauthorized(response, "Unauthorized: Invalid token");
                 return;
             }
-
-            // Authentifizierung im SecurityContext setzen
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    userEntity,
-                    null,
-                    Collections.emptyList() // Rollen oder Berechtigungen hinzufügen, falls erforderlich
-            );
-            SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         // Anfrage weiterleiten
         filterChain.doFilter(request, response);
     }
 
+    //Sendet eine 401 unauthorized Request
     private void handleUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json");

@@ -104,6 +104,10 @@ header nav ul li a:hover, .header-bottom a:hover {
         font-size: 8px;
     }
 
+    h2{
+        font-size: 20px;
+    }
+
     .main-container-homepage, .main-container{
         word-break: break-all;
         top: 50px;
@@ -119,6 +123,7 @@ header nav ul li a:hover, .header-bottom a:hover {
         width: 100%;
         display: flex;
         flex-direction: column;
+        height: calc(100vh - 100px);
     }
 
     .container-left{
@@ -312,6 +317,18 @@ header nav ul li a:hover, .header-bottom a:hover {
         gap: 5px;
     }
 
+    .user-label span{
+        width: 60%;
+    }
+
+    .user-label img{
+        margin-right: 10px;
+    }
+
+    .user-checkbox{
+        width: 10%;
+    }
+
     .fund-list span{
         font-size: 20px;
     }
@@ -348,6 +365,62 @@ header nav ul li a:hover, .header-bottom a:hover {
 
     .simple-text p{
         font-size: 12px;
+    }
+
+    .main-container .left-container{
+        width: 100%;
+        padding: 0;
+    }
+
+    .main-container .right-container{
+        width: 100%;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .left-container {
+        font-size: 18px;
+    }
+
+    .text-input-container{
+        height: 40px;
+    }
+
+    .chat-container{
+        gap: 0;
+    }
+
+    .message-time{
+        font-size: 8px;
+    }
+
+    .message span{
+        font-size: 12px;
+    }
+
+    .divider span{
+        font-size: 18px;
+    }
+
+    .subscription-status span{
+        font-size: 12px;
+    }
+
+    .subscription-description{
+        font-size: 12px;
+    }
+
+    .abo-image i{
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .dropdown-button i{
+        font-size: 16px;
+    }
+
+    .dropdown-menu{
+        top: -40%;
     }
 
 

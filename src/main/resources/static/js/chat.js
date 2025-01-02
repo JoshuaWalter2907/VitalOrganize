@@ -121,11 +121,11 @@ function showMessage(message) {
                     ${message.sender.username}
                 </a>
             </p>
-            <p>
+            <p class="message">
                 <span>${message.content}</span>
             </p>
             <span class="message-time">${formatCurrentTimestamp(message.timestamp || new Date())}</span>
-        `
+        `;
     } else {
         // Direktnachricht: Prüfen, ob der Absender der aktuelle Benutzer ist
         if (String(currentUserId) === String(message.senderId)) {
@@ -136,7 +136,7 @@ function showMessage(message) {
 
         // Direktnachrichten-HTML
         newMessage.innerHTML = `
-            <p>
+            <p class="message">
                 <span>${message.content}</span>
             </p>
             <span class="message-time">${formatCurrentTimestamp(message.timestamp || new Date())}</span>
@@ -163,3 +163,8 @@ function formatCurrentTimestamp() {
 
     return hours + ':' + minutes; // Rückgabe im Format "HH:mm"
 }
+
+document.getElementById('message-form').addEventListener('submit', sendMessage);
+
+// Connect to WebSocket server when the page loads
+window.onload = connect;

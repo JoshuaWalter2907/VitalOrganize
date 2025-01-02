@@ -265,7 +265,7 @@ public class ChatService {
         return chatDetailsList;
     }
 
-    public MessageEntity handleMessageSending(MessageDTO messageDTO) {
+    public void handleMessageSending(MessageDTO messageDTO) {
         // Überprüfen, ob die Nachricht gültig ist
         if (messageDTO.getContent() == null || messageDTO.getContent().isEmpty()) {
             throw new IllegalArgumentException("Nachrichteninhalt darf nicht leer sein.");
@@ -287,7 +287,6 @@ public class ChatService {
             throw new IllegalArgumentException("Weder Empfänger noch Gruppen-ID angegeben.");
         }
 
-        return savedMessage;
     }
 
     public List<UserEntity> preparePublicUsersPage(Long userId) {
@@ -313,6 +312,7 @@ public class ChatService {
         }
 
         List<Long> selectedUsers = request.getSelectedUsers();
+        System.out.println(selectedUsers);
         String chatName = request.getChatName();
 
         if (selectedUsers == null || selectedUsers.isEmpty()) {

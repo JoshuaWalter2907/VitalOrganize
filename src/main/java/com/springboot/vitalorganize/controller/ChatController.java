@@ -7,10 +7,12 @@ import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.UserService;
+import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -30,6 +32,7 @@ public class ChatController {
 
     private final UserService userService;
     private final ChatService chatService;
+
 
 
     @GetMapping("/chat")
@@ -130,7 +133,7 @@ public class ChatController {
         boolean isDeleted = chatService.deleteChatById(chatId, currentUser);
         if (!isDeleted) {
             model.addAttribute("errorMessage", "Chat konnte nicht gelöscht werden.");
-            return "chat";
+            return "redirect:/chat";
         }
 
         return "redirect:/chat";
@@ -145,6 +148,7 @@ public class ChatController {
             System.err.println("Fehler beim Senden der Nachricht: " + e.getMessage());
         }
     }
+
 
 
 }

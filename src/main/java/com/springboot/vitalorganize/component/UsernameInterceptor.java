@@ -60,7 +60,6 @@ public class UsernameInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // Wenn alles gut ist, fahre mit der Anfrage fort
         return true;
     }
 

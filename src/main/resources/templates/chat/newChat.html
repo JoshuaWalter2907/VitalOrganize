@@ -33,15 +33,16 @@
           <!-- Benutzer in der Gruppe -->
           <div th:each="user : ${group.value}" class="user-item" th:data-user-id="${user.id}">
             <label class="user-label">
-              <input type="checkbox" name="selectedUsers" th:value="${user.id}" class="user-checkbox">
               <img th:src="${user.getProfilePictureUrl()}" alt="UserImage" class="profile-image">
               <span class="username" th:text="${user.username}">Benutzername</span>
+              <input type="checkbox" name="selectedUsers" th:value="${user.id}" class="user-checkbox">
             </label>
           </div>
         </div>
       </div>
       <div class="search-container">
         <div class="input-container">
+          <input type="hidden" name="currentUrl" th:value="${currentUrl}">
           <input type="text" name="chatName" placeholder="Gruppenname">
           <button type="submit" class="search-button">
             <i class="fa fa-paper-plane"></i>
@@ -50,7 +51,6 @@
         <div th:if="${errorMessage}" class="error-message">
           <p th:text="${errorMessage}"></p>
         </div>
-        <input type="hidden" name="currentUrl" th:value="${currentUrl}">
       </div>
     </form>
   </div>
@@ -64,21 +64,5 @@
     </div>
   </div>
 </div>
-
-<footer th:replace="fragments/footer:: footer"></footer>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const userItems = document.querySelectorAll('.user-item');
-
-    userItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const checkbox = item.querySelector('.user-checkbox');
-        const isSelected = item.classList.toggle('selected');
-        checkbox.checked = isSelected; // Synchronisiert den Zustand mit der Checkbox
-      });
-    });
-  });
-</script>
 </body>
 </html>

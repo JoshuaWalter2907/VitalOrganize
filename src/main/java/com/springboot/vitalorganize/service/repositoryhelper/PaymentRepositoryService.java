@@ -20,7 +20,6 @@ public class PaymentRepositoryService {
         return paymentRepository.findAllByUser(user); // Angenommen, PaymentRepository hat diese Methode
     }
 
-
     public Payment findLatestTransactionByFundId(Long id) {
         return paymentRepository.findLatestTransactionByFundId(id);
     }
