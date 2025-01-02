@@ -5,28 +5,20 @@ import com.springboot.vitalorganize.model.IngredientEntity;
 import com.springboot.vitalorganize.model.IngredientRepository;
 import com.springboot.vitalorganize.model.ShoppingListItemEntity;
 import com.springboot.vitalorganize.model.ShoppingListItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class ShoppingListService {
-
     private final ShoppingListItemRepository shoppingListItemRepository;
     private final IngredientRepository ingredientRepository;
-
+    private final TranslationService translationService;
     private final IngredientListService ingredientListService;
 
-    @Autowired
-    public ShoppingListService(ShoppingListItemRepository shoppingListItemRepository,
-                               IngredientListService ingredientListService,
-                               IngredientRepository ingredientRepository) {
-        this.shoppingListItemRepository = shoppingListItemRepository;
-        this.ingredientListService = ingredientListService;
-        this.ingredientRepository = ingredientRepository;
-    }
 
     public void addItem(
             Long userId,
@@ -37,6 +29,16 @@ public class ShoppingListService {
 
         Long ingredientId;
         IngredientEntity existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
+
+        if(existingIngredient == null){
+            // try again with translated ingredient name
+            name = translationService.translateQuery(name, "de", "en");
+            existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
+            if(name.startsWith("Translation failed:")){
+                redirectAttributes.addFlashAttribute("error", "shoppingList.error.translationFailed");
+                return;
+            }
+        }
 
         if(existingIngredient != null) {
             ingredientId = existingIngredient.getId();

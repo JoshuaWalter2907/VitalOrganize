@@ -1,13 +1,15 @@
 /* Container für die Liste */
 .list-container {
-    position: fixed;
+    position: relative;
+    overflow-y: auto;
+    max-height: calc(100vh - 180px);
     top: 100px;
     left: 0;
     right: 0;
-    /bottom: /*10*/0px;
+    bottom: 0;
     width: 80%;
     max-width: 1200px;
-    margin: 20px auto;
+    margin: 30px auto;
     padding: 10px;
     background-color: white;
     border-radius: 8px;
