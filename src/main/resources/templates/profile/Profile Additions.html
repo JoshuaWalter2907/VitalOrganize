@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Profile Addition</title>
+</head>
+<body th:class="${theme}">
+
+
+<div th:replace="fragments/header :: header" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+
+<div class="wrapper">
+    <h1>Ergänzen Sie Ihr Profil</h1>
+    <form th:action="${provider != null ? '/send-2fa-code' : '/profileaddition'}" method="post">
+        <div class="input-container-profile-addition">
+            <div th:if="${provider}">
+                <a >Sie sind mit GitHub Angemeldet. Bitte geben sie ihre Email ein.</a>
+                <div class="input-box-profile">
+                    <label for="email">EmailAdresse:</label>
+                    <input type="email" id="email" name="email" th:value="${email != null ? email : ''}">
+                </div>
+            </div>
+            <div class="input-box-profile">
+                <label>Benutzername:</label>
+                <input type="text" id="inputString" name="inputString" th:value="${username != null ? username : ''}"  required>
+            </div>
+            <!-- Fehlermeldung anzeigen -->
+            <p th:if="${error}" th:text="${error}" style="color:red;"></p>
+            <div class="input-box-profile">
+                <label>Geburtsdatum:</label>
+                <input type="date" id="birthDate" name="birthDate" th:value="${birthday != null ? birthday : ''}"   required>
+            </div>
+
+        </div>
+        <button type="submit" class="form-actions">Speichern</button>
+
+    </form>
+    <div class="fa-input" th:if="${auth}">
+        <a>Bitte bestätigen sie ihre Email-Address anhand eines kurzen Codes, den wir ihnen gesendet haben.</a>
+        <form action="/verify-2fa" method="post">
+            <div class="input-container">
+                <input type="text" id="digit1" name="digit1" class="input-box" maxlength="1" required>
+                <input type="text" id="digit2" name="digit2" class="input-box" maxlength="1" required>
+                <input type="text" id="digit3" name="digit3" class="input-box" maxlength="1" required>
+                <input type="text" id="digit4" name="digit4" class="input-box" maxlength="1" required>
+                <input type="text" id="digit5" name="digit5" class="input-box" maxlength="1" required>
+                <input type="text" id="digit6" name="digit6" class="input-box" maxlength="1" required>
+            </div>
+            <button type="submit" class="form-actions">Code verifizieren</button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

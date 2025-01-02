@@ -130,7 +130,6 @@ public class FundService {
     public boolean deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
         FundEntity fund = fundRepositoryService.findFundById(fundId);
 
-        // Hier könnten Sie weitere Berechtigungsprüfungen vornehmen (z. B. ob der Benutzer Admin ist)
         if (!isUserAdminOfFund(loggedInUser, fund)) {
             throw new SecurityException("Nicht autorisiert, um den Fund zu löschen.");
         }

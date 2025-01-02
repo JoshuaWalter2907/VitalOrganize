@@ -79,15 +79,15 @@ body{
 }
 .input-box input,
 .input-box select{
-    width: 85%;
+    width: 100%;
     height: 40%;
     background: transparent;
-    border: 2px solid var(--text-color-dark);
+    border: 1px solid var(--text-color-light);
     outline: none;
     border-radius: 40px;
     font-size: 16px;
     color: var(--text-color-light);
-    padding: 20px 45px 20px 20px;
+    padding: 20px 20px 20px 20px;
 }
 
 .input-box input::placeholder{
@@ -196,32 +196,6 @@ body{
     text-decoration: underline;
 }
 
-header {
-    padding: 20px 0;
-    text-align: center;
-}
-
-header nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-header nav ul li {
-    display: inline;
-    margin-right: 20px;
-}
-
-header nav ul li a {
-    text-decoration: none;
-    color: var(--text-color-light);
-    font-weight: 600;
-}
-
-header nav ul li a:hover {
-    text-decoration: underline;
-}
-
 /* Footer Styles */
 footer {
     display: flex;
@@ -261,36 +235,6 @@ footer ul li a:hover {
     text-decoration: underline;
 }
 
-/* Grundlegendes Styling für den Header */
-header {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    background: linear-gradient(to bottom, var(--color-medium-dark), var(--color-slightly-light) );
-    width: 100%;
-    height: 100px;
-    position: fixed;
-    margin: 0 auto;
-    padding: 0 20px;
-    top: 0;
-    left: 0;
-    z-index: 10;
-}
-
-.header-top{
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-around;
-}
-
-.header-bottom{
-    display: flex;
-    width: 60%;
-    align-items: center;
-    justify-content: space-evenly;
-}
 
 /* Tooltip Stile */
 .tooltip {
@@ -318,23 +262,6 @@ header {
 /* Tooltip sichtbar machen bei Hover */
 .tooltip[data-tooltip]:hover::after {
     opacity: 1;
-}
-
-.header-bottom a{
-    text-decoration: none;
-    color: var(--text-color-light);
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.header-bottom a:hover{
-    text-decoration: underline;
-}
-
-
-.header-right {
-    display: flex;
-    align-items: center;
 }
 
 /* Login Button */
@@ -418,26 +345,7 @@ header {
     display: block;
 }
 
-/* Navigation */
-header nav ul {
-    list-style-type: none;
-    display: flex;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-}
 
-header nav ul li {
-    margin: 0 15px;
-}
-
-/* Links im Header */
-header nav ul li a {
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: bold;
-    transition: color 0.3s ease-in-out;
-}
 
 .error-message-container{
     color: darkred;
@@ -644,7 +552,7 @@ h2{
     display: flex;
     flex-wrap: wrap;  /* Zeilenumbruch erlauben */
     gap: 20px;        /* Abstand zwischen den Endpunkten */
-    justify-content: space-between; /* Abstand gleichmäßig verteilen */
+    justify-content: space-around; /* Abstand gleichmäßig verteilen */
 }
 
 /* Einzelner Endpoint */
@@ -653,6 +561,7 @@ h2{
     padding: 15px;
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
+    word-break: break-all;
 }
 
 .endpoint-header {
@@ -663,6 +572,7 @@ h2{
 }
 
 .description, .example, .response {
+    word-break: break-all;
     margin: 15px 0;
 }
 
@@ -671,6 +581,11 @@ h2{
     padding: 10px;
     border-radius: 5px;
     font-size: 1em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.endpoint pre{
     white-space: pre-wrap;
     word-wrap: break-word;
 }
@@ -705,10 +620,4 @@ h2{
     height: auto; /* Beibehaltung der Proportionen des Bildes */
 }
 
-/* Sicherstellen, dass auf kleinen Bildschirmen die Endpoints untereinander angezeigt werden */
-@media (max-width: 768px) {
-    .endpoint {
-        flex-basis: 100%;  /* Auf kleinen Bildschirmen 100% der Breite */
-    }
-}
 

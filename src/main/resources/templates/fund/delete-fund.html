@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
-    <link rel="stylesheet" th:href="@{/css/themes.css}">
     <link rel="stylesheet" th:href="@{/css/fund.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
@@ -20,7 +20,7 @@
 
 <div class="main-container">
     <div class="left-side">
-        <h1>In diesem Fund sind noch : <span th:text="${balance}"></span>€</h1>
+        <h1>In diesem Fund sind noch : <br><span th:text="${balance}"></span>€</h1>
         <form method="post" th:action="@{/fund/payinto}" class="form-card">
             <label>An wen soll das restliche Geld gesendet werden</label>
             <input type="hidden" name="fundid" th:value="${id}">

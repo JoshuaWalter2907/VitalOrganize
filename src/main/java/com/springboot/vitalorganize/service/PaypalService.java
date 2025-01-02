@@ -138,12 +138,17 @@ public class PaypalService {
         return payment.execute(apiContext, paymentExecution);
     }
 
-    public void addPayment(Payment payment, Long id) {
-        // Letzte Buchung abrufen
-        Optional<Payment> latestTransaction = paymentRepositoryService.findLatestTransactionByFundId(id);
-        double lastBalance = latestTransaction.map(Payment::getBalance).orElse(0.0);
+    public void addPayment(Payment payment, Long fundId) {
+        Payment latestTransaction = paymentRepositoryService.findLatestTransactionByFundId(fundId);
+        double lastBalance;
+        if(latestTransaction == null){
+            lastBalance = 0;
+        }
+        else{
+            lastBalance = latestTransaction.getBalance();
+        }
 
-        // Neuen Kontostand berechnen
+
         if (payment.getType() == PaymentType.EINZAHLEN) {
             payment.setBalance(lastBalance + payment.getAmount());
         } else if (payment.getType() == PaymentType.AUSZAHLEN) {
@@ -156,6 +161,8 @@ public class PaypalService {
 
 
     public double getCurrentBalance() {
+        if(paymentRepositoryService.findLatestTransaction() == null)
+            return 0.0;
         return paymentRepositoryService.findLatestTransaction().getBalance();
     }
 
@@ -275,7 +282,7 @@ public class PaypalService {
             zahlung.setType(PaymentType.EINZAHLEN);
             com.paypal.api.payments.Payment payment = executePayment(paymentId, payerId);
             if ("approved".equals(payment.getState())) {
-                addPayment(zahlung, id);
+                addPayment(zahlung, fundId);
                 senderService.sendConfirmationEmail(email, amount, currency, "paypal", description, type);
                 return;
             }
@@ -286,7 +293,7 @@ public class PaypalService {
             } else {
                 zahlung.setType(PaymentType.AUSZAHLEN);
                 executePayout(receiverEmail, amount, currency);
-                addPayment(zahlung, id);
+                addPayment(zahlung, fundId);
                 senderService.sendConfirmationEmail(email, amount, currency, "paypal", description, type);
                 return;
             }

@@ -4,8 +4,6 @@ import com.paypal.base.rest.PayPalRESTException;
 import com.springboot.vitalorganize.dto.FundDetailsDto;
 import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.repository.FundRepository;
-import com.springboot.vitalorganize.repository.PaymentRepository;
-import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.FundService;
 import com.springboot.vitalorganize.service.PaypalService;
 import com.springboot.vitalorganize.service.UserService;
@@ -48,7 +46,8 @@ public class FundController {
             @RequestParam(required = false) String reason,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate datefrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateto,
-            @RequestParam(required = false) Long amount) {
+            @RequestParam(required = false) Long amount
+    ) {
         UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
 
         // Delegiere Logik an FundService
@@ -64,7 +63,7 @@ public class FundController {
         model.addAttribute("show", show);
         model.addAttribute("error", fundDetails.getError());
 
-        return "fund";
+        return "fund/fund";
     }
 
     @GetMapping("/newfund")
@@ -82,7 +81,102 @@ public class FundController {
         // Ergebnisse an die View übergeben
         model.addAttribute("friends", filteredFriends);
 
-        return "newfund";
+        return "fund/newfund";
+    }
+
+
+    @GetMapping("/edit-members")
+    public String editMembers(
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken authenticationToken,
+            @RequestParam(name = "fundId") Long fundId,
+            @RequestParam(name = "query", required = false) String query,
+            Model model
+    ) {
+        UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
+
+        FundEntity fund = fundService.getFund(fundId);
+
+        List<UserEntity> filteredFriends = fundService.getFilteredFriends(userEntity, query);
+
+        model.addAttribute("fund", fund);
+        model.addAttribute("id", fundId);
+        model.addAttribute("friends", filteredFriends);
+
+        // Zur View weiterleiten
+        return "fund/edit-members";
+    }
+
+
+    @GetMapping("/delete-fund")
+    public String deleteFund(
+            @RequestParam(name = "fundId") Long id,
+            @ModelAttribute(name = "loggedInUser") UserEntity loggedInUser,
+            @RequestParam(name = "balance", required = false) String balance,
+            HttpSession session,
+            Model model
+    ) {
+        session.setAttribute("delete", true);
+        FundEntity fund = fundService.getFund(id);
+
+        if(fundService.getLatestFundBalance(fund) != 0){
+            model.addAttribute("id", id);
+            model.addAttribute("balance", fundService.getLatestFundBalance(fund));
+
+            return "fund/delete-fund";
+        }
+
+
+        fundService.deleteFund(id, loggedInUser, balance);
+
+        return "redirect:/fund";
+
+    }
+
+
+    @GetMapping("/payinto/cancel")
+    public String PaymentCancel(){
+        return "redirect:/fund";
+    }
+
+    @GetMapping("/payinto/error")
+    public String paymentError(){
+        return "redirect:/fund";
+    }
+
+
+    @Transactional
+    @GetMapping("/payinto/success")
+    public String paypalSuccess(
+            @RequestParam("paymentId") String paymentId,
+            @RequestParam("PayerID") String payerId,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken authentication,
+            HttpSession session
+    ) {
+
+        UserEntity userEntity = userService.getCurrentUser(user, authentication);
+        String email = userEntity.getEmail();
+        Long userId = (Long) session.getAttribute("id");
+        String type = (String) session.getAttribute("type");
+        String amount = (String) session.getAttribute("amount");
+        String currency = (String) session.getAttribute("currency");
+        String description = (String) session.getAttribute("description");
+        String receiverEmail = (String) session.getAttribute("email");
+        Long fundId = (Long) session.getAttribute("fundid");
+        String provider = authentication.getAuthorizedClientRegistrationId();
+
+        try {
+            paypalService.processPayment(
+                    paymentId, payerId, type, amount, currency, description,
+                    receiverEmail, email, provider, userId, fundId
+            );
+
+            return "redirect:/fund";  // Erfolgreiche Weiterleitung nach der Zahlung
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return "redirect:/fund/payinto/error";  // Fehlerseite anzeigen
+        }
     }
 
     @PostMapping("/payinto")
@@ -101,7 +195,6 @@ public class FundController {
         UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
         Long id = userEntity.getId();
 
-        // Daten in die Session speichern
         session.setAttribute("amount", amount);
         session.setAttribute("currency", "EUR");
         session.setAttribute("description", description);
@@ -135,56 +228,6 @@ public class FundController {
         }
     }
 
-    @Transactional
-    @GetMapping("/payinto/success")
-    public String paypalSuccess(
-            @RequestParam("paymentId") String paymentId,
-            @RequestParam("PayerID") String payerId,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpSession session
-    ) {
-
-        // Daten aus der Session lesen
-        Long userId = (Long) session.getAttribute("id");
-        String type = (String) session.getAttribute("type");
-        String amount = (String) session.getAttribute("amount");
-        String currency = (String) session.getAttribute("currency");
-        String description = (String) session.getAttribute("description");
-        String receiverEmail = (String) session.getAttribute("email");
-        Long fundId = (Long) session.getAttribute("fundid");
-        Boolean delete = (Boolean) session.getAttribute("delete");
-
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = userService.getEmailForUser(user, provider);
-
-        try {
-            paypalService.processPayment(
-                    paymentId, payerId, type, amount, currency, description,
-                    receiverEmail, email, provider, userId, fundId
-            );
-
-            if (delete != null && delete) {
-                fundService.processFundDeletion(fundId);
-            }
-
-            return "redirect:/fund";  // Erfolgreiche Weiterleitung nach der Zahlung
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return "redirect:/fund/payinto/error";  // Fehlerseite anzeigen
-        }
-    }
-
-
-    @GetMapping("/payinto/cancel")
-    public String PaymentCancel(){
-        return "redirect:/fund";
-    }
-
-    @GetMapping("/payinto/error")
-    public String paymentError(){
-        return "redirect:/fund";
-    }
 
     @PostMapping("/create-fund")
     public String createFund(
@@ -200,51 +243,6 @@ public class FundController {
     }
 
 
-    @GetMapping("/edit-members")
-    public String editMembers(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authenticationToken,
-            @RequestParam(name = "fundId") Long fundId,
-            @RequestParam(name = "query", required = false) String query,
-            Model model
-    ) {
-        UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
-
-        FundEntity fund = fundService.getFund(fundId);
-
-        List<UserEntity> filteredFriends = fundService.getFilteredFriends(userEntity, query);
-
-        model.addAttribute("fund", fund);
-        model.addAttribute("id", fundId);
-        model.addAttribute("friends", filteredFriends);
-
-        // Zur View weiterleiten
-        return "edit-members";
-    }
-
-
-    @GetMapping("/delete-fund")
-    public String deleteFund(
-            @RequestParam(name = "fundId") Long id,
-            @ModelAttribute(name = "loggedInUser") UserEntity loggedInUser,
-            @RequestParam(name = "balance", required = false) String balance,
-            HttpSession session,
-            Model model
-    ) {
-        session.setAttribute("delete", true);
-
-        boolean deleted = fundService.deleteFund(id, loggedInUser, balance);
-
-        if (deleted) {
-            return "redirect:/fund";
-        }
-
-        FundEntity fund = fundService.getFund(id);
-        model.addAttribute("id", id);
-        model.addAttribute("balance", fundService.getLatestFundBalance(fund));
-
-        return "delete-fund";
-    }
 
     @PostMapping("/edit-fund")
     public String editFund(

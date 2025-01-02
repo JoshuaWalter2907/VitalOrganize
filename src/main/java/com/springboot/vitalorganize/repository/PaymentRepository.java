@@ -23,7 +23,7 @@ public interface PaymentRepository  extends JpaRepository<Payment, Long> {
     void updateUserReferencesToNull(@Param("userId") Long userId);
 
     @Query("SELECT p FROM Payment p ORDER BY p.date DESC LIMIT 1")
-    Optional<Payment> findLatestTransactionByFundId(Long id);
+    Payment findLatestTransactionByFundId(Long id);
 
     void deleteByFundId(Long id);
 }
