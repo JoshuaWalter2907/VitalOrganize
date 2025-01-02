@@ -36,7 +36,7 @@ public class MainController {
 
     @GetMapping("/api-docs")
     public String apiDocs(Model model) {
-        return "api-docs";
+        return "api/api-docs";
     }
 
     @GetMapping("/change-theme")

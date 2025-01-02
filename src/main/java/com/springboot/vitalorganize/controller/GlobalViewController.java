@@ -29,7 +29,6 @@ public class GlobalViewController {
         String theme = themeService.getTheme(request);
         request.setAttribute("theme", theme);
 
-        // Benutzer aus dem AuthenticationService abrufen
         UserEntity userEntity = authenticationService.getCurrentUser(user, authentication);
 
         if (userEntity != null) {

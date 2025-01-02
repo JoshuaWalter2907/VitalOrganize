@@ -40,21 +40,20 @@
       </div>
 
 
-      <a th:if="${username != null and httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null}"
+      <a th:if="${loggedInUser != null && username != null and httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null}"
          th:href="@{/logout}"
          class="dropdown-button">
         Logout
       </a>
 
-      <a th:if="${username != null and !(httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null)}"
+      <a th:if="${loggedInUser != null && username != null and !(httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null)}"
          th:href="@{/profile}"
          class="dropdown-button"
          th:text="#{profile}">
         Profile
       </a>
 
-
-      <a th:unless="${username != null}"
+      <a th:if="${loggedInUser == null}"
          th:href="@{/login}"
          class="dropdown-button"
          th:text="#{login}">

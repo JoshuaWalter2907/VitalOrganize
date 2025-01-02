@@ -14,7 +14,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    width: 80%;
     margin: 20px;
     padding: 10px 40px;
     background-color: var(--color-medium-dark);
@@ -78,6 +79,7 @@
 }
 
 .fund-image{
+    padding: 10px;
     display: flex;
     flex-direction: column;
     text-align: center;
@@ -150,6 +152,10 @@
     box-sizing: border-box;
 }
 
+.input-container input {
+    width: 75%;
+}
+
 
 /* Button (Lupe) */
 .search-button {
@@ -213,7 +219,6 @@
 }
 
 .create-group-form input{
-    width: 100%;
     padding: 8px 15px;
     font-size: 14px;
     border: none;
@@ -225,14 +230,8 @@
 }
 
 .user-list {
+    width: 100%;
     margin: 20px;
-}
-
-.profile-image {
-    width: 40px; /* Größe des Bildes */
-    height: 40px;
-    border-radius: 50%; /* Macht das Bild rund */
-    object-fit: cover; /* Sorgt dafür, dass das Bild richtig zugeschnitten wird */
 }
 
 /* Standard-Design */

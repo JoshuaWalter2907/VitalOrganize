@@ -21,7 +21,7 @@ public class PaymentRepositoryService {
     }
 
 
-    public Optional<Payment> findLatestTransactionByFundId(Long id) {
+    public Payment findLatestTransactionByFundId(Long id) {
         return paymentRepository.findLatestTransactionByFundId(id);
     }
 

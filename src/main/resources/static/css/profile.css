@@ -34,10 +34,6 @@
     overflow: hidden;
 }
 
-.form-actions{
-    width: 100%;
-    padding: 10px;
-}
 
 .right-side{
     display: flex;
@@ -162,7 +158,6 @@
     height: 100%;
 }
 
-/* Der Button (Hamburger-Menü) */
 .dropdown-button {
     background-color: transparent;
     border: none;
@@ -342,6 +337,7 @@ h1{
 }
 
 .form-actions{
+    width: 100%;
     margin-top: 20px;
     padding: 20px;
     background-color: var(--color-dark);

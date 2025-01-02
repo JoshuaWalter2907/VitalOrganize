@@ -78,7 +78,7 @@ public class ChatController {
         model.addAttribute("chatId", chatDetailsDTO.getChatId());
         model.addAttribute("RecipientId", chatDetailsDTO.getRecipientId());
 
-        return "chat"; // Zurück zur Chat-Seite
+        return "chat/chat"; // Zurück zur Chat-Seite
     }
 
     @GetMapping("/public-users")
@@ -96,7 +96,7 @@ public class ChatController {
         model.addAttribute("groupedUsers", groupedUsers);
         model.addAttribute("currentUrl", request.getRequestURI());
 
-        return "newChat";
+        return "chat/newChat";
     }
 
     @PostMapping("/create-group")

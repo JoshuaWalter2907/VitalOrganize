@@ -21,6 +21,35 @@ public class PaypalController {
     private final SubscriptionService subscriptionService;
 
 
+    @GetMapping("/subscription-success")
+    public String handleSubscriptionSuccess(@RequestParam("subscription_id") String subscriptionId,
+                                            @RequestParam("token") String token,
+                                            RedirectAttributes redirectAttributes,
+                                            @AuthenticationPrincipal OAuth2User user,
+                                            OAuth2AuthenticationToken authentication) {
+        try {
+            UserEntity userEntity = userService.getCurrentUser(user, authentication);
+            boolean success = subscriptionService.confirmSubscription(subscriptionId, token, userEntity);
+
+            if (success) {
+                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich!");
+                return "redirect:/profile";  // Weiterleitung auf die Erfolgseite
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Fehler bei der Bestätigung der Subscription.");
+                return "redirect:/";  // Falls die Bestätigung fehlschlägt
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
+            return "redirect:/";  // Fehlerbehandlung
+        }
+    }
+
+    @GetMapping("/subscription-cancel")
+    public String handleSubscriptionCancel(){
+        return "redirect:/";
+    }
+
     @PostMapping("/create-subscription")
     public String createSubscription(@AuthenticationPrincipal OAuth2User user,
                                      OAuth2AuthenticationToken authentication,
@@ -126,32 +155,4 @@ public class PaypalController {
     }
 
 
-    @GetMapping("/subscription-success")
-    public String handleSubscriptionSuccess(@RequestParam("subscription_id") String subscriptionId,
-                                            @RequestParam("token") String token,
-                                            RedirectAttributes redirectAttributes,
-                                            @AuthenticationPrincipal OAuth2User user,
-                                            OAuth2AuthenticationToken authentication) {
-        try {
-            UserEntity userEntity = userService.getCurrentUser(user, authentication);
-            boolean success = subscriptionService.confirmSubscription(subscriptionId, token, userEntity);
-
-            if (success) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich!");
-                return "redirect:/profile";  // Weiterleitung auf die Erfolgseite
-            } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler bei der Bestätigung der Subscription.");
-                return "redirect:/";  // Falls die Bestätigung fehlschlägt
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
-            return "redirect:/";  // Fehlerbehandlung
-        }
-    }
-
-    @GetMapping("/subscription-cancel")
-    public String handleSubscriptionCancel(){
-        return "redirect:/";
-    }
 }

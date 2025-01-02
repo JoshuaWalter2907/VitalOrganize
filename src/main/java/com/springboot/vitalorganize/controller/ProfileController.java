@@ -59,7 +59,7 @@ public class ProfileController {
         model.addAttribute("friends", friends);
         model.addAttribute("userEntity", profileUser);
 
-        return "profile";
+        return "profile/profile";
     }
 
     private Long getCurrentUserId(OAuth2User user, OAuth2AuthenticationToken authenticationToken) {
@@ -131,10 +131,6 @@ public class ProfileController {
     }
 
 
-
-
-
-
     @GetMapping("/profile-edit")
     public String profile(ProfileRequest profileRequest,
                           @RequestParam(value = "fa", required = false) boolean auth,
@@ -169,7 +165,7 @@ public class ProfileController {
         String showSubscription = profileService.determineTab(profileRequest.getTab());
         model.addAttribute("showSubscription", showSubscription);
 
-        return "private-profile";
+        return "profile/private-profile";
     }
 
 
@@ -220,7 +216,7 @@ public class ProfileController {
         model.addAttribute("auth", auth);
 
 
-        return "Profile Additions"; // Thymeleaf-Template für die Profilerweiterung
+        return "profile/Profile Additions"; // Thymeleaf-Template für die Profilerweiterung
     }
 
     @PostMapping("/profileaddition")
