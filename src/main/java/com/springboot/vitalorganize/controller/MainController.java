@@ -13,6 +13,12 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import java.util.Map;
 
 
+/**
+ * Der MainController steuert grundlegende Routen der Anwendung.
+ *
+ * Dieser Controller enthält Endpunkte für die Startseite, API-Dokumentation,
+ * Theme-Änderungen, Login-Seite sowie die Verarbeitung von Zwei-Faktor-Authentifizierung (2FA).
+ */
 @Controller
 @AllArgsConstructor
 public class MainController {
@@ -23,43 +29,69 @@ public class MainController {
     private final SenderService senderService;
 
 
+    /**
+     * Rendert die Startseite der Anwendung.
+     *
+     * @param model das UI-Modell, in das die Benutzerattribute eingefügt werden
+     * @return der Name der View für die Startseite
+     */
     @RequestMapping("/")
-    public String home(
-            Model model
-    ) {
-
+    public String home(Model model) {
         authenticationService.getAuthenticatedUsername()
                 .ifPresent(username -> model.addAttribute("username", username));
-
         return "home";
     }
 
+    /**
+     * Zeigt die API-Dokumentation an.
+     *
+     * @param model das UI-Modell
+     * @return der Name der View für die API-Dokumentation
+     */
     @GetMapping("/api-docs")
     public String apiDocs(Model model) {
         return "api/api-docs";
     }
 
+    /**
+     * Ändert das aktuelle Theme der Anwendung.
+     *
+     * @param request die aktuelle HTTP-Anfrage
+     * @return eine Weiterleitung zur vorherigen Seite oder zur Startseite
+     */
     @GetMapping("/change-theme")
-    public String changeTheme(
-            HttpServletRequest request
-    ) {
-
+    public String changeTheme(HttpServletRequest request) {
         String referer = request.getHeader("Referer");
         if (referer != null) {
             return "redirect:" + referer;
         }
-
         return "redirect:/";
     }
 
+    /**
+     * Zeigt die Login-Seite an.
+     *
+     * @param model das UI-Modell
+     * @return der Name der View für die Login-Seite
+     */
     @GetMapping("/login")
-    public String login(
-            Model model
-    ) {
+    public String login(Model model) {
         return "LoginPage";
     }
 
 
+    /**
+     * Sendet einen Zwei-Faktor-Authentifizierungscode (2FA) an die E-Mail des Benutzers.
+     *
+     * @param email die Ziel-E-Mail-Adresse (optional)
+     * @param inputString eine zusätzliche Eingabe (optional)
+     * @param birthDate das Geburtsdatum (optional)
+     * @param isPublic ein öffentlicher Indikator (optional)
+     * @param user der aktuell authentifizierte Benutzer
+     * @param auth2AuthenticationToken das Authentifizierungs-Token des Benutzers
+     * @param session die aktuelle HTTP-Session
+     * @return eine Weiterleitung zur vorherigen URI mit dem 2FA-Flag
+     */
     @PostMapping("/send-2fa-code")
     public String sendTwoFactorCode(
             @RequestParam(name = "email", required = false) String email,
@@ -71,6 +103,8 @@ public class MainController {
             HttpSession session
     ) {
         String uri = (String) session.getAttribute("uri");
+
+        // Attribute in der Session setzen, wenn der Benutzer aus der Profilseite kommt
         if ("/profileaddition".equals(uri)) {
             session.setAttribute("email", email);
             session.setAttribute("inputString", inputString);
@@ -78,21 +112,32 @@ public class MainController {
             session.setAttribute("isPublic", isPublic);
         }
 
+        // Aktuelle Benutzerinformationen abrufen
         UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
-        if(email == null) {
+        if (email == null) {
             email = userEntity.getEmail();
         }
 
-        if (userEntity.getProvider().equals("github") && userEntity.getSendtoEmail() != null) {
+        // Alternative E-Mail für bestimmte Provider verwenden
+        if ("github".equals(userEntity.getProvider()) && userEntity.getSendtoEmail() != null) {
             email = userEntity.getSendtoEmail();
         }
 
-        // Generiere und sende den Code
+        // Zwei-Faktor-Code generieren und senden
         twoFactorService.generateAndSendCode(userEntity, email);
 
         return "redirect:" + uri + "?fa=true";
     }
 
+    /**
+     * Überprüft den eingegebenen Zwei-Faktor-Authentifizierungscode.
+     *
+     * @param user der aktuell authentifizierte Benutzer
+     * @param auth2AuthenticationToken das Authentifizierungs-Token des Benutzers
+     * @param digits die vom Benutzer eingegebenen Ziffern
+     * @param session die aktuelle HTTP-Session
+     * @return eine Weiterleitung basierend auf der URI und dem Verifizierungsstatus
+     */
     @PostMapping("/verify-2fa")
     public String verifyTwoFactorCode(
             @AuthenticationPrincipal OAuth2User user,
@@ -102,10 +147,13 @@ public class MainController {
     ) {
         String uri = (String) session.getAttribute("uri");
 
+        // Aktuelle Benutzerinformationen abrufen
         UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
 
+        // Code verifizieren
         boolean isVerified = twoFactorService.verifyCode(user, auth2AuthenticationToken, digits, session);
 
+        // Verifizierungslogik und Weiterleitungen
         if (isVerified) {
             session.setAttribute("2fa_verified", true);
             if ("/profile-edit".equals(uri)) {

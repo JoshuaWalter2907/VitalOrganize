@@ -1,5 +1,4 @@
 package com.springboot.vitalorganize.controller;
-
 import com.springboot.vitalorganize.dto.ChatDetail;
 import com.springboot.vitalorganize.dto.ChatDetailsDTO;
 import com.springboot.vitalorganize.dto.CreateGroupRequest;
@@ -7,12 +6,10 @@ import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.UserService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +48,7 @@ public class ChatController {
         model.addAttribute("currentUser", username);
         model.addAttribute("SenderId", senderId);
 
-        // Hole alle relevanten Chat-Daten über den Service
+        // Hole alle relevanten Chat-Daten
         List<ChatGroup> chatGroups = chatService.getChatGroups(senderId);
         List<DirectChat> directChats = chatService.getDirectChats(senderId);
         List<UserEntity> chatParticipants = chatService.getChatParticipants(senderId);
@@ -81,9 +77,10 @@ public class ChatController {
         model.addAttribute("chatId", chatDetailsDTO.getChatId());
         model.addAttribute("RecipientId", chatDetailsDTO.getRecipientId());
 
-        return "chat/chat"; // Zurück zur Chat-Seite
+        return "chat/chat";
     }
 
+    //Endpoint zum erstellen eines neuen Chats
     @GetMapping("/public-users")
     public String showPublicUsers(
             @AuthenticationPrincipal OAuth2User user,
@@ -91,9 +88,12 @@ public class ChatController {
             HttpServletRequest request,
             Model model
     ) {
+        // Logged in User
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
+        //Alle user, die öffentlich sind, einholen
         List<UserEntity> publicUsers = chatService.preparePublicUsersPage(currentUser.getId());
 
+        //Die User werden nach ihrem ersten Buchstaben in ihrem Usernamen sortiert
         Map<Character, List<UserEntity>> groupedUsers = chatService.groupUsersByInitial(publicUsers);
 
         model.addAttribute("groupedUsers", groupedUsers);
@@ -102,6 +102,7 @@ public class ChatController {
         return "chat/newChat";
     }
 
+    //Endpoint um einen neuen Chat/ eine neue Gruppe zu erstellen
     @PostMapping("/create-group")
     public String createGroup(
             @ModelAttribute CreateGroupRequest createGroupRequest,
@@ -111,11 +112,14 @@ public class ChatController {
     ) {
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
 
+        //Validiert die selektierten User, ob eine direkt Chat, ein Gruppenchat oder
         boolean isValid = chatService.validateCreateGroupRequest(createGroupRequest, model, currentUser);
+        // Wenn eingabe nicht valide ist, wird zurückgeleitet
         if (!isValid) {
             return "redirect:/public-users";
         }
 
+        // Wenn Eingabe valid ist, wird einen neue Gruppe oder ein neuer Direkt Chat erstellt
         chatService.createChat(createGroupRequest.getSelectedUsers(), createGroupRequest.getChatName(), currentUser);
 
         return "redirect:/chat";
@@ -130,8 +134,10 @@ public class ChatController {
     ) {
         UserEntity currentUser = userService.getCurrentUser(user, authentication);
 
+        //Schaut ob der Chat löschbar ist
         boolean isDeleted = chatService.deleteChatById(chatId, currentUser);
         if (!isDeleted) {
+            //Wenn der Chat nicht gelöscht werden konnte
             model.addAttribute("errorMessage", "Chat konnte nicht gelöscht werden.");
             return "redirect:/chat";
         }
@@ -139,12 +145,12 @@ public class ChatController {
         return "redirect:/chat";
     }
 
+    //Empfangen der Nachricht: Wie bereits per Email besprochen, ist das senden der Email mittels Server Sockets umgesetzt um das Frontend besser zu gestalten
     @MessageMapping("/chat/send")
     public void sendMessage(@Payload MessageDTO messageDTO) {
         try {
             chatService.handleMessageSending(messageDTO);
         } catch (IllegalArgumentException e) {
-            // Optional: Fehlerbehandlung oder Logging
             System.err.println("Fehler beim Senden der Nachricht: " + e.getMessage());
         }
     }

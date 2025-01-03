@@ -23,6 +23,24 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.time.LocalDate;
 import java.util.List;
 
+
+/**
+ * Der FundController verwaltet alle Operationen, die mit der Verwaltung von "Funds" (z. B. Gruppenfinanzierungen)
+ * in der Anwendung zusammenhängen. Dazu gehören das Anzeigen, Bearbeiten, Löschen und Bezahlen von Funds.
+ *
+ * Dieser Controller nutzt Spring MVC-Anmerkungen wie @Controller und @RequestMapping, um Endpunkte bereitzustellen,
+ * und integriert Services für die Geschäftslogik.
+ *
+ * Hauptfunktionen:
+ * - Anzeigen und Filtern von Funds
+ * - Erstellen, Bearbeiten und Löschen von Funds
+ * - Integration mit PayPal-Zahlungsdiensten
+ *
+ * Abhängigkeiten:
+ * - FundService: Kernlogik für Fund-bezogene Operationen
+ * - UserService: Benutzerverwaltung und Authentifizierung
+ * - PaypalService: Zahlungsintegration mit PayPal
+ */
 @Controller
 @AllArgsConstructor
 @RequestMapping("/fund")
@@ -32,8 +50,22 @@ public class FundController {
     private final UserService userService;
     private final PaypalService paypalService;
 
-    private final FundRepository fundRepository;
-
+    /**
+     * Zeigt die Hauptseite für Funds an, ermöglicht Filterung und Suchoptionen.
+     *
+     * @param model das UI-Modell
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authenticationToken das Authentifizierungstoken
+     * @param id die Fund-ID (optional)
+     * @param query Suchbegriff für die Filterung
+     * @param show zeigt zusätzliche Optionen in der Ansicht an
+     * @param username Name des Benutzers für Filterung (optional)
+     * @param reason Grund für Fund (optional)
+     * @param datefrom Filter: Startdatum (optional)
+     * @param dateto Filter: Enddatum (optional)
+     * @param amount Filter: Betrag (optional)
+     * @return der Name der View
+     */
     @GetMapping()
     public String fund(
             Model model,
@@ -66,6 +98,15 @@ public class FundController {
         return "fund/fund";
     }
 
+    /**
+     * Zeigt die Seite zum Erstellen eines neuen Funds an.
+     *
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authenticationToken das Authentifizierungstoken
+     * @param query Suchbegriff für die Filterung von Freunden
+     * @param model das UI-Modell
+     * @return der Name der View
+     */
     @GetMapping("/newfund")
     public String newfund(
             @AuthenticationPrincipal OAuth2User user,
@@ -85,6 +126,16 @@ public class FundController {
     }
 
 
+    /**
+     * Zeigt die Seite zum Bearbeiten der Mitglieder eines Funds an.
+     *
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authenticationToken das Authentifizierungstoken
+     * @param fundId die ID des Funds, dessen Mitglieder bearbeitet werden sollen
+     * @param query Suchbegriff zur Filterung der Mitglieder
+     * @param model das UI-Modell
+     * @return der Name der View
+     */
     @GetMapping("/edit-members")
     public String editMembers(
             @AuthenticationPrincipal OAuth2User user,
@@ -93,21 +144,32 @@ public class FundController {
             @RequestParam(name = "query", required = false) String query,
             Model model
     ) {
+        // Aktuellen Benutzer und Fund abrufen
         UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
-
         FundEntity fund = fundService.getFund(fundId);
 
+        // Gefilterte Freunde abrufen
         List<UserEntity> filteredFriends = fundService.getFilteredFriends(userEntity, query);
 
+        // Daten für die Ansicht vorbereiten
         model.addAttribute("fund", fund);
         model.addAttribute("id", fundId);
         model.addAttribute("friends", filteredFriends);
 
-        // Zur View weiterleiten
-        return "fund/edit-members";
+        return "fund/edit-members"; // Rückgabe der View
     }
 
 
+    /**
+     * Löscht einen Fund, falls der Kontostand null ist, oder zeigt eine Warnung an.
+     *
+     * @param id die ID des zu löschenden Funds
+     * @param loggedInUser der aktuell eingeloggte Benutzer
+     * @param balance der Kontostand des Funds (optional)
+     * @param session die aktuelle HTTP-Session
+     * @param model das UI-Modell
+     * @return der Name der View oder eine Weiterleitung
+     */
     @GetMapping("/delete-fund")
     public String deleteFund(
             @RequestParam(name = "fundId") Long id,
@@ -119,18 +181,18 @@ public class FundController {
         session.setAttribute("delete", true);
         FundEntity fund = fundService.getFund(id);
 
-        if(fundService.getLatestFundBalance(fund) != 0){
+        // Überprüfen, ob der Fund-Kontostand null ist
+        if (fundService.getLatestFundBalance(fund) != 0) {
             model.addAttribute("id", id);
             model.addAttribute("balance", fundService.getLatestFundBalance(fund));
 
-            return "fund/delete-fund";
+            return "fund/delete-fund"; // Warnseite anzeigen
         }
 
-
+        // Fund löschen, wenn der Kontostand null ist
         fundService.deleteFund(id, loggedInUser, balance);
 
-        return "redirect:/fund";
-
+        return "redirect:/fund"; // Zur Hauptseite weiterleiten
     }
 
 
@@ -145,6 +207,16 @@ public class FundController {
     }
 
 
+    /**
+     * Verarbeitet die Rückmeldung einer erfolgreichen PayPal-Zahlung.
+     *
+     * @param paymentId die PayPal-Zahlungs-ID
+     * @param payerId die ID des Zahlers
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authentication das Authentifizierungstoken
+     * @param session die aktuelle HTTP-Session
+     * @return eine Weiterleitung zur Hauptseite oder Fehlerseite
+     */
     @Transactional
     @GetMapping("/payinto/success")
     public String paypalSuccess(
@@ -154,7 +226,7 @@ public class FundController {
             OAuth2AuthenticationToken authentication,
             HttpSession session
     ) {
-
+        // Benutzer- und Zahlungsdaten abrufen
         UserEntity userEntity = userService.getCurrentUser(user, authentication);
         String email = userEntity.getEmail();
         Long userId = (Long) session.getAttribute("id");
@@ -167,18 +239,34 @@ public class FundController {
         String provider = authentication.getAuthorizedClientRegistrationId();
 
         try {
+            // Zahlung verarbeiten
             paypalService.processPayment(
                     paymentId, payerId, type, amount, currency, description,
                     receiverEmail, email, provider, userId, fundId
             );
 
-            return "redirect:/fund";  // Erfolgreiche Weiterleitung nach der Zahlung
+            return "redirect:/fund"; // Erfolgreiche Weiterleitung
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return "redirect:/fund/payinto/error";  // Fehlerseite anzeigen
+            return "redirect:/fund"; // Fehlerseite anzeigen
         }
     }
 
+
+    /**
+     * Erstellt eine neue PayPal-Zahlung und leitet zur PayPal-Seite weiter.
+     *
+     * @param amount der Betrag der Zahlung
+     * @param type der Typ der Zahlung (z. B. Spende oder Einzahlung)
+     * @param description Beschreibung der Zahlung
+     * @param email die E-Mail-Adresse des Empfängers (optional)
+     * @param fundid die ID des Funds, dem die Zahlung zugeordnet ist (optional)
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authenticationToken das Authentifizierungstoken
+     * @param session die aktuelle HTTP-Session
+     * @param request die HTTP-Anfrage
+     * @return eine Weiterleitung zur PayPal-Website oder Fehlerseite
+     */
     @PostMapping("/payinto")
     public RedirectView createPaypal(
             @RequestParam("amount") String amount,
@@ -191,10 +279,11 @@ public class FundController {
             HttpSession session,
             HttpServletRequest request
     ) {
-        // Benutzerinformationen aus der Authentication abrufen
+        // Benutzerinformationen abrufen
         UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
         Long id = userEntity.getId();
 
+        // Session-Attribute setzen
         session.setAttribute("amount", amount);
         session.setAttribute("currency", "EUR");
         session.setAttribute("description", description);
@@ -208,8 +297,8 @@ public class FundController {
             session.setAttribute("fundid", fundid);
         }
 
-        // Aufruf der Service-Methode zur Zahlungsabwicklung und URL-Erstellung
         try {
+            // URL für die Zahlungsabwicklung abrufen
             String approvalUrl = paypalService.createPaypalPayment(
                     Double.parseDouble(amount),
                     type,
@@ -219,31 +308,46 @@ public class FundController {
                     id
             );
 
-            // Weiterleitung zur PayPal-Seite
-            return new RedirectView(approvalUrl);
-
+            return new RedirectView(approvalUrl); // Weiterleitung zu PayPal
         } catch (PayPalRESTException e) {
             System.out.println(e.getMessage());
-            return new RedirectView("/paypal/error");  // Fehlerseite zurückgeben
+            return new RedirectView("/paypal/error"); // Fehlerseite zurückgeben
         }
     }
 
 
+    /**
+     * Erstellt einen neuen Fund mit dem angegebenen Namen und den ausgewählten Benutzern.
+     *
+     * @param fundname der Name des neuen Funds
+     * @param userId die IDs der Benutzer, die Mitglieder des Funds werden sollen
+     * @param loggedInUser der aktuell eingeloggte Benutzer
+     * @return eine Weiterleitung zur Hauptseite
+     */
     @PostMapping("/create-fund")
     public String createFund(
             @RequestParam(name = "fundname") String fundname,
             @RequestParam(name = "selectedUsers", required = false) List<Long> userId,
             @ModelAttribute(name = "loggedInUser") UserEntity loggedInUser
     ) {
-        // Logik wird jetzt an den FundService delegiert
+        // Fund erstellen
         fundService.createFund(fundname, userId, loggedInUser);
 
-        // Nach erfolgreicher Erstellung des Funds weiterleiten
-        return "redirect:/fund";
+        return "redirect:/fund"; // Weiterleitung nach erfolgreicher Erstellung
     }
 
 
 
+    /**
+     * Bearbeitet einen bestehenden Fund und aktualisiert dessen Mitglieder und Namen.
+     *
+     * @param id die ID des Funds, der bearbeitet wird
+     * @param users die IDs der neuen Mitglieder
+     * @param name der neue Name des Funds
+     * @param user der aktuelle OAuth2-Benutzer
+     * @param authentication das Authentifizierungstoken
+     * @return eine Weiterleitung zur Hauptseite
+     */
     @PostMapping("/edit-fund")
     public String editFund(
             @RequestParam("fundId") Long id,
@@ -252,11 +356,13 @@ public class FundController {
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication
     ) {
+        // Aktuellen Benutzer abrufen
         UserEntity loggedInUser = userService.getCurrentUser(user, authentication);
 
+        // Fund bearbeiten
         fundService.editFund(id, users, name, loggedInUser);
 
-        return "redirect:/fund";
+        return "redirect:/fund"; // Weiterleitung nach erfolgreicher Bearbeitung
     }
 
 }

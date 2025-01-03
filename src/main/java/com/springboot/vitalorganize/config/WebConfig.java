@@ -6,6 +6,7 @@ import com.springboot.vitalorganize.model.PersonalInformation;
 import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
+import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.MessageSource;
@@ -40,6 +41,7 @@ import java.util.Locale;
 @EnableWebSecurity
 public class WebConfig implements WebMvcConfigurer {
 
+    private final UserRepositoryService userRepositoryService;
     private UserRepository userRepository;
 
     private UsernameInterceptor usernameInterceptor;
@@ -69,12 +71,14 @@ public class WebConfig implements WebMvcConfigurer {
                     // Alle anderen Endpunkte erfordern eine Authentifizierung
                     registry.anyRequest().authenticated();
                 })
+                //OAuthLogin mit social Media
                 .oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/login")
                         .successHandler((request, response, authentication) -> {
                             // Prüfen, ob das Authentication-Objekt ein OAuth2AuthenticationToken ist
                             if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
                                 String provider = oauth2Token.getAuthorizedClientRegistrationId();
+                                //Überprüfen, welcher provider authentifiziert
                                 if ("discord".equals(provider)) {
                                     handleDiscordLogin(oauth2Token); // Discord-spezifische Logik
                                     response.sendRedirect("/profileaddition");
@@ -111,111 +115,95 @@ public class WebConfig implements WebMvcConfigurer {
     public AccessDeniedHandler accessDeniedHandler() {
         // Redirect zur Hauptseite ("/") bei fehlenden Berechtigungen
         AccessDeniedHandlerImpl accessDeniedHandler = new AccessDeniedHandlerImpl();
-        accessDeniedHandler.setErrorPage("/"); // Seite, zu der der User bei einem AccessDenied-Fehler weitergeleitet wird
+        accessDeniedHandler.setErrorPage("/");
         return accessDeniedHandler;
     }
 
     private void handleGoogleLogin(OAuth2AuthenticationToken authentication) {
-        System.out.println("google login wurde gestartet");
+        //Neuen user in Datenbank erstellen auf Grundlage der Informationen von Google, wenn er nicht bereits vorhanden ist
         String username = authentication.getPrincipal().getAttribute("username");
         String email = authentication.getPrincipal().getAttribute("email");
         String picture = authentication.getPrincipal().getAttribute("picture");
-        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "google");
+        UserEntity userEntity = userRepositoryService.findByEmailAndProvider(email, "google");
         if (userEntity == null) {
             userEntity = new UserEntity();
             userEntity.setUsername(username);
             userEntity.setEmail(email);
             userEntity.setUsername("");
-            userEntity.setPassword(""); // Passwort leer für OAuth
-            userEntity.setRole("USER"); // Standardrolle
-            userEntity.setProvider("google"); // Anbieter auf "discord" setzen
+            userEntity.setPassword("");
+            userEntity.setRole("USER");
+            userEntity.setProvider("google");
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
-            userRepository.save(userEntity);
-            System.out.println("Neuer Benutzer erstellt: " + email);
-        } else {
-            // Falls notwendig, Attribute aktualisieren
-            System.out.println("Benutzer aktualisiert: " + email);
+            userRepositoryService.saveUser(userEntity);
         }
     }
 
     private void handleGitHubLogin(OAuth2AuthenticationToken authentication) {
-        // GitHub-spezifische Attribute abrufen
-        System.out.println(authentication);
-        String username = authentication.getPrincipal().getAttribute("login"); // GitHub-Benutzername
-        String email = authentication.getPrincipal().getAttribute("email"); // GitHub-E-Mail-Adresse
+        //Neuen user in Datenbank erstellen auf Grundlage der Informationen von Github, wenn er nicht bereits vorhanden ist
+        String username = authentication.getPrincipal().getAttribute("login");
+        String email = authentication.getPrincipal().getAttribute("email");
         String picture = authentication.getPrincipal().getAttribute("avatar_url");
-        System.out.println(picture);
 
+        //Dummy Email erstellen, da Github die Email nicht immer mitliefert
         if (email == null) {
-            email = username + "@github.com"; // Dummy-E-Mail erstellen
+            email = username + "@github.com";
         }
 
-        // Benutzer in der Datenbank suchen
-        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "github");
+        UserEntity userEntity = userRepositoryService.findByEmailAndProvider(email, "github");
         if (userEntity == null) {
-            // Benutzer erstellen, wenn er nicht existiert
             userEntity = new UserEntity();
-            userEntity.setEmail(email); // Als Benutzername die E-Mail verwenden
+            userEntity.setEmail(email);
             userEntity.setUsername("");
-            userEntity.setPassword(""); // Passwort leer für OAuth
-            userEntity.setRole("USER"); // Standardrolle
-            userEntity.setProvider("github"); // Anbieter auf "github" setzen
+            userEntity.setPassword("");
+            userEntity.setRole("USER");
+            userEntity.setProvider("github");
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
-            userRepository.save(userEntity);
-            System.out.println("Neuer Benutzer erstellt: " + email);
-        } else {
-            // Optional: Bestehende Benutzerattribute aktualisieren
-            System.out.println("Benutzer aktualisiert: " + email);
+            userRepositoryService.saveUser(userEntity);
         }
     }
 
     private void handleDiscordLogin(OAuth2AuthenticationToken authentication) {
-        // Extrahiere Benutzerinformationen von Discord
+        //Neuen user in Datenbank erstellen auf Grundlage der Informationen von Discord, wenn er nicht bereits vorhanden ist
         OAuth2User oAuth2User = authentication.getPrincipal();
-        String discordId = oAuth2User.getAttribute("id"); // Benutzer-ID von Discord
-        String email = oAuth2User.getAttribute("email"); // E-Mail von Discord
+        String discordId = oAuth2User.getAttribute("id");
+        String email = oAuth2User.getAttribute("email");
+        String avatarHash = oAuth2User.getAttribute("avatar");
         String picture;
-        String avatarHash = oAuth2User.getAttribute("avatar"); // Discord Avatar-Hash
 
+        // Holen der URL für das Profilebild von Discord, da der LInk nicht direkt mitgeliefert wird
         if (discordId != null && avatarHash != null) {
             picture = "https://cdn.discordapp.com/avatars/" + discordId + "/" + avatarHash + ".png";
         } else {
-            picture = "https://cdn.discordapp.com/embed/avatars/0.png"; // Standardavatar
+            // Default Avatar
+            picture = "https://cdn.discordapp.com/embed/avatars/0.png";
         }
 
         if (discordId == null || email == null) {
-            System.out.println("Fehler: Keine Benutzer-ID oder E-Mail von Discord erhalten.");
             return;
         }
 
-        // Überprüfen, ob der Benutzer bereits existiert
-        UserEntity userEntity = userRepository.findByEmailAndProvider(email, "discord");
+        UserEntity userEntity = userRepositoryService.findByEmailAndProvider(email, "discord");
         if (userEntity == null) {
-            // Benutzer existiert nicht, also neuen erstellen
             userEntity = new UserEntity();
-            userEntity.setEmail(email);  // E-Mail als Benutzernamen verwenden
+            userEntity.setEmail(email);
             userEntity.setUsername("");
-            userEntity.setPassword("");     // Kein Passwort für OAuth
+            userEntity.setPassword("");
             userEntity.setRole("USER");
-            userEntity.setProvider("discord"); // Standardrolle
+            userEntity.setProvider("discord");
             userEntity.setPublic(true);
             userEntity.setBirthday(LocalDate.of(1900, 1, 1));
             userEntity.setProfilePictureUrl(picture);
             userEntity.setToken(generateAccessToken());
             userEntity.setPersonalInformation(createnewPersonalInformation(userEntity));
-            userRepository.save(userEntity);
-            System.out.println("Neuer Discord-Benutzer erstellt: " + email);
-        } else {
-            // Falls erforderlich, Benutzerinformationen aktualisieren
-            System.out.println("Benutzer existiert bereits: " + email);
+            userRepositoryService.saveUser(userEntity);
         }
     }
 
@@ -248,14 +236,6 @@ public class WebConfig implements WebMvcConfigurer {
         return interceptor;
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(usernameInterceptor)
-                .addPathPatterns("/**") // Überall anwenden
-                .excludePathPatterns("/profileaddition","/css/**", "/js/**", "/images/**", "/", "/login", "/verify-2fa", "/send-2fa-code", "/logout")
-                .excludePathPatterns("/login/**", "/login**");; // Ausnahmen
-    }
-
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
@@ -265,24 +245,19 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     public static String generateAccessToken() {
-        // Erstelle eine SecureRandom Instanz
+        // Erstelle eines zufälligen 32byte langen Zeichen Arrays, für die spätere Authentifizierung bei Verwendung der REST API
         SecureRandom secureRandom = new SecureRandom();
-
-        // Byte-Array zur Speicherung des Tokens
         byte[] tokenBytes = new byte[32];
-
-        // Fülle das Byte-Array mit zufälligen Werten
         secureRandom.nextBytes(tokenBytes);
-
-        // Konvertiere das Byte-Array in eine Base64-kodierte Zeichenkette
         return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
 
+    // Filter für alle API anfragen
     @Bean
     public FilterRegistrationBean<ApiAuthenticationFilter> loggingFilter() {
         FilterRegistrationBean<ApiAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new ApiAuthenticationFilter(userRepository)); // Füge den Filter hinzu
-        registrationBean.addUrlPatterns("/api/**"); // Filter für alle /api/**-Anfragen aktivieren
+        registrationBean.setFilter(new ApiAuthenticationFilter(userRepository));
+        registrationBean.addUrlPatterns("/api/**");
         return registrationBean;
     }
 

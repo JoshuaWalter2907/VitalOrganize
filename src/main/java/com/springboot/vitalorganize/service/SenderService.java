@@ -16,51 +16,66 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 
+/**
+ * Service-Klasse zur Verwaltung des E-Mail-Versands und der PDF-Erstellung.
+ * Diese Klasse bietet Methoden zur Erstellung von PDF-Dokumenten mit Benutzerinformationen,
+ * zum Versenden von Bestätigungs-E-Mails und zum Anhängen von PDFs an E-Mails.
+ */
 @Service
 @AllArgsConstructor
 public class SenderService {
 
+    // Abhängigkeit: Service zum Versenden von E-Mails
     private final JavaMailSender mailSender;
 
-
+    /**
+     * Erstellt ein PDF-Dokument mit den Benutzerinformationen und sendet es per E-Mail an den Benutzer.
+     * Das PDF wird mit einem zufällig generierten Passwort geschützt, das dem Benutzer per E-Mail zugesendet wird.
+     *
+     * @param benutzer Der Benutzer, dessen Informationen im PDF enthalten sein sollen
+     */
     @Async
     public void createPdf(UserEntity benutzer) {
         String email = benutzer.getEmail();
+        // Wenn der Benutzer über GitHub authentifiziert wurde, verwenden wir die SendtoEmail-Adresse
         if (benutzer.getProvider().equals("github"))
             email = benutzer.getSendtoEmail();
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
+            // Generiere ein zufälliges Passwort für die PDF-Datei
             String password = generateRandomPassword();
 
-
+            // Sende dem Benutzer das Passwort für das PDF per E-Mail
             sendEmail(
                     email,
                     "Ihr PDF Passwort",
                     "Das Passwort für Ihr PDF lautet: " + password
             );
 
-
+            // Erstelle das PDF-Dokument
             Document document = new Document();
             PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 
+            // Verschlüssele das PDF mit dem generierten Passwort
             writer.setEncryption(
                     password.getBytes(),
-                    null, // Benutzer-Passwort (Owner Passwort kann leer sein)
+                    null, // Benutzer-Passwort (Owner Passwort bleibt leer)
                     PdfWriter.ALLOW_PRINTING,
                     PdfWriter.ENCRYPTION_AES_128
             );
 
             document.open();
 
+            // Füge Benutzerinformationen in das PDF-Dokument ein
             document.add(new Paragraph("Benutzerinformationen", new Font(Font.HELVETICA, 16, Font.BOLD)));
             document.add(new Paragraph("Email: " + benutzer.getEmail()));
             document.add(new Paragraph("Nutzername: " + (benutzer.getUsername() != null ? benutzer.getUsername() : "N/A")));
             document.add(new Paragraph("Geburtstag: " + (benutzer.getBirthday() != null ? benutzer.getBirthday().toString() : "N/A")));
 
+            // Füge persönliche Informationen hinzu, falls verfügbar
             if (benutzer.getPersonalInformation() != null) {
                 PersonalInformation personalInfo = benutzer.getPersonalInformation();
                 document.add(new Paragraph("\nPersönliche Informationen", new Font(Font.HELVETICA, 14, Font.BOLD)));
@@ -76,6 +91,8 @@ public class SenderService {
             }
 
             document.close();
+
+            // Sende das PDF-Dokument per E-Mail an den Benutzer
             sendEmailWithAttachment(
                     email,
                     "Ihre Benutzerinformationen",
@@ -88,6 +105,15 @@ public class SenderService {
         }
     }
 
+    /**
+     * Sendet eine E-Mail mit einem Anhang (z.B. PDF).
+     *
+     * @param to E-Mail-Adresse des Empfängers
+     * @param subject Betreff der E-Mail
+     * @param body Inhalt der E-Mail
+     * @param fileName Name des Anhangs
+     * @param attachment Der Anhang als ByteArrayResource
+     */
     public void sendEmailWithAttachment(String to, String subject, String body, String fileName, ByteArrayResource attachment) {
         MimeMessage message = mailSender.createMimeMessage();
 
@@ -104,6 +130,11 @@ public class SenderService {
         }
     }
 
+    /**
+     * Generiert ein zufälliges Passwort für die PDF-Verschlüsselung.
+     *
+     * @return Ein zufällig generiertes Passwort
+     */
     private String generateRandomPassword() {
         SecureRandom random = new SecureRandom();
         int length = 12;
@@ -115,6 +146,16 @@ public class SenderService {
         return password.toString();
     }
 
+    /**
+     * Sendet eine Bestätigungs-E-Mail für eine PayPal-Zahlung.
+     *
+     * @param email Die E-Mail-Adresse des Empfängers
+     * @param amount Der Betrag der Zahlung
+     * @param currency Die Währung der Zahlung
+     * @param method Die Zahlungsmethode
+     * @param description Eine Beschreibung der Transaktion
+     * @param type Der Transaktionstyp
+     */
     public void sendConfirmationEmail(
             String email, String amount, String currency, String method,
             String description, String type
@@ -143,6 +184,13 @@ public class SenderService {
         }
     }
 
+    /**
+     * Sendet eine einfache E-Mail ohne Anhang.
+     *
+     * @param to E-Mail-Adresse des Empfängers
+     * @param subject Betreff der E-Mail
+     * @param text Inhalt der E-Mail
+     */
     public void sendEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -155,5 +203,4 @@ public class SenderService {
             System.out.println(e.getMessage());
         }
     }
-
 }

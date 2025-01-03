@@ -29,12 +29,15 @@ public class PayPalConfig {
 
     @Bean
     public APIContext getAPIContext() throws PayPalRESTException {
+        //Konfiguration für die PayPal SDK
         Map<String, String> sdkConfig = new HashMap<>();
         sdkConfig.put("mode", mode);
 
+        //Authentifizierung und zugriffstoken erstellung
         OAuthTokenCredential authTokenCredential = new OAuthTokenCredential(clientId, clientSecret, sdkConfig);
         String accessToken = authTokenCredential.getAccessToken();
 
+        //Api-Context initialisierung
         APIContext apiContext = new APIContext(accessToken);
         apiContext.setConfigurationMap(sdkConfig);
 

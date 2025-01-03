@@ -15,12 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Service-Klasse für die Verwaltung von Chat-Nachrichten, -Gruppen und -Teilnehmern.
+ * Diese Klasse bietet Methoden zum Senden von Nachrichten, Erstellen von Chats und Abrufen von Chat-Details.
+ */
 @Service
 @AllArgsConstructor
 public class ChatService {
@@ -32,14 +33,37 @@ public class ChatService {
     private SimpMessagingTemplate brokerMessagingTemplate;
     private final UserService userService;
 
+    /**
+     * Gibt eine Liste von Nachrichten zwischen zwei Benutzern zurück.
+     *
+     * @param user1 der erste Benutzer
+     * @param user2 der zweite Benutzer
+     * @param page die Seitenzahl für die Paginierung
+     * @param size die Seitengröße für die Paginierung
+     * @return eine Liste von Nachrichten
+     */
     public List<MessageEntity> getMessages(Long user1, Long user2, int page, int size) {
         return messageRepositoryService.ChatMessagesBetweenUsers(user1, user2, page, size);
     }
 
+    /**
+     * Gibt eine Liste der Chat-Teilnehmer eines Benutzers zurück.
+     *
+     * @param user1 der Benutzer
+     * @return eine Liste von Benutzern
+     */
     public List<UserEntity> getChatParticipants(Long user1) {
         return messageRepositoryService.ChatParticipants(user1);
     }
 
+    /**
+     * Sendet eine Direktnachricht von einem Benutzer an einen anderen Benutzer.
+     *
+     * @param senderId die ID des Absenders
+     * @param recipientId die ID des Empfängers
+     * @param content der Inhalt der Nachricht
+     * @return die gesendete Nachricht
+     */
     public MessageEntity sendMessage(Long senderId, Long recipientId, String content) {
         UserEntity sender = userRepositoryService.findUserById(senderId);
         UserEntity recipient = userRepositoryService.findUserById(recipientId);
@@ -56,6 +80,14 @@ public class ChatService {
         return messageRepositoryService.saveMessage(message);
     }
 
+    /**
+     * Sendet eine Gruppen-Nachricht an alle Mitglieder einer bestimmten Gruppe.
+     *
+     * @param senderId die ID des Absenders
+     * @param groupId die ID der Gruppe
+     * @param content der Inhalt der Nachricht
+     * @return die gesendete Gruppen-Nachricht
+     */
     public MessageEntity sendGroupMessage(Long senderId, Long groupId, String content) {
         UserEntity sender = userRepositoryService.findUserById(senderId);
         ChatGroup group = chatGroupRepositoryService.findById(groupId)
@@ -70,23 +102,56 @@ public class ChatService {
         return messageRepositoryService.saveMessage(message);
     }
 
+    /**
+     * Gibt eine Liste der Nachrichten einer Gruppe zurück.
+     *
+     * @param groupId die ID der Gruppe
+     * @param page die Seitenzahl für die Paginierung
+     * @param size die Seitengröße für die Paginierung
+     * @return eine Liste von Nachrichten
+     */
     public List<MessageEntity> getGroupMessages(Long groupId, int page, int size) {
         return messageRepositoryService.findChatParticipants(groupId, page, size);
     }
 
+    /**
+     * Gibt alle Chat-Gruppen eines Benutzers zurück.
+     *
+     * @param userId die ID des Benutzers
+     * @return eine Liste von Chat-Gruppen
+     */
     public List<ChatGroup> getChatGroups(Long userId) {
         return chatGroupRepositoryService.findChatGroups(userId);
     }
 
+    /**
+     * Gibt alle Direktchats eines Benutzers zurück.
+     *
+     * @param userId die ID des Benutzers
+     * @return eine Liste von Direktchats
+     */
     public List<DirectChat> getDirectChats(Long userId) {
         return direktChatRepositoryService.findDirectChats(userId);
     }
 
+    /**
+     * Gibt den Direktchat zwischen zwei Benutzern zurück.
+     *
+     * @param user1Id die ID des ersten Benutzers
+     * @param user2Id die ID des zweiten Benutzers
+     * @return den entsprechenden Direktchat
+     */
     public DirectChat getDirectChat(Long user1Id, Long user2Id) {
         return direktChatRepositoryService.findDirectChatBetweenUsers(user1Id, user2Id);
     }
 
-
+    /**
+     * Erstellt einen neuen Chat (entweder eine Direktnachricht oder eine Gruppe) für die ausgewählten Benutzer.
+     *
+     * @param selectedUsers die Liste der ausgewählten Benutzer
+     * @param chatName der Name des Chats (nur für Gruppen)
+     * @param currentUser der aktuell angemeldete Benutzer
+     */
     public void createChat(List<Long> selectedUsers, String chatName, UserEntity currentUser) {
         if (selectedUsers.size() > 1) {
             if (!selectedUsers.contains(currentUser.getId())) {
@@ -127,7 +192,12 @@ public class ChatService {
         }
     }
 
-
+    /**
+     * Gibt den Chat mit der angegebenen ID zurück (kann entweder ein Gruppenchat oder ein Direktchat sein).
+     *
+     * @param chatId die ID des Chats
+     * @return den Chat, entweder eine Gruppe oder ein Direktchat
+     */
     public Object getChatById(Long chatId) {
         Optional<ChatGroup> chatGroup = chatGroupRepositoryService.findById(chatId);
         if (chatGroup.isPresent()) {
@@ -142,6 +212,13 @@ public class ChatService {
         throw new IllegalArgumentException("Chat nicht gefunden");
     }
 
+    /**
+     * Löscht einen Gruppenchat, wenn der aktuelle Benutzer berechtigt ist.
+     *
+     * @param group die zu löschende Gruppe
+     * @param currentUser der aktuell angemeldete Benutzer
+     * @return true, wenn die Gruppe gelöscht wurde, andernfalls false
+     */
     public boolean deleteGroupChat(ChatGroup group, UserEntity currentUser) {
         if (group.getUsers().contains(currentUser)) {
             chatGroupRepositoryService.deleteChatGroup(group);
@@ -151,6 +228,13 @@ public class ChatService {
         return true;
     }
 
+    /**
+     * Löscht einen Direktchat, wenn der aktuelle Benutzer berechtigt ist.
+     *
+     * @param chat der zu löschende Direktchat
+     * @param currentUser der aktuell angemeldete Benutzer
+     * @return true, wenn der Direktchat gelöscht wurde, andernfalls false
+     */
     public boolean deleteDirectChat(DirectChat chat, UserEntity currentUser) {
         if (chat.getUser1().equals(currentUser) || chat.getUser2().equals(currentUser)) {
             direktChatRepositoryService.deleteDirectChat(chat);
@@ -160,14 +244,32 @@ public class ChatService {
         return true;
     }
 
+    /**
+     * Gibt die letzte Nachricht eines Direktchats zurück.
+     *
+     * @param chatId die ID des Direktchats
+     * @return die letzte Nachricht des Direktchats
+     */
     public MessageEntity getLastMessage(Long chatId) {
         return messageRepositoryService.getLastDirectChatMessage(chatId);
     }
 
+    /**
+     * Gibt die letzte Nachricht eines Gruppen-Chats zurück.
+     *
+     * @param groupId die ID der Gruppe
+     * @return die letzte Nachricht der Gruppe
+     */
     public MessageEntity getLastGroupMessage(Long groupId) {
         return messageRepositoryService.getLastGroupChatMessage(groupId);
     }
 
+    /**
+     * Bereitet die öffentliche Benutzerseite für einen Benutzer vor und fügt sie dem Model hinzu.
+     *
+     * @param model das Model, das an die Ansicht übergeben wird
+     * @param userId die ID des Benutzers
+     */
     public void preparePublicUsersPage(Model model, Long userId) {
         List<UserEntity> users = userService.getUsersWithFriendsOrPublic(userId);
 
@@ -177,6 +279,13 @@ public class ChatService {
         model.addAttribute("publicUsers", groupedUsers);
     }
 
+    /**
+     * Filtert die Chats eines Benutzers basierend auf einer Suchanfrage.
+     *
+     * @param senderId die ID des Benutzers, der die Anfrage stellt
+     * @param query der Suchbegriff
+     * @return eine Liste von gefilterten Chats
+     */
     public List<Object> filterChats(Long senderId, String query) {
         List<Object> filteredChatList = new ArrayList<>();
 
@@ -205,6 +314,15 @@ public class ChatService {
         return filteredChatList;
     }
 
+    /**
+     * Bereitet die Details für einen bestimmten Chat vor (entweder eine Gruppe oder ein Direktchat).
+     *
+     * @param senderId die ID des Absenders
+     * @param groupId die ID der Gruppe
+     * @param user2 die ID des zweiten Benutzers (für Direktchats)
+     * @param query der Suchbegriff
+     * @return ein DTO mit den Chat-Details
+     */
     public ChatDetailsDTO prepareChatDetails(Long senderId, Long groupId, Long user2, String query) {
         List<MessageEntity> messages = null;
         UserEntity selectedUser = null;
@@ -237,6 +355,12 @@ public class ChatService {
         return new ChatDetailsDTO(selectedGroup, selectedUser, selectedDirectChat, messages, otherUserName, otherUserPicture, groupId, chatId, recipientId);
     }
 
+    /**
+     * Bereitet eine Liste von Chat-Details für die Anzeige vor.
+     *
+     * @param filteredChatList die Liste der gefilterten Chats
+     * @return eine Liste von ChatDetails-Objekten
+     */
     public List<ChatDetail> prepareChatDetailsList(List<Object> filteredChatList) {
         List<ChatDetail> chatDetailsList = new ArrayList<>();
 
@@ -265,6 +389,11 @@ public class ChatService {
         return chatDetailsList;
     }
 
+    /**
+     * Verarbeitet das Senden einer Nachricht.
+     *
+     * @param messageDTO das DTO mit den Nachrichtendaten
+     */
     public void handleMessageSending(MessageDTO messageDTO) {
         // Überprüfen, ob die Nachricht gültig ist
         if (messageDTO.getContent() == null || messageDTO.getContent().isEmpty()) {
@@ -289,6 +418,12 @@ public class ChatService {
 
     }
 
+    /**
+     * Bereitet die öffentliche Benutzerseite vor und gibt die Mitglieder als Liste zurück.
+     *
+     * @param userId die ID des Benutzers
+     * @return eine Liste von Benutzern, die Mitglieder sind
+     */
     public List<UserEntity> preparePublicUsersPage(Long userId) {
         List<UserEntity> publicUsers = userService.getPublicUsers();
 
@@ -299,11 +434,25 @@ public class ChatService {
         return members;
     }
 
+    /**
+     * Gruppiert eine Liste von Benutzern nach dem ersten Buchstaben ihres Benutzernamens.
+     *
+     * @param users die Liste der Benutzer
+     * @return eine Map, die Benutzer nach dem ersten Buchstaben ihres Benutzernamens gruppiert
+     */
     public Map<Character, List<UserEntity>> groupUsersByInitial(List<UserEntity> users) {
         return users.stream()
                 .collect(Collectors.groupingBy(user -> Character.toUpperCase(user.getUsername().charAt(0))));
     }
 
+    /**
+     * Validiert die Anfrage zum Erstellen einer Gruppe.
+     *
+     * @param request die Anfrage zum Erstellen einer Gruppe
+     * @param model das Model, das die Fehlernachricht enthält
+     * @param currentUser der aktuell angemeldete Benutzer
+     * @return true, wenn die Anfrage gültig ist, andernfalls false
+     */
     public boolean validateCreateGroupRequest(CreateGroupRequest request, Model model, UserEntity currentUser) {
         if (request == null) {
             model.addAttribute("errorMessage", "Ungültige Anfrage. Bitte versuchen Sie es erneut.");
@@ -312,7 +461,6 @@ public class ChatService {
         }
 
         List<Long> selectedUsers = request.getSelectedUsers();
-        System.out.println(selectedUsers);
         String chatName = request.getChatName();
 
         if (selectedUsers == null || selectedUsers.isEmpty()) {
@@ -330,6 +478,13 @@ public class ChatService {
         return true;
     }
 
+    /**
+     * Löscht einen Chat anhand seiner ID, je nach Typ (Gruppe oder Direktchat).
+     *
+     * @param chatId die ID des zu löschenden Chats
+     * @param currentUser der aktuell angemeldete Benutzer
+     * @return true, wenn der Chat gelöscht wurde, andernfalls false
+     */
     public boolean deleteChatById(Long chatId, UserEntity currentUser) {
         Object chat = getChatById(chatId);
         if (chat == null) {
@@ -343,7 +498,4 @@ public class ChatService {
         }
         return false; // Weder Gruppenchat noch Direktchat
     }
-
-
-
 }

@@ -2,9 +2,6 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.dto.ZahlungStatistikRequest;
 import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.repository.FundRepository;
-import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.ZahlungsStatistikRepositoryService;
@@ -15,40 +12,66 @@ import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Service-Klasse für die Verwaltung von Zahlungstatistiken.
+ * Diese Klasse stellt Methoden zum Abrufen, Erstellen, Bearbeiten und Löschen von Zahlungstatistiken bereit.
+ */
 @Service
 @AllArgsConstructor
 public class ZahlungStatistikService {
 
-
+    // Abhängigkeiten: Repository-Services für Fonds, Benutzer und Zahlungstatistiken
     private final FundRepositoryService fundRepositoryService;
     private final UserRepositoryService userRepositoryService;
     private ZahlungsStatistikRepositoryService zahlungsStatistikRepositoryService;
 
+    /**
+     * Ruft alle Zahlungstatistiken ab.
+     *
+     * @return Eine Liste aller Zahlungstatistiken
+     */
     public List<ZahlungStatistik> getAllZahlungStatistiken() {
         return zahlungsStatistikRepositoryService.findAll();
     }
 
+    /**
+     * Ruft eine Zahlungstatistik basierend auf der ID ab.
+     *
+     * @param id Die ID der Zahlungstatistik
+     * @return Die Zahlungstatistik mit der angegebenen ID
+     */
     public ZahlungStatistik getZahlungStatistikById(Long id) {
         return zahlungsStatistikRepositoryService.findById(id);
     }
 
-
-    // Delete
+    /**
+     * Löscht eine Zahlungstatistik basierend auf der ID.
+     *
+     * @param id Die ID der Zahlungstatistik, die gelöscht werden soll
+     */
     public void deleteZahlungStatistik(Long id) {
         if (zahlungsStatistikRepositoryService.findById(id) != null) {
             zahlungsStatistikRepositoryService.deleteById(id);
-
         }
     }
 
+    /**
+     * Erstellt eine Zahlungstatistik mit minimalen Eingabedaten.
+     *
+     * @param fundId Die ID des Fonds, für den die Statistik erstellt werden soll
+     * @param startDate Das Startdatum der Zahlungsperiode im Format "yyyy-MM-dd"
+     * @param endDate Das Enddatum der Zahlungsperiode im Format "yyyy-MM-dd"
+     * @return Die erstellte Zahlungstatistik
+     */
     public ZahlungStatistik createZahlungStatistikWithMinimalInput(Long fundId, String startDate, String endDate) {
         // Fund abrufen
         FundEntity fund = fundRepositoryService.findFundById(fundId);
 
+        // Start- und Enddatum parsen
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
 
-        // Zahlungen im Zeitraum filtern
+        // Zahlungen im angegebenen Zeitraum filtern
         List<Payment> paymentsInPeriod = fund.getPayments().stream()
                 .filter(payment -> {
                     LocalDate paymentDate = payment.getDate().toLocalDate();
@@ -61,7 +84,7 @@ public class ZahlungStatistikService {
         long paymentCount = paymentsInPeriod.size();
         double averageAmount = paymentCount > 0 ? totalAmount / paymentCount : 0.0;
 
-        // ZahlungStatistik erstellen
+        // Zahlungstatistik erstellen
         ZahlungStatistik zahlungStatistik = new ZahlungStatistik();
         zahlungStatistik.setFund(fund);
         zahlungStatistik.setStartDate(start);
@@ -74,44 +97,58 @@ public class ZahlungStatistikService {
         if (!paymentsInPeriod.isEmpty()) {
             zahlungStatistik.setCurrency(paymentsInPeriod.get(0).getCurrency());
         } else {
-            zahlungStatistik.setCurrency("EUR"); // Standardwert
+            zahlungStatistik.setCurrency("EUR"); // Standardwert, wenn keine Zahlungen vorhanden sind
         }
 
         return zahlungsStatistikRepositoryService.saveStatistic(zahlungStatistik);
     }
 
-
+    /**
+     * Ruft alle Fonds ab, die dem Benutzer zugeordnet sind, basierend auf dem Access Token.
+     *
+     * @param accessToken Das Access Token des Benutzers
+     * @return Eine Liste der Fonds, die mit dem Benutzer verknüpft sind
+     */
     public List<FundEntity> getAllFunds(String accessToken) {
-        System.out.println(accessToken);
-        // Überprüfe, ob der User anhand des Tokens existiert
+        // Überprüfe, ob der Benutzer anhand des Tokens existiert
         UserEntity user = userRepositoryService.findByToken(accessToken);
         if (user == null) {
-            throw new IllegalArgumentException("Invalid access token or user not found.");
+            throw new IllegalArgumentException("Ungültiges Access Token oder Benutzer nicht gefunden.");
         }
 
-        // Liste der Funds abrufen, die dem User zugeordnet sind
+        // Liste der Fonds abrufen, die dem Benutzer zugeordnet sind
         List<FundEntity> funds = fundRepositoryService.findALl();
-        System.out.println(funds);
         funds = funds.stream()
-                .filter(f -> f.getUsers().contains(user))  // Filtere die Funds, die mit diesem User verknüpft sind
+                .filter(f -> f.getUsers().contains(user))  // Filtere die Fonds, die mit diesem Benutzer verknüpft sind
                 .toList();
 
         return funds;
     }
 
+    /**
+     * Erstellt oder aktualisiert eine Zahlungstatistik, basierend auf den übermittelten Daten.
+     *
+     * @param id Die ID der Zahlungstatistik (null für eine neue Statistik)
+     * @param request Die Anfrage mit den zu erstellenden oder zu aktualisierenden Daten
+     * @return Die erstellte oder aktualisierte Zahlungstatistik
+     */
     public ZahlungStatistik createOrUpdateZahlungStatistik(Long id, ZahlungStatistikRequest request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;  // Hier kannst du das Format anpassen
+        // Start- und Enddatum aus der Anfrage parsen
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
         LocalDate startDate = LocalDate.parse(request.getStartDate(), formatter);
         LocalDate endDate = LocalDate.parse(request.getEndDate(), formatter);
 
+        // Überprüfen, ob eine bestehende Statistik vorhanden ist
         ZahlungStatistik existing = zahlungsStatistikRepositoryService.findById(id);
 
         if (existing != null) {
+            // Aktualisieren der bestehenden Statistik
             existing.setFund(request.getFundId());
             existing.setStartDate(startDate);
             existing.setEndDate(endDate);
             return zahlungsStatistikRepositoryService.saveStatistic(existing);
         } else {
+            // Erstellen einer neuen Statistik
             ZahlungStatistik newStatistik = new ZahlungStatistik();
             newStatistik.setFund(request.getFundId());
             newStatistik.setStartDate(startDate);
@@ -120,11 +157,18 @@ public class ZahlungStatistikService {
         }
     }
 
+    /**
+     * Extrahiert das Access Token aus dem Authorization-Header.
+     *
+     * @param authorizationHeader Der Authorization-Header im Format "Bearer <token>"
+     * @return Das Access Token
+     * @throws IllegalArgumentException Wenn der Header nicht im erwarteten Format ist
+     */
     public String extractAccessToken(String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7); // Entfernt "Bearer " und gibt den Token zurück
         } else {
-            throw new IllegalArgumentException("Authorization header must be in the form 'Bearer <token>'");
+            throw new IllegalArgumentException("Der Authorization-Header muss im Format 'Bearer <token>' sein.");
         }
     }
 }
