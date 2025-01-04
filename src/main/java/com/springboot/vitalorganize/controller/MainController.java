@@ -69,6 +69,21 @@ public class MainController {
     }
 
     /**
+     * Ändert die aktuelle Sprache der Anwendung.
+     *
+     * @param request die aktuelle HTTP-Anfrage
+     * @return eine Weiterleitung zur vorherigen Seite oder zur Startseite
+     */
+    @GetMapping("/change-lang")
+    public String changeLang(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        if (referer != null) {
+            return "redirect:" + referer;
+        }
+        return "redirect:/";
+    }
+
+    /**
      * Zeigt die Login-Seite an.
      *
      * @param model das UI-Modell
@@ -145,13 +160,25 @@ public class MainController {
             @RequestParam Map<String, String> digits,
             HttpSession session
     ) {
+        String email = "";
+        String username = "";
+        String birthdate = "";
+        Boolean isPublic = false;
+
         String uri = (String) session.getAttribute("uri");
+        if(uri.equals("/profileaddition")){
+            email = session.getAttribute("email").toString();
+            username = session.getAttribute("inputString").toString();
+            birthdate = session.getAttribute("birthDate").toString();
+            isPublic = (Boolean) session.getAttribute("isPublic");
+        }
 
         // Aktuelle Benutzerinformationen abrufen
         UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
 
         // Code verifizieren
         boolean isVerified = twoFactorService.verifyCode(user, auth2AuthenticationToken, digits, session);
+        System.out.println(isVerified);
 
         // Verifizierungslogik und Weiterleitungen
         if (isVerified) {
@@ -160,7 +187,7 @@ public class MainController {
                 senderService.createPdf(userEntity);
                 return "redirect:/profile-edit";
             } else if ("/profileaddition".equals(uri)) {
-                return "forward:/profileaddition";
+                return "forward:/profileaddition?inputString=" + username + "&isPublic=" + isPublic + "&birthDate=" + birthdate + "&email=" + email;
             }
         }
 

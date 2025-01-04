@@ -270,8 +270,8 @@ public class ProfileController {
      * @return der Name des Templates oder eine Weiterleitung
      */
     @PostMapping("/profileaddition")
-    public String profileAddition(@RequestParam("inputString") String inputString,
-                                  @RequestParam("birthDate") String birthDate,
+    public String profileAddition(@RequestParam(value = "inputString") String inputString,
+                                  @RequestParam(value = "birthDate") String birthDate,
                                   @RequestParam(value = "email", required = false, defaultValue = "") String email,
                                   @AuthenticationPrincipal OAuth2User user,
                                   OAuth2AuthenticationToken authentication,

@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Eine globale Controller-Klasse, die globale Attribute für Views bereitstellt.
@@ -38,11 +39,20 @@ public class GlobalViewController {
     public void addGlobalAttributes(@AuthenticationPrincipal OAuth2User user,
                                     OAuth2AuthenticationToken authentication,
                                     HttpServletRequest request,
-                                    Model model) {
+                                    Model model
+    ) {
 
         // Aktuelles Theme aus dem ThemeService abrufen und zur Anfrage hinzufügen
         String theme = themeService.getTheme(request);
         request.setAttribute("theme", theme);
+
+
+        String lang = "en";
+        if(request.getParameter("lang") != null) {
+            lang = request.getParameter("lang");
+        };
+        System.out.println(lang);
+        model.addAttribute("lang", lang);
 
         // Aktuell eingeloggten Benutzer über AuthenticationService abrufen
         UserEntity userEntity = authenticationService.getCurrentUser(user, authentication);

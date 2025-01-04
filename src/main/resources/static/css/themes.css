@@ -32,26 +32,6 @@ body.red {
     --color-light: #E69B9B;
 }
 
-.main-container {
-    width: 80%; /* Standardbreite */
-    min-height: 100vh; /* Mindesthöhe über die gesamte Ansichtshöhe */
-    display: flex; /* Flexbox für Layout */
-    flex: 1; /* Flex-Verhältnis */
-    flex-direction: row; /* Standard-Ausrichtung: horizontal */
-    align-items: flex-start; /* Inhalte oben ausrichten */
-    justify-content: flex-start; /* Inhalte links ausrichten */
-    position: relative; /* Positionierung relativ zum Elternelement */
-    box-sizing: border-box; /* Box-Modell für korrekte Berechnung */
-    padding: 20px; /* Innenabstand */
-    margin-bottom: 200px; /* Abstand nach unten */
-    background: var(--color-medium-light); /* Hintergrundfarbe */
-    color: var(--text-color-light); /* Standard-Textfarbe */
-    gap: 10px; /* Abstand zwischen Elementen */
-    overflow: hidden; /* Überlauf verbergen */
-    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.5), 0px 2px 5px 0 rgba(0, 0, 0, 0.6); /* Schatteneffekt */
-    margin-top: 100px; /* Abstand zum oberen Rand */
-}
-
 /* Header styles */
 header {
     display: flex;

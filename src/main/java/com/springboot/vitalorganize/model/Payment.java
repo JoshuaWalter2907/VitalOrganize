@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,7 @@ public class Payment {
     private String currency;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "user_id", nullable = true) // Verknüpfung mit UserEntity
     private UserEntity user; // Wer
 
@@ -40,6 +42,7 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Jede Zahlung gehört zu einem Fund
     @JoinColumn(name = "fund_id", nullable = false) // Verknüpfung zum Fund
+    @JsonIgnore
     private FundEntity fund; // Fund, in den die Zahlung getätigt wurde
 
 }

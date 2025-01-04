@@ -1,10 +1,7 @@
 package com.springboot.vitalorganize.model;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -19,8 +16,9 @@ public class ZahlungStatistik {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Automatisches Löschen der Statistik bei Fund-Löschung    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "fund_id", nullable = false) // Verknüpfung zum Fund
+    @JsonIgnore
     private FundEntity fund;
 
     @Column(nullable = false)

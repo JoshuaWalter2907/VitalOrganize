@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -70,8 +71,10 @@ public class ZahlungStatistikController {
      * @return eine Liste von Zahlungsstatistiken
      */
     @GetMapping("/all/statistics")
-    public ResponseEntity<List<ZahlungStatistik>> getAllZahlungStatistiken() {
-        List<ZahlungStatistik> list = zahlungStatistikService.getAllZahlungStatistiken();
+    public ResponseEntity<List<ZahlungStatistik>> getAllZahlungStatistiken(
+            @RequestParam Long id
+    ) {
+        List<ZahlungStatistik> list = zahlungStatistikService.getAllZahlungStatistiken(id);
         return ResponseEntity.ok(list);
     }
 
@@ -91,16 +94,19 @@ public class ZahlungStatistikController {
      * Erstellt oder aktualisiert eine Zahlungsstatistik.
      *
      * @param id      die ID der zu aktualisierenden oder zu erstellenden Zahlungsstatistik
-     * @param request die Details der Zahlungsstatistik im Anfrageobjekt
      * @return die erstellte oder aktualisierte Zahlungsstatistik
      */
     @PutMapping("/statistics/{id}")
     public ResponseEntity<ZahlungStatistik> createOrUpdateZahlungStatistik(
             @PathVariable Long id,
-            @RequestBody ZahlungStatistikRequest request) {
-        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(id, request);
+            @RequestParam(required = false) Long fundId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate
+            ) {
+        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(id, fundId, startDate, endDate);
         return ResponseEntity.ok(result);
     }
+
 
     /**
      * Löscht eine Zahlungsstatistik anhand ihrer ID.

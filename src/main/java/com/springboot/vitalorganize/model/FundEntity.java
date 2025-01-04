@@ -35,6 +35,5 @@ public class FundEntity {
     private UserEntity admin;
 
     @OneToMany(mappedBy = "fund",cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<Payment> payments;
 }

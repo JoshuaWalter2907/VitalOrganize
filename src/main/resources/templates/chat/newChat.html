@@ -21,7 +21,7 @@
 
 <div class="main-container">
   <div class="left-container">
-    <h2>Wähle Benutzer aus</h2>
+    <h2 th:text="#{chat.choose.user}">Wähle Benutzer aus</h2>
     <form id="user-selection-form" method="post" action="/create-group" class="create-group-form">
       <div class="user-list">
         <!-- Schleife durch die Gruppen der Benutzer -->
@@ -43,7 +43,7 @@
       <div class="search-container">
         <div class="input-container">
           <input type="hidden" name="currentUrl" th:value="${currentUrl}">
-          <input type="text" name="chatName" placeholder="Gruppenname">
+          <input type="text" name="chatName" th:placeholder="#{chat.groupname}">
           <button type="submit" class="search-button">
             <i class="fa fa-paper-plane"></i>
           </button>
@@ -58,7 +58,7 @@
   <div class="right-container">
     <div class="simple-text">
       <div>
-        <p>Bitte wählen Sie einen Benutzer um einen Chat zu starten,
+        <p th:text="#{chat.new.placeholder}">Bitte wählen Sie einen Benutzer um einen Chat zu starten,
           <br> oder mehrere Benutzer um eine Gruppe zu erstellen.</p>
       </div>
     </div>

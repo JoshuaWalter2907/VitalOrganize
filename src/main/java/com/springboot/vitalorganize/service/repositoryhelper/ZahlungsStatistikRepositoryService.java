@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
+import com.springboot.vitalorganize.model.FundEntity;
 import com.springboot.vitalorganize.model.ZahlungStatistik;
 import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import lombok.AllArgsConstructor;
@@ -37,7 +38,7 @@ public class ZahlungsStatistikRepositoryService {
     public ZahlungStatistik findById(Long id) {
         // Sucht nach der Zahlungstatistik mit der angegebenen ID und wirft eine Ausnahme, wenn diese nicht existiert
         return zahlungStatistikRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Statistic not found with id: " + id));
+                .orElse(null);
     }
 
     /**
@@ -59,5 +60,9 @@ public class ZahlungsStatistikRepositoryService {
     public ZahlungStatistik saveStatistic(ZahlungStatistik zahlungStatistik) {
         // Speichert die übergebene Zahlungstatistik im Repository
         return zahlungStatistikRepository.save(zahlungStatistik);
+    }
+
+    public List<ZahlungStatistik> findAllByFundId(FundEntity fundEntity) {
+        return zahlungStatistikRepository.findAllByfund(fundEntity);
     }
 }

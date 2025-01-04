@@ -169,8 +169,10 @@ public class FundService {
             users.add(loggedInUser); // Füge den Admin hinzu
         }
 
+        if(name != null && !name.isBlank()) {
+            fund.setName(name);
+        }
         fund.setUsers(users);
-        fund.setName(name);
 
         fundRepositoryService.saveFund(fund);
     }

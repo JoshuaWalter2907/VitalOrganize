@@ -352,7 +352,7 @@ public class FundController {
     public String editFund(
             @RequestParam("fundId") Long id,
             @RequestParam("selectedUsers") List<Long> users,
-            @RequestParam("fundname") String name,
+            @RequestParam(value = "fundname", required = false) String name,
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken authentication
     ) {

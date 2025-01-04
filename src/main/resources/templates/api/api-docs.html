@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="${lang}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,31 +10,33 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <title>Profile Page</title>
+    <title th:text="#{profile.page.title}">Profilseite</title>
 </head>
 <body th:class="${theme}">
 
 <header th:replace="fragments/header :: header"></header>
 <div class="main-container-profile">
-    <h1>API Dokumentation</h1>
-    <p>Willkommen zur API-Dokumentation für das ZahlungStatistik-System. Hier erklären wir, wie du mit den verschiedenen Endpunkten interagieren kannst.</p>
+    <h1 th:text="#{api.documentation.title}">API Dokumentation</h1>
+    <p th:text="#{api.documentation.description}">Willkommen zur API-Dokumentation für das ZahlungStatistik-System.</p>
 
     <div class="endpoint-container">
 
         <!-- Endpoint 1 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>1. Erstellen einer ZahlungStatistik</h2>
+                <h2 th:text="#{api.create.statistics.title}">1. Erstellen einer ZahlungStatistik</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Erstellt eine neue ZahlungStatistik mit den angegebenen Parametern.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.create.statistics.description}">Erstellt eine neue ZahlungStatistik mit den angegebenen Parametern.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>POST /api?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.create.statistics.example.request}">POST /api?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort:</strong>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
                 <pre>
 {
     "id": 123,
@@ -53,17 +55,19 @@
         <!-- Endpoint 2 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>2. Alle FundStatistiken abrufen</h2>
+                <h2 th:text="#{api.get.all.funds.title}">2. Alle FundStatistiken abrufen</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Gibt alle Funds zurück, auf die der Benutzer Zugriff hat.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.get.all.funds.description}">Gibt alle Fonds zurück, auf die der Benutzer Zugriff hat.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>GET /api/all/fund</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.get.all.funds.example.request}">GET /api/all/fund</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort:</strong>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
                 <pre>
 [
     {
@@ -78,20 +82,23 @@
                 </pre>
             </div>
         </div>
+
         <!-- Endpoint 3 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>3. Alle ZahlungStatistiken abrufen</h2>
+                <h2 th:text="#{api.get.all.statistics.title}">3. Alle ZahlungStatistiken abrufen</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Gibt eine Liste aller ZahlungStatistiken zurück.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.get.all.statistics.description}">Gibt eine Liste aller ZahlungStatistiken für einen spezifischen Fund zurück.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>GET /api/all/statistics</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.get.all.statistics.example.request}">GET /api/all/statistics?id=1</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort:</strong>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
                 <pre>
 [
     {
@@ -108,19 +115,23 @@
                 </pre>
             </div>
         </div>
+
+        <!-- Endpoint 4 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>4. ZahlungStatistik nach ID abrufen</h2>
+                <h2 th:text="#{api.get.by.id.title}">4. ZahlungStatistik nach ID abrufen</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Ruft eine ZahlungStatistik anhand der angegebenen ID ab.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.get.by.id.description}">Ruft eine ZahlungStatistik anhand der angegebenen ID ab.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>GET /api/statistics/123</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.get.by.id.example.request}">GET /api/statistics/123</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort:</strong>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
                 <pre>
 {
     "id": 123,
@@ -136,19 +147,22 @@
             </div>
         </div>
 
+        <!-- Endpoint 5 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>5. ZahlungStatistik erstellen oder aktualisieren</h2>
+                <h2 th:text="#{api.create.or.update.title}">5. ZahlungStatistik erstellen oder aktualisieren</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Aktualisiert eine bestehende ZahlungStatistik oder erstellt eine neue, wenn keine Statistik mit der angegebenen ID existiert.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.create.or.update.description}">Erstellt eine neue oder aktualisiert eine bestehende ZahlungStatistik.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>PUT /api/statistics/123?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.create.or.update.example.request}">PUT /api/statistics/123?fundId=1&startDate=2023-01-01&endDate=2023-12-31</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort (Update):</strong>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
                 <pre>
 {
     "id": 123,
@@ -161,69 +175,30 @@
     "currency": "EUR"
 }
                 </pre>
-                <strong>Beispiel Antwort (Create):</strong>
-                <pre>
-{
-    "id": 124,
-    "fundId": 1,
-    "startDate": "2023-01-01",
-    "endDate": "2023-12-31",
-    "totalAmount": 10000.0,
-    "averageAmount": 500.0,
-    "paymentCount": 20,
-    "currency": "EUR"
-}
-                </pre>
             </div>
         </div>
 
-        <!-- Endpoint 3: Delete -->
+        <!-- Endpoint 6 -->
         <div class="endpoint">
             <div class="endpoint-header">
-                <h2>6. ZahlungStatistik löschen</h2>
+                <h2 th:text="#{api.delete.title}">6. ZahlungStatistik löschen</h2>
             </div>
             <div class="description">
-                <p><strong>Beschreibung:</strong> Löscht eine ZahlungStatistik anhand der angegebenen ID.</p>
+                <p><strong th:text="#{api.description}">Beschreibung:</strong>
+                    <span th:text="#{api.delete.description}">Löscht eine ZahlungStatistik anhand der angegebenen ID.</span>
+                </p>
             </div>
             <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>DELETE /api/statistics/123</pre>
+                <strong th:text="#{api.example.request}">Beispiel Anfrage:</strong>
+                <pre th:text="#{api.delete.example.request}">DELETE /api/statistics/123</pre>
             </div>
             <div class="response">
-                <strong>Beispiel Antwort:</strong>
-                <pre>
-HTTP/1.1 204 No Content
-                </pre>
+                <strong th:text="#{api.example.response}">Beispiel Antwort:</strong>
+                <pre th:text="#{api.delete.example.response}">HTTP/1.1 204 No Content</pre>
             </div>
         </div>
 
     </div>
-
-    <h2>Fehlerbehandlung</h2>
-    <div class="endpoint-container">
-        <div class="endpoint">
-            <div class="endpoint-header">
-                <h2>Falsche Anfrage</h2>
-            </div>
-            <div class="description">
-                <p><strong>Beschreibung:</strong> Wenn eine falsche Anfrage gestellt wird, wie eine nicht definierte Route, gibt der Server einen Fehler zurück.</p>
-            </div>
-            <div class="example">
-                <strong>Beispiel Anfrage:</strong>
-                <pre>GET /api/nonexistent</pre>
-            </div>
-            <div class="response">
-                <strong>Beispiel Antwort:</strong>
-                <pre>
-HTTP/1.1 400 Bad Request
-{
-    "error": "Invalid endpoint or bad request"
-}
-                </pre>
-            </div>
-        </div>
-    </div>
-
 </div>
 </body>
 </html>

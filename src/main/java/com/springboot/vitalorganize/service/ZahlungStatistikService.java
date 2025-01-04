@@ -30,8 +30,8 @@ public class ZahlungStatistikService {
      *
      * @return Eine Liste aller Zahlungstatistiken
      */
-    public List<ZahlungStatistik> getAllZahlungStatistiken() {
-        return zahlungsStatistikRepositoryService.findAll();
+    public List<ZahlungStatistik> getAllZahlungStatistiken(Long fundId) {
+        return zahlungsStatistikRepositoryService.findAllByFundId(fundRepositoryService.findFundById(fundId));
     }
 
     /**
@@ -129,31 +129,41 @@ public class ZahlungStatistikService {
      * Erstellt oder aktualisiert eine Zahlungstatistik, basierend auf den übermittelten Daten.
      *
      * @param id Die ID der Zahlungstatistik (null für eine neue Statistik)
-     * @param request Die Anfrage mit den zu erstellenden oder zu aktualisierenden Daten
      * @return Die erstellte oder aktualisierte Zahlungstatistik
      */
-    public ZahlungStatistik createOrUpdateZahlungStatistik(Long id, ZahlungStatistikRequest request) {
-        // Start- und Enddatum aus der Anfrage parsen
+    public ZahlungStatistik createOrUpdateZahlungStatistik(Long id, Long fundId, String start, String end) {
+
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-        LocalDate startDate = LocalDate.parse(request.getStartDate(), formatter);
-        LocalDate endDate = LocalDate.parse(request.getEndDate(), formatter);
+        LocalDate startDate = LocalDate.parse(start, formatter);
+        LocalDate endDate = LocalDate.parse(end, formatter);
 
         // Überprüfen, ob eine bestehende Statistik vorhanden ist
         ZahlungStatistik existing = zahlungsStatistikRepositoryService.findById(id);
 
         if (existing != null) {
+            FundEntity fund = fundRepositoryService.findFundById(fundId);
             // Aktualisieren der bestehenden Statistik
-            existing.setFund(request.getFundId());
+            List<Payment> paymentsInPeriod = fund.getPayments().stream()
+                    .filter(payment -> {
+                        LocalDate paymentDate = payment.getDate().toLocalDate();
+                        return !paymentDate.isBefore(startDate) && !paymentDate.isAfter(endDate);
+                    })
+                    .toList();
+
+            // Berechnungen durchführen
+            double totalAmount = paymentsInPeriod.stream().mapToDouble(Payment::getAmount).sum();
+            long paymentCount = paymentsInPeriod.size();
+            double averageAmount = paymentCount > 0 ? totalAmount / paymentCount : 0.0;
+
+            existing.setFund(fundRepositoryService.findFundById(fundId));
             existing.setStartDate(startDate);
             existing.setEndDate(endDate);
+            existing.setTotalAmount(totalAmount);
+            existing.setAverageAmount(averageAmount);
+            existing.setPaymentCount(paymentCount);
             return zahlungsStatistikRepositoryService.saveStatistic(existing);
         } else {
-            // Erstellen einer neuen Statistik
-            ZahlungStatistik newStatistik = new ZahlungStatistik();
-            newStatistik.setFund(request.getFundId());
-            newStatistik.setStartDate(startDate);
-            newStatistik.setEndDate(endDate);
-            return zahlungsStatistikRepositoryService.saveStatistic(newStatistik);
+            return createZahlungStatistikWithMinimalInput(fundId, start, end);
         }
     }
 

@@ -26,7 +26,7 @@
           <button type="submit" class="search-button">
             <i class="fa fa-search"></i> <!-- Such-Icon -->
           </button>
-          <input type="text" name="query" placeholder="Search for a person" th:value="${query}">
+          <input type="text" name="query" th:placeholder="#{fund.search.person}" th:value="${query}">
         </div>
       </form>
     </div>
@@ -56,7 +56,7 @@
   </div>
   <div class="right-side-funds">
     <div class="simple-text">
-      <p>Only Persons in your Friendslist will appear here</p>
+      <p th:text="#{fund.new.placeholder}">Only Persons in your Friendslist will appear here</p>
     </div>
   </div>
 

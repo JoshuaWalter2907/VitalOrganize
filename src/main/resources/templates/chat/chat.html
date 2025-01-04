@@ -23,7 +23,7 @@
 
     <!-- Chats Header -->
     <div class="chats-header">
-      <h2>Chats</h2>
+      <h2 th:text="#{chat.header}">Chats</h2>
       <form th:action="@{/public-users}">
         <button type="submit" class="create-chat-btn">
           <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
@@ -38,7 +38,7 @@
           <button type="submit" class="search-button">
             <i class="fa fa-search"></i> <!-- Such-Icon -->
           </button>
-          <input type="text" name="query" placeholder="Search a chat" th:value="${query}">
+          <input type="text" name="query" th:placeholder="#{chat.search.chat}" th:value="${query}">
         </div>
       </form>
     </div>
@@ -141,7 +141,7 @@
         <span class="message-time" th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
       </div>
       <div th:if="${selectedUser == null && selectedGroup == null}">
-        <p>Bitte wählen Sie einen Benutzer oder eine Gruppe, um zu chatten.</p>
+        <p th:text="#{chat.main.placeholder}">Bitte wählen Sie einen Benutzer oder eine Gruppe, um zu chatten.</p>
       </div>
     </div>
 

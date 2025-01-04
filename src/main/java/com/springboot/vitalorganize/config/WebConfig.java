@@ -54,7 +54,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
                     // Weitere öffentlich zugängliche Endpunkte
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/api/**", "/api").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/api/**", "/api", "/change-theme", "/change-lang").permitAll();
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
 
                     // Geschützte Endpunkte
@@ -234,6 +234,11 @@ public class WebConfig implements WebMvcConfigurer {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
         interceptor.setParamName("lang");
         return interceptor;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(localeChangeInterceptor());
     }
 
     @Bean

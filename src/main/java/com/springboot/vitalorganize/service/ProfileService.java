@@ -213,7 +213,7 @@ public class ProfileService {
         currentUser.setUsername(username);
         currentUser.setBirthday(LocalDate.parse(birthdate));  // Beispiel: Geburtsdatum setzen
         if(!email.isBlank())
-            currentUser.setEmail(email);
+            currentUser.setSendtoEmail(email);
         userRepositoryService.saveUser(currentUser);
 
         return false;

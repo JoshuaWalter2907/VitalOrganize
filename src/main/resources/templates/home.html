@@ -16,96 +16,96 @@
 <body th:class="${theme}">
 <!-- Einfügen des Headers -->
 <div th:replace="fragments/header :: header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
-  <div class="main-container-homepage">
-    <h3>Erkunde unsere Funktionen</h3>
-    <p>Hier kannst du alles über die spannenden Features unserer Plattform erfahren. Klicke auf die jeweiligen Icons, um mehr zu entdecken.</p>
+<div class="main-container-homepage">
+  <h3 th:text="#{homepage.featuresTitle}"></h3>
+  <p th:text="#{homepage.featuresDescription}"></p>
 
-
-    <div class="container-left">
-      <div class="content-symbol">
-        <form th:action="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" method="get">
-          <button type="submit" class="search-button" style="font-size: 80px">
-            <i class="fa fa-commenting" aria-hidden="true"></i>
-          </button>
-        </form>
-      </div>
-      <div class="content">
-        <h2>Entdecke die Zukunft der Kommunikation!</h2>
-        <p>Verliere nie wieder den Überblick über deine Chats. Organisiere, plane und verfolge alle Gespräche an einem Ort – schneller, smarter, effizienter! Klicke hier und erlebe, wie einfach es ist, deine Kommunikation zu meistern!</p>
-      </div>
-      <div class="homepage-image">
-        <img src="https://www.medak.at/files/medak/user_data/fortbildungen_bilder/Kommunikation.jpg">
-      </div>
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-commenting" aria-hidden="true"></i>
+        </button>
+      </form>
     </div>
-
-    <div class="container-left">
-      <div class="homepage-image">
-        <img src="https://th.bing.com/th/id/R.39a931a4313606272190e142cc97c611?rik=0%2fpF2uMrLOFWZQ&pid=ImgRaw&r=0">
-      </div>
-      <div class="content">
-        <h2>Revolutioniere deine Küche!</h2>
-        <p>Entdecke kreative Rezepte, die deine Kochkünste auf das nächste Level heben. Einfach nachzukochen, raffiniert im Geschmack – klicke hier und lass dich von leckeren Ideen inspirieren!</p>
-      </div>
-      <div class="content-symbol">
-        <form th:action="@{/}" method="get">
-          <button type="submit" class="search-button" style="font-size: 80px">
-            <i class="fa fa-cutlery" aria-hidden="true"></i>
-          </button>
-        </form>
-      </div>
+    <div class="content">
+      <h2 th:text="#{homepage.communicationTitle}"></h2>
+      <p th:text="#{homepage.communicationDescription}"></p>
     </div>
-
-    <div class="container-left">
-      <div class="content-symbol">
-        <form th:action="@{/calendar}" method="get">
-          <button type="submit" class="search-button" style="font-size: 80px">
-            <i class="fa fa-calendar" aria-hidden="true"></i>
-          </button>
-        </form>
-      </div>
-      <div class="content">
-        <h2>Verwalte deine Zeit wie ein Profi!</h2>
-        <p>Nie wieder den Überblick verlieren – plane deine Termine und wichtigen Events in Sekundenschnelle. Hol dir jetzt deinen persönlichen Kalender und meistere deinen Alltag effizient und stressfrei!</p>
-      </div>
-      <div class="homepage-image">
-        <img src="https://arbeits-abc.de/wp-content/uploads/2020/10/zeit_vergeht.jpg">
-      </div>
+    <div class="homepage-image">
+      <img src="https://www.medak.at/files/medak/user_data/fortbildungen_bilder/Kommunikation.jpg">
     </div>
-
-    <div class="container-left">
-      <div class="homepage-image">
-        <img src="https://www.friedrich-verlag.de/fileadmin/user_upload/tx_vcfvhefteundartikel/541088-001/541088-001_teaser.jpg">
-      </div>
-      <div class="content">
-        <h2>Entfessele die Macht unserer API!</h2>
-        <p>Erschließe neue Möglichkeiten und integriere leistungsstarke Funktionen in deine Projekte. Alle Infos, die du brauchst, findest du hier – klicke jetzt und starte mit der Nutzung unserer API!</p>
-      </div>
-      <div class="content-symbol">
-        <form th:action="@{/api-docs}" method="get">
-          <button type="submit" class="search-button" style="font-size: 80px">
-            <i class="fa fa-question-circle" aria-hidden="true"></i>
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div class="container-left">
-      <div class="content-symbol">
-        <form th:action="@{/fund}" method="get">
-          <button type="submit" class="search-button" style="font-size: 80px">
-            <i class="fa fa-credit-card-alt" aria-hidden="true"></i>
-          </button>
-        </form>
-      </div>
-      <div class="content">
-        <h2>Mach deine WG stark – jetzt einzahlen!</h2>
-        <p>Verstärke den WG-Fund und sorg dafür, dass eure Gemeinschaft immer gut versorgt ist. Einfache Einzahlungen, große Wirkung – klicke hier und unterstütze eure WG-Finanzplanung!</p>
-      </div>
-      <div class="homepage-image">
-        <img src="https://th.bing.com/th/id/OIP.Uyi-95uh6u5UDa2zHKnpYAHaE7?rs=1&pid=ImgDetMain">
-      </div>
-    </div>
-
   </div>
+
+  <div class="container-left">
+    <div class="homepage-image">
+      <img src="https://th.bing.com/th/id/R.39a931a4313606272190e142cc97c611?rik=0%2fpF2uMrLOFWZQ&pid=ImgRaw&r=0">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.kitchenTitle}"></h2>
+      <p th:text="#{homepage.kitchenDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-cutlery" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/calendar}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-calendar" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.timeManagementTitle}"></h2>
+      <p th:text="#{homepage.timeManagementDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://arbeits-abc.de/wp-content/uploads/2020/10/zeit_vergeht.jpg">
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="homepage-image">
+      <img src="https://www.friedrich-verlag.de/fileadmin/user_upload/tx_vcfvhefteundartikel/541088-001/541088-001_teaser.jpg">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.apiTitle}"></h2>
+      <p th:text="#{homepage.apiDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/api-docs}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-question-circle" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/fund}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-credit-card-alt" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.wgFundTitle}"></h2>
+      <p th:text="#{homepage.wgFundDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://th.bing.com/th/id/OIP.Uyi-95uh6u5UDa2zHKnpYAHaE7?rs=1&pid=ImgDetMain">
+    </div>
+  </div>
+
+</div>
+
 </body>
 </html>

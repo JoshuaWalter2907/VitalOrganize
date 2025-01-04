@@ -20,9 +20,12 @@
 
 <div class="main-container">
     <div class="left-side">
-        <h1>In diesem Fund sind noch : <br><span th:text="${balance}"></span>€</h1>
+        <h1>
+            <span th:text="#{fund.delete.message}"></span>
+            <br><span th:text="${balance}"></span>€
+        </h1>
         <form method="post" th:action="@{/fund/payinto}" class="form-card">
-            <label>An wen soll das restliche Geld gesendet werden</label>
+            <label th:text="#{fund.to}">An wen soll das restliche Geld gesendet werden</label>
             <input type="hidden" name="fundid" th:value="${id}">
             <input type="hidden" name="type" value="AUSZAHLEN">
             <input type="hidden" class="form-control" name="amount" th:value="${balance}">
@@ -31,14 +34,14 @@
                 <input type="text" class="form-control" name="email" placeholder="E-mail">
             </div>
             <button class="search-button">
-                <span>Pay with PayPal</span>
+                <span th:text="#{fund.payout}">Pay with PayPal</span>
                 <i class="fa fa-credit-card" style="margin-left: 10px"></i>
             </button>
         </form>
     </div>
     <div class="right-side-funds">
         <div class="simple-text">
-            <p>Please make sure you really want to delete the fund</p>
+            <p th:text="#{fund.placeholder.deletion}">Please make sure you really want to delete the fund</p>
         </div>
     </div>
 
