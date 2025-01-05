@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+    <link rel="stylesheet" th:href="@{/css/statistics.css}">
+</head>
+<body th:class="${theme}">
+
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="main-container">
+        <div class="statistics-container">
+            <div id="statistics-title">
+                <h4 th:text="#{statistics.title}"></h4>
+            </div>
+            <div th:each="fund : ${fundsStatistics}" class="statistics-item">
+                <h3 th:text="#{statistics.description} + ': ' + ${fund.fundName}"></h3>
+                <div>
+                    <p th:text="#{statistics.totalDeposits} + ': ' + ${fund.statistics.totalDeposits} + '€'"></p>
+                    <p th:text="#{statistics.totalWithdrawals} + ': ' + ${fund.statistics.totalWithdrawals} + '€'"></p>
+                </div>
+                <div class="charts">
+                    <img th:src="'data:image/png;base64,' + ${fund.charts[0]}" alt="Line Chart" />
+                    <img th:src="'data:image/png;base64,' + ${fund.charts[1]}" alt="Bar Chart" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

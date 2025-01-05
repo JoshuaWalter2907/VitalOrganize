@@ -14,4 +14,7 @@ public interface FundRepository extends JpaRepository<FundEntity, Long> {
     List<FundEntity> findFundsByUserId(@Param("userId") Long userId);
 
     List<FundEntity> findByAdmin(UserEntity admin);
+
+    @Query("SELECT f.name FROM FundEntity f WHERE f.id = :id")
+    String findNameById(@Param("id") Long id);
 }

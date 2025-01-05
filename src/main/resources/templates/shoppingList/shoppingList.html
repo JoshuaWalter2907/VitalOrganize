@@ -8,11 +8,12 @@
   <!-- Einbinden des CSS-->
   <link rel="stylesheet" th:href="@{/css/ingredients.css}">
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
 
-  <!-- Boxicons Library für Icons -->
+    <!-- Boxicons Library für Icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
-<body>
+<body th:class="${theme}">
 <!-- Header einfügen -->
 <div th:replace="fragments/header :: header"></div>
 
@@ -24,7 +25,7 @@
             <div th:text="#{${error}}" class="error-message" style="margin-left: 10px"></div>
 
             <!-- Delete error button (X icon) -->
-            <form th:action="@{/shoppingList}" method="get" class="delete-error-form">
+            <form th:action="@{/templates/shoppingList}" method="get" class="delete-error-form">
                 <button type="submit" class="delete-error-button" style="background: none; border: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
                         <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
@@ -39,7 +40,7 @@
                 <span class="add-icon">
                     <!-- Add Icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
-                        <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="green"></path>
+                        <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill=#07F353></path>
                     </svg>
                 </span>
             </button>

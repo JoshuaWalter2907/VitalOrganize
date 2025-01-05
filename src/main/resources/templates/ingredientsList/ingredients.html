@@ -7,12 +7,13 @@
 
     <!-- Einbinden des CSS-->
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
     <link rel="stylesheet" th:href="@{/css/ingredients.css}">
 
     <!-- Boxicons Library für Icons -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
-<body>
+<body th:class="${theme}">
 <!-- Header einfügen -->
 <div th:replace="fragments/header :: header"></div>
 
@@ -40,7 +41,7 @@
                     <span class="add-icon">
                          <!-- Add-Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
-                            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="green"></path>
+                            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill=#07F353></path>
                         </svg>
                     </span>
                 </button>
@@ -99,7 +100,7 @@
                 <!-- Title for Remove from Shopping List -->
                 <span th:if="${ingredient.onShoppingList}" th:title="#{ingredient.remove.from.shoppinglist}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
-                        <path d="M4 7h11v2H4zm0 4h11v2H4zm0 4h7v2H4zm15.299-2.708-4.3 4.291-1.292-1.291-1.414 1.415 2.706 2.704 5.712-5.703z" fill="green"></path>
+                        <path d="M4 7h11v2H4zm0 4h11v2H4zm0 4h7v2H4zm15.299-2.708-4.3 4.291-1.292-1.291-1.414 1.415 2.706 2.704 5.712-5.703z" fill=#07F353></path>
                     </svg>
                 </span>
             </button>

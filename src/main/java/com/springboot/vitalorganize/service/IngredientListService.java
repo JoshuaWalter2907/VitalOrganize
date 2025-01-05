@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
-import com.springboot.vitalorganize.model.IngredientRepository;
+import com.springboot.vitalorganize.repository.IngredientRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;

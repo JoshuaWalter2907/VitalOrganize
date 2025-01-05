@@ -2,9 +2,9 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.dto.ShoppingListData;
 import com.springboot.vitalorganize.model.IngredientEntity;
-import com.springboot.vitalorganize.model.IngredientRepository;
+import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.model.ShoppingListItemEntity;
-import com.springboot.vitalorganize.model.ShoppingListItemRepository;
+import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -18,7 +18,6 @@ public class ShoppingListService {
     private final IngredientRepository ingredientRepository;
     private final TranslationService translationService;
     private final IngredientListService ingredientListService;
-
 
     public void addItem(
             Long userId,
