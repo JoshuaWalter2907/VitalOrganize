@@ -59,6 +59,6 @@ public class StatisticsController {
         }
 
         model.addAttribute("fundsStatistics", fundsStatistics);
-        return "statistics";
+        return "statistics/statistics";
     }
 }

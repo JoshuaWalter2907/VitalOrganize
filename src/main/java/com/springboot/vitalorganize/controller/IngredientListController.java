@@ -37,7 +37,7 @@ public class IngredientListController {
         List<IngredientEntity> ingredients = ingredientService.getAllIngredients(user_id);
         model.addAttribute("ingredients", ingredients);
 
-        return "ingredients";
+        return "ingredientsList/ingredients";
     }
 
     // add ingredient

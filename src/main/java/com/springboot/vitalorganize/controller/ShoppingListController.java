@@ -48,7 +48,7 @@ public class ShoppingListController {
 
         model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("shoppingListItems", shoppingListItems);
-        return "shoppingList";
+        return "shoppingList/shoppingList";
     }
 
     // add ingredient
