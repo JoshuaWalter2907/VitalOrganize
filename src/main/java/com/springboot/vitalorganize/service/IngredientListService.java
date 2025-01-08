@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,18 +64,19 @@ public class IngredientListService {
         return true;
     }
 
-    public void deleteIngredient(Long id) {
-        ingredientRepository.deleteById(id);
+    @Transactional
+    public void deleteIngredient(Long userId, Long ingredientId) {
+        ingredientRepository.deleteByUserIdAndIngredientId(userId, ingredientId);
     }
 
-    public void toggleFavourite(Long id) {
-        IngredientEntity ingredient = ingredientRepository.findById(id).orElseThrow(() -> new RuntimeException("Ingredient not found"));
+    public void toggleFavourite(Long userId, Long ingredientId) {
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, ingredientId).orElseThrow(() -> new RuntimeException("Ingredient not found"));
         ingredient.setFavourite(!ingredient.isFavourite()); // invert the favourite status
         ingredientRepository.save(ingredient);
     }
 
-    public void toggleOnShoppingList(Long id) {
-        IngredientEntity ingredient = ingredientRepository.findById(id).orElseThrow(() -> new RuntimeException("Ingredient not found"));
+    public void toggleOnShoppingList(Long userId, Long ingredientId) {
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, ingredientId).orElseThrow(() -> new RuntimeException("Ingredient not found"));
         ingredient.setOnShoppingList(!ingredient.isOnShoppingList()); // invert the onShoppingList status
         ingredientRepository.save(ingredient);
     }

@@ -227,8 +227,7 @@ public class GraphService {
 
         double lastKnownBalance = paymentRepository.findBalanceByDate((Long) transactions.getFirst()[0], startDate).orElse(0.0);;
         double initialBalance = lastKnownBalance;
-        System.out.println(lastKnownBalance + "id:" + transactions.getFirst()[0]);
-        // Populate balance for available transaction dates
+
         for (Object[] transaction : transactions) {
             LocalDateTime date = ((LocalDateTime) transaction[1]).toLocalDate().atStartOfDay();
             double netAmount = (double) transaction[2];
@@ -237,11 +236,10 @@ public class GraphService {
         }
 
         lastKnownBalance = initialBalance;
-        // Fill missing days with the last known balance
+        // Fill missing days with the balance of the previous day
         for (String date : dailyBalances.keySet()) {
             if (dailyBalances.get(date) == null) {
                 dailyBalances.put(date, lastKnownBalance);
-                System.out.println(lastKnownBalance);
             } else {
                 lastKnownBalance = dailyBalances.get(date);
             }

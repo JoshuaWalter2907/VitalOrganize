@@ -51,7 +51,7 @@ public class IngredientListController {
         } else if (filter != null) {                                                   // new filter is selected
             session.setAttribute("filter", filter);
             session.setAttribute("page", 0);
-        } else {                                                                       // current/default filter
+        } else {                                                                       // page loaded for the first time or was reloaded
             filter = (String) session.getAttribute("filter");
             if(filter == null) {
                 filter = "";
@@ -68,7 +68,7 @@ public class IngredientListController {
             session.setAttribute("sort", sort);
         }
 
-        // check if page was set to default 0 or given as parameter
+        // check if page was set to default or passed as a parameter
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
             page = Integer.parseInt(pageParam);
@@ -97,7 +97,6 @@ public class IngredientListController {
         model.addAttribute("sort", sort);
         model.addAttribute("page", ingredientsPage);
 
-
         return "ingredientsList/ingredients";
     }
 
@@ -108,24 +107,32 @@ public class IngredientListController {
             RedirectAttributes redirectAttributes,
             @AuthenticationPrincipal OAuth2User user,
             OAuth2AuthenticationToken token) {
-        Long user_id  = userService.getCurrentUser(user, token).getId();
+        Long userId = userService.getCurrentUser(user, token).getId();
 
-        ingredientService.addIngredient(user_id, name, redirectAttributes);
+        ingredientService.addIngredient(userId, name, redirectAttributes);
 
         return "redirect:/ingredients";
     }
 
     // delete ingredient
     @PostMapping("/delete/{id}")
-    public String deleteIngredient(@PathVariable("id") Long id) {
-        ingredientService.deleteIngredient(id);
+    public String deleteIngredient(@PathVariable("id") Long id,
+                                   @AuthenticationPrincipal OAuth2User user,
+                                   OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
+
+        ingredientService.deleteIngredient(userId, id);
         return "redirect:/ingredients";
     }
 
     // toggles the favourite status
     @PostMapping("/favourite/{id}")
-    public String toggleFavouriteIngredient(@PathVariable("id") Long id) {
-        ingredientService.toggleFavourite(id);
+    public String toggleFavouriteIngredient(@PathVariable("id") Long id,
+                                            @AuthenticationPrincipal OAuth2User user,
+                                            OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
+
+        ingredientService.toggleFavourite(userId, id);
         return "redirect:/ingredients";
     }
 
@@ -135,14 +142,15 @@ public class IngredientListController {
                                        RedirectAttributes redirectAttributes,
                                        @AuthenticationPrincipal OAuth2User user,
                                        OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
 
-        IngredientEntity ingredient = ingredientRepository.findById(id).orElseThrow();
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, id).orElseThrow();
 
         if(!ingredient.isOnShoppingList()){
             Long user_id  = userService.getCurrentUser(user, token).getId();
             shoppingListService.addItem(user_id, ingredient.getName(), redirectAttributes);
         } else {
-            shoppingListService.deleteItem(id);
+            shoppingListService.deleteItem(userId, id);
         }
 
         return "redirect:/ingredients";

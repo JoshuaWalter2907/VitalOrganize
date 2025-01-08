@@ -1,10 +1,6 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.dto.ShoppingListData;
-import com.springboot.vitalorganize.model.IngredientEntity;
-import com.springboot.vitalorganize.repository.IngredientRepository;
-import com.springboot.vitalorganize.model.ShoppingListItemEntity;
-import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
@@ -23,11 +19,8 @@ import java.util.List;
 @RequestMapping("/shoppingList")
 public class ShoppingListController {
 
-    private ShoppingListService shoppingListService;
-
-    private ShoppingListItemRepository shoppingListItemRepository;
-    private IngredientRepository ingredientRepository;
-    private UserService userService;
+    private final ShoppingListService shoppingListService;
+    private final UserService userService;
 
     // loads the shoppingList page
     @GetMapping()
@@ -35,11 +28,11 @@ public class ShoppingListController {
                             @AuthenticationPrincipal OAuth2User user,
                             OAuth2AuthenticationToken token) {
         Long user_id  = userService.getCurrentUser(user, token).getId();
+
         List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(user_id);
 
+        // limit display prices to 2 behind-the-comma-digits
         double totalPrice = 0;
-
-        // limit prices to 2 behind-the-comma-digits
         for(ShoppingListData shoppingListItem : shoppingListItems){
             shoppingListItem.setCalculatedPrice(Double.parseDouble(String.format("%.2f", shoppingListItem.getCalculatedPrice()).replace(",", ".")));
             totalPrice += shoppingListItem.getCalculatedPrice();
@@ -68,53 +61,28 @@ public class ShoppingListController {
 
     // delete ingredient
     @PostMapping("/delete/{id}")
-    public String deleteItem(@PathVariable("id") Long id) {
-        shoppingListService.deleteItem(id);
+    public String deleteItem(@PathVariable("id") Long id,
+                             @AuthenticationPrincipal OAuth2User user,
+                             OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
+
+        shoppingListService.deleteItem(userId, id);
         return "redirect:/shoppingList";
     }
 
-    @PostMapping("/editAmount/{id}")
-    public String editAmount(
+    @PostMapping("/updateAmount/{id}")
+    public String updateAmount(
             @PathVariable("id") Long id,
             @RequestParam("newAmount") String newAmountStr,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            @AuthenticationPrincipal OAuth2User user,
+            OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
 
-        // Retrieve the shopping list item by ID
-        ShoppingListItemEntity item = shoppingListItemRepository.findById(id)
-                .orElse(null);
-
-        // input validation
-        double newAmount;
-        try {
-            newAmount = Double.parseDouble(newAmountStr);
-
-            if (newAmount <= 0) {
-                redirectAttributes.addFlashAttribute("error", "shoppingList.error.notGreaterThanZero");
-                return "redirect:/shoppingList";
-            }
-        } catch (NumberFormatException e) {
-            // invalid input
-            redirectAttributes.addFlashAttribute("error", "shoppingList.error.notANumber");
-            return "redirect:/shoppingList";
+        String error = shoppingListService.updateAmount(userId, id, newAmountStr);
+        if(!error.isEmpty()){
+            redirectAttributes.addFlashAttribute("error", error);
         }
-
-        // Update the item amount
-        item.setPurchaseAmount(newAmount);
-
-        IngredientEntity ingredient = ingredientRepository.findById(id).orElse(null);
-
-        // get the standard price per 100g for example
-        double price = ingredient.getPrice();
-        double standardAmount = ingredient.getAmount();
-
-        // total price for the new amount
-        double newPrice = price / standardAmount * newAmount;
-
-        item.setCalculatedPrice(newPrice);
-
-        // Save the updated shopping list item to the repository
-        shoppingListItemRepository.save(item);
-
         return "redirect:/shoppingList";
     }
 

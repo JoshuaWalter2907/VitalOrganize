@@ -85,7 +85,7 @@
         <span th:text="${shoppingListItem.name}" class="item-name"></span>
         <span class="item-amount" style="display: flex; align-items: center;">
             <span th:text="${shoppingListItem.purchaseAmount} + ${shoppingListItem.unit}" style="margin-right: 10px"></span>
-            <form th:action="@{/shoppingList/editAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" style="display: flex; gap: 10px;">
+            <form th:action="@{/shoppingList/updateAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" style="display: flex; gap: 10px;">
             <label for="newAmount" style="display: none;"></label>
                 <!-- Input Field -->
             <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0px;  font-size: 14px; text-align: center;" required>
