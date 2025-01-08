@@ -48,8 +48,46 @@
             </form>
         </div>
     </div>
+    <div class="filtering-and-sorting">
+        <!-- Sorting -->
+        <div class="sorting">
+            <span th:text="#{ingredient.sort} + ': '" style="margin-right: 10px; font-size: 20px"></span>
+            <form th:action="@{/ingredients}" method="get" style="display: flex; align-items: center;">
+                <select name="sort" style="margin-right: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="alphabetical" th:selected="${sort == 'alphabetical'}" th:text="#{ingredient.sort.alphabetical}"></option>
+                    <option value="alphabeticalReverse" th:selected="${sort == 'alphabeticalReverse'}" th:text="#{ingredient.sort.alphabeticalReverse}"></option>
+                    <option value="insertionDate" th:selected="${sort == 'insertionDate'}" th:text="#{ingredient.sort.insertionDate}"></option>
+                    <option value="insertionDateReverse" th:selected="${sort == 'insertionDateReverse'}" th:text="#{ingredient.sort.insertionDateReverse}"></option>
+                </select>
+                <button type="submit" th:title="#{ingredient.sort.confirm}" style="border: none; background: none; padding: 0; cursor: pointer;">
+                    <!-- Confirm Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                        <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706z" fill="#07F353"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <!-- Filtering -->
+        <div class="filtering">
+            <span th:text="#{ingredient.filter} + ': '" style="margin-right: 10px; font-size: 20px"></span>
+            <form th:action="@{/ingredients}" method="get" style="margin-right: 10px;">
+                <button type="submit" name="filter" value="favourite"
+                        th:text="#{ingredient.filter.favourite}"
+                        style="padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;"
+                        th:style="'background-color:' + (${filter == 'favourite'} ? '#07F353' : '#f8f9fa')">
+                </button>
+            </form>
+            <form th:action="@{/ingredients}" method="get">
+                <button type="submit" name="filter" value="shoppingList"
+                        th:text="#{ingredient.filter.shoppingList}"
+                        th:style="'background-color:' + (${filter == 'shoppingList'} ? '#07F353' : '#f8f9fa')">
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- column titles -->
-    <div class="list-item">
+    <div class="list-item" style="font-size:20px">
         <span class="item-name" style="font-weight: bold;" th:text="#{ingredient.name}"></span>
         <span class="item-category" style="font-weight: bold;" th:text="#{ingredient.category}"></span>
         <span class="item-price" style="font-weight: bold;" th:text="#{ingredient.price}"></span>
@@ -131,6 +169,24 @@
                 </span>
             </button>
         </form>
+    </div>
+
+    <div class="custom-pagination">
+        <a th:if="${page.number > 1}"
+           th:href="@{/ingredients(page=0)}"
+           class="pagination-link" th:text="1"></a>
+        <span th:if="${page.totalPages > 3 and page.number > 2}">...</span>
+        <a th:if="${page.number > 0}"
+           th:href="@{/ingredients(page=${page.number - 1})}"
+           class="pagination-link" th:text="${page.number}"></a>
+        <a class="pagination-link active" th:text="${page.number + 1}"></a>
+        <a th:if="${page.number + 1 < page.totalPages - 1}"
+           th:href="@{/ingredients(page=${page.number + 1})}"
+           class="pagination-link" th:text="${page.number + 2}"></a>
+        <span th:if="${page.totalPages > 3 and page.number < page.totalPages - 3}">...</span>
+        <a th:if="${page.number < page.totalPages - 1}"
+           th:href="@{/ingredients(page=${page.totalPages - 1})}"
+           class="pagination-link" th:text="${page.totalPages}"></a>
     </div>
 </div>
 

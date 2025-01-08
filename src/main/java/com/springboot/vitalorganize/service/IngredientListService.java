@@ -3,10 +3,13 @@ package com.springboot.vitalorganize.service;
 import com.springboot.vitalorganize.model.IngredientEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -76,8 +79,39 @@ public class IngredientListService {
         ingredientRepository.save(ingredient);
     }
 
-    public List<IngredientEntity> getAllIngredients(Long userId) {
-        List<IngredientEntity> ingredients = ingredientRepository.findAllByUserId(userId);
-        return ingredients;
+    public Page<IngredientEntity> getAllIngredients(Long userId, Pageable pageable, String sort, String filter) {
+        // determine sorting functionality, default is sorting by ascending insertion date
+        Sort.Direction direction = Sort.Direction.ASC;
+        String sortBy = "id";
+
+        switch (sort) {
+            case "insertionDate":
+                sortBy = "id";
+                break;
+            case "insertionDateReverse":
+                direction = Sort.Direction.DESC;
+                sortBy = "id";
+                break;
+            case "alphabetical":
+                sortBy = "name";
+                break;
+            case "alphabeticalReverse":
+                direction = Sort.Direction.DESC;
+                sortBy = "name";
+                break;
+            default:
+                break;
+        }
+
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
+
+        if (filter.equals("favourite")) {
+            return ingredientRepository.findByUserIdAndFavourite(userId, sortedPageable);
+        } else if (filter.equals("shoppingList")) {
+            return ingredientRepository.findByUserIdAndOnShoppingList(userId, sortedPageable);
+        }
+
+        // without filters
+        return ingredientRepository.findAllByUserId(userId, sortedPageable);
     }
 }
