@@ -31,7 +31,7 @@ public interface ShoppingListItemRepository extends JpaRepository<ShoppingListIt
     void deleteByUserIdAndItemId(@Param("userId") Long userId,
                                  @Param("itemId") Long itemId);
     @Query("SELECT new com.springboot.vitalorganize.dto.ShoppingListData(" +
-            "i.id, i.name, COALESCE(s.purchaseAmount, 0), COALESCE(i.price, 0), i.amount, i.unit, COALESCE(s.calculatedPrice, 0))" +
+            "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice)" +
             "FROM ShoppingListItemEntity s " +
             "RIGHT JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +
             "WHERE i.userId = :userId AND i.onShoppingList = true")
@@ -39,7 +39,7 @@ public interface ShoppingListItemRepository extends JpaRepository<ShoppingListIt
 
 
     @Query("SELECT new com.springboot.vitalorganize.dto.ShoppingListData(" +
-            "i.id, i.name, COALESCE(s.purchaseAmount, 0), COALESCE(i.price, 0), i.amount, i.unit, COALESCE(s.calculatedPrice, 0)) " +
+            "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice) " +
             "FROM ShoppingListItemEntity s " +
             "RIGHT JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +
             "WHERE i.userId = :userId AND i.id = :ingredientId AND i.onShoppingList = true")

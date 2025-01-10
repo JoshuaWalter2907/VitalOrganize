@@ -30,7 +30,7 @@ public class IngredientListService {
 
         String englishName = translationService.translateQuery(name, "de", "en");
         if(englishName.startsWith("Translation failed:")){
-            // on translation fail (500 character api limit reached), try it with the original name, might be in english already
+            // on translation fail try it with the original name, might be in english already
             englishName = name;
         }
 
@@ -55,8 +55,6 @@ public class IngredientListService {
 
         // set other stuff taken from api
         ingredient.setCategory((String) ingredientData.get("category"));
-        ingredient.setAmount((double) ingredientData.get("amount"));
-        ingredient.setUnit((String) ingredientData.get("unit"));
         ingredient.setPrice((double) ingredientData.get("estimatedCostInEuros"));
 
         // save the ingredient

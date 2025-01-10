@@ -51,7 +51,6 @@ public class GlobalViewController {
         if(request.getParameter("lang") != null) {
             lang = request.getParameter("lang");
         };
-        System.out.println(lang);
         model.addAttribute("lang", lang);
 
         // Aktuell eingeloggten Benutzer über AuthenticationService abrufen

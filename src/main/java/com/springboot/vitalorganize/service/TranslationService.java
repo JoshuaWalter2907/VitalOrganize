@@ -17,26 +17,27 @@ public class TranslationService {
     private final WebClient webClient;
 
     public String translateQuery(String textToTranslate, String sourceLang, String targetLang) {
-        String apiUrl = "https://translation-api.translate.com/translate/v1/mt";
-        String translateApiKey = spoonacularConfig.getTranslateApiKey();
+        String apiUrl = "https://deep-translate1.p.rapidapi.com/language/translate/v2";
+        String rapidApiKey = spoonacularConfig.getTranslateApiKey();
 
         try {
             Mono<String> responseMono = webClient.post()
                     .uri(apiUrl)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
-                    .header("x-api-key", translateApiKey)
-                    .bodyValue("source_language=" + sourceLang +
-                            "&translation_language=" + targetLang +
-                            "&text=" + textToTranslate)
+                    .header("X-RapidAPI-Key", rapidApiKey)
+                    .header("X-RapidAPI-Host", "deep-translate1.p.rapidapi.com")
+                    .bodyValue("{\"q\":\"" + textToTranslate + "\",\"source\":\"" + sourceLang + "\",\"target\":\"" + targetLang + "\"}")
                     .retrieve()
                     .bodyToMono(String.class);
 
             String response = responseMono.block();
-            System.out.println(response);
             JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
 
-            return jsonObject.get("translation").getAsString();
+            return jsonObject.getAsJsonObject("data")
+                    .getAsJsonObject("translations")
+                    .get("translatedText")
+                    .getAsString();
         } catch (Exception e) {
             return "Translation failed: " + e.getMessage();
         }

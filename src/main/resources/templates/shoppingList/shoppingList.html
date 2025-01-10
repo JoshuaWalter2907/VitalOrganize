@@ -84,11 +84,11 @@
     <div th:each="shoppingListItem : ${shoppingListItems}" class="list-item" style="display: flex; align-items: center; justify-content: space-between;">
         <span th:text="${shoppingListItem.name}" class="item-name"></span>
         <span class="item-amount" style="display: flex; align-items: center;">
-            <span th:text="${shoppingListItem.purchaseAmount} + ${shoppingListItem.unit}" style="margin-right: 10px"></span>
+            <span th:text="${shoppingListItem.purchaseAmountInGrams} + 'g'" style="margin-right: 10px"></span>
             <form th:action="@{/shoppingList/updateAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" style="display: flex; gap: 10px;">
             <label for="newAmount" style="display: none;"></label>
                 <!-- Input Field -->
-            <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0px;  font-size: 14px; text-align: center;" required>
+            <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0;  font-size: 14px; text-align: center;" required>
                 <!-- Edit Icon Button -->
             <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
             <span class="add-icon">
@@ -100,7 +100,7 @@
             </button>
         </form>
         </span>
-        <span th:text="${shoppingListItem.calculatedPrice} + '€'" class="item-price"></span>
+        <span th:text="${shoppingListItem.calculatedPriceInEuros} + '€'" class="item-price"></span>
         <form th:action="@{/shoppingList/delete/{id}(id=${shoppingListItem.ingredientId})}" method="post" th:title="#{shoppingListItem.delete}" class="item-delete" style="flex: 0;">
             <button type="submit" class="delete-button" style="background: none; border: none; padding: 0; margin: 0;">
             <span class="delete-icon">

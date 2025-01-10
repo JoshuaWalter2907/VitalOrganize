@@ -18,7 +18,7 @@ public class ShoppingListItemEntity {
     private Long userId;
 
     @Column(name = "purchase_amount")
-    private double purchaseAmount;
+    private double purchaseAmount = 0;
 
     @Column(name = "calculated_price")
     private double calculatedPrice = 0;

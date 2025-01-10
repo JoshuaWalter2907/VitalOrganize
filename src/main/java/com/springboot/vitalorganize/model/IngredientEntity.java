@@ -21,12 +21,10 @@ public class IngredientEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false)
     private double price;
 
-    private double amount;
-
-    private String unit;
-
+    @Column(nullable = false)
     private String category;
 
     @Column(nullable = false)

@@ -125,7 +125,7 @@
     <div th:each="ingredient : ${ingredients}" class="list-item">
         <span th:text="${ingredient.name}" class="item-name" ></span>
         <span th:text="${ingredient.category}" class="item-category"></span>
-        <span th:text="${ingredient.price + '€/ ' + ingredient.amount + ingredient.unit}" class="item-price"></span>
+        <span th:text="${ingredient.price + '€/100g'}" class="item-price"></span>
         <form th:action="@{/ingredients/onShoppingList/{id}(id=${ingredient.id})}" method="post" class="shopping-list-add-remove-item">
             <input type="hidden" name="newItem" th:value="${ingredient.name}">
             <button type="submit" style="background: none; border: none;">

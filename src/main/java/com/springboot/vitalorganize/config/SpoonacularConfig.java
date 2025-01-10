@@ -13,7 +13,7 @@ public class SpoonacularConfig {
     @Value("${spoonacular.apikey}")
     private String spoonacularApiKey;
 
-    @Value("${translate.apikey}")
+    @Value("${rapidApi-DeepTranslate.apikey}")
     private String translateApiKey;
 
     @Bean

@@ -125,6 +125,7 @@ public class IngredientListController {
         return "redirect:/ingredients";
     }
 
+
     // toggles the favourite status
     @PostMapping("/favourite/{id}")
     public String toggleFavouriteIngredient(@PathVariable("id") Long id,

@@ -22,7 +22,6 @@ public class SpoonacularService {
     public Map<String, Object> getIngredientData(String query) throws IllegalArgumentException {
         int ingredientId = getIngredientId(query);
         Map<String, Object> ingredientData = getIngredientInformation(ingredientId);
-        System.out.println(ingredientData);
 
         return ingredientData;
     }
@@ -44,7 +43,6 @@ public class SpoonacularService {
 
         // Block to retrieve the JsonObject and process it
         JsonObject jsonObject = response.block();
-        System.out.println(response.block());
 
         return extractIngredientId(jsonObject);
     }
@@ -76,7 +74,6 @@ public class SpoonacularService {
 
         // Block to get the JsonObject and analyze it
         JsonObject ingredientInfo = response.block();
-        System.out.println(response.block());
         // at this point the existence of the ingredient info is no longer in question
         return analyseIngredientData(ingredientInfo);
     }
@@ -86,8 +83,6 @@ public class SpoonacularService {
     public Map<String, Object> analyseIngredientData(JsonObject jsonObject) {
         // Extract values from the JSON object
         String category = jsonObject.get("aisle").getAsString();
-        double amount = jsonObject.get("amount").getAsDouble();
-        String unit = jsonObject.get("unit").getAsString();
         double estimatedCostInCents = jsonObject.getAsJsonObject("estimatedCost").get("value").getAsDouble();
 
         // Convert cost to EUR
@@ -96,14 +91,9 @@ public class SpoonacularService {
         // round cost to 2 digits
         estimatedCostInEuros = (double) Math.round(estimatedCostInEuros * 100) /100;
 
-        // round amount to whole number
-        amount = Math.round(amount);
-
         // return a result map
         return Map.of(
                 "category", category,
-                "amount", amount,
-                "unit", unit,
                 "estimatedCostInEuros", estimatedCostInEuros
         );
     }

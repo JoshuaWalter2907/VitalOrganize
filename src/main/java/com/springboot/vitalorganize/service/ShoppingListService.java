@@ -25,6 +25,14 @@ public class ShoppingListService {
         return shoppingListItemRepository.existsByUserIdAndItemId(userId, itemId);
     }
 
+    public String extractAccessToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7); // Entfernt "Bearer " und gibt das Token zurück
+        } else {
+            throw new IllegalArgumentException("Der Authorization-Header muss im Format 'Bearer <token>' sein.");
+        }
+    }
+
     public void addItem(
             Long userId,
             String name,
@@ -34,18 +42,16 @@ public class ShoppingListService {
 
         Long ingredientId;
         IngredientEntity existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
+        String originalName = name;
 
         if(existingIngredient == null){
-            // try again with translated ingredient name
-            name = translationService.translateQuery(name, "de", "en");
-            existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
-            if(name.startsWith("Translation failed:")){
-                if (redirectAttributes != null) {
-                    redirectAttributes.addFlashAttribute("error", "shoppingList.error.translationFailed");
-                    return;
-                } else {
-                    throw new IllegalArgumentException("Translation failed for the ingredient name.");
-                }
+            // also check with the translated ingredient name
+            String englishName = translationService.translateQuery(name, "de", "en");
+            existingIngredient = ingredientRepository.findByUserIdAndName(userId, englishName);
+            name = englishName;
+            if(englishName.startsWith("Translation failed:")){
+                redirectAttributes.addFlashAttribute("error", "shoppingList.error.translationFailed");
+                name = originalName;
             }
         }
 
@@ -118,19 +124,18 @@ public class ShoppingListService {
 
         IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, itemId).orElse(null);
 
-        // get the standard price per 100g
+        // get the price per 100g
         double price = ingredient.getPrice();
-        double standardAmount = ingredient.getAmount();
 
         // total price for the new amount
-        double newPrice = price / standardAmount * newAmount;
+        double newPrice = price/100 * newAmount;
 
         item.setCalculatedPrice(newPrice);
 
         // Save the updated shopping list item to the repository
         shoppingListItemRepository.save(item);
 
-        // no error
+        // no error return
         return "";
     }
 

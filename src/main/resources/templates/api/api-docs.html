@@ -200,5 +200,140 @@
 
     </div>
 </div>
+<div class="main-container-profile">
+    <p th:text="#{api.shoppingList.title} + ':'"></p>
+
+    <div class="endpoint-container">
+
+        <!-- Endpoint 1 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2 th:text="'1. ' + #{api.shoppingList.getAll.title}"></h2>
+            </div>
+            <div class="description">
+                <p><strong th:text="#{api.shoppingList.description} + ':'"></strong>
+                    <span th:text="#{api.shoppingList.getAll.description}"></span>
+                </p>
+            </div>
+            <div class="example">
+                <strong th:text="#{api.shoppingList.request} + ':'"></strong>
+                <pre>GET /api/shoppingList/all</pre>
+            </div>
+            <div class="response">
+                <strong th:text="#{api.shoppingList.response} + ':'"></strong>
+                <pre>
+[
+    {
+        "ingredientId": 134,
+        "name": "Flour",
+        "purchaseAmountInGrams": 1000.0,
+        "priceInEuroPerHundredGrams": 0.13,
+        "calculatedPriceInEuros": 1.3
+    },
+    {
+        "ingredientId": 136,
+        "name": "Butter",
+        "purchaseAmountInGrams": 250.0,
+        "priceInEuroPerHundredGrams": 0.38,
+        "calculatedPriceInEuros": 0.95
+    },
+    ...
+]
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 2 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2 th:text="'2. ' + #{api.shoppingList.create.title}"></h2>
+            </div>
+            <div class="description">
+                <p><strong th:text="#{api.shoppingList.description} + ':'"></strong>
+                    <span th:text="#{api.shoppingList.create.description}"></span>
+                </p>
+            </div>
+            <div class="example">
+                <strong th:text="#{api.shoppingList.request} + ':'"></strong>
+                <pre>POST /api/shoppingList?ingredientName=Eggs</pre>
+            </div>
+            <div class="response">
+                <strong th:text="#{api.shoppingList.response} + ':'"></strong>
+                <pre>
+Item added successfully.
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 3 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2 th:text="'3. ' + #{api.shoppingList.get.title}"></h2>
+            </div>
+            <div class="description">
+                <p><strong th:text="#{api.shoppingList.description} + ':'"></strong>
+                    <span th:text="#{api.shoppingList.get.description}"></span>
+                </p>
+            </div>
+            <div class="example">
+                <strong th:text="#{api.shoppingList.request} + ':'"></strong>
+                <pre>GET /api/shoppingList/148</pre>
+            </div>
+            <div class="response">
+                <strong th:text="#{api.shoppingList.response} + ':'"></strong>
+                <pre>
+{
+    "ingredientId": 148,
+    "name": "Grapes",
+    "purchaseAmountInGrams": 500.0,
+    "priceInEuroPerHundredGrams": 0.42,
+    "calculatedPriceInEuros": 2.1
+}
+                </pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 4 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2 th:text="'4. ' + #{api.shoppingList.delete.title}"></h2>
+            </div>
+            <div class="description">
+                <p><strong th:text="#{api.shoppingList.description} + ':'"></strong>
+                    <span th:text="#{api.shoppingList.delete.description}"></span>
+                </p>
+            </div>
+            <div class="example">
+                <strong th:text="#{api.shoppingList.request} + ':'"></strong>
+                <pre>DELETE /api/shoppingList/1</pre>
+            </div>
+            <div class="response">
+                <strong th:text="#{api.shoppingList.response} + ':'"></strong>
+                <pre>HTTP/1.1 204 No Content</pre>
+            </div>
+        </div>
+
+        <!-- Endpoint 5 -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <h2 th:text="'5. ' + #{api.shoppingList.update.title}"></h2>
+            </div>
+            <div class="description">
+                <p><strong th:text="#{api.shoppingList.description} + ':'"></strong>
+                    <span th:text="#{api.shoppingList.update.description}"></span>
+                </p>
+            </div>
+            <div class="example">
+                <strong th:text="#{api.shoppingList.request} + ':'"></strong>
+                <pre>PUT /api/shoppingList/148/amount?newAmount=750</pre>
+            </div>
+            <div class="response">
+                <strong th:text="#{api.shoppingList.response} + ':'"></strong>
+                <pre>Item updated successfully.</pre>
+            </div>
+        </div>
+
+    </div>
+</div>
 </body>
 </html>

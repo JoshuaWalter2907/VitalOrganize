@@ -34,8 +34,8 @@ public class ShoppingListController {
         // limit display prices to 2 behind-the-comma-digits
         double totalPrice = 0;
         for(ShoppingListData shoppingListItem : shoppingListItems){
-            shoppingListItem.setCalculatedPrice(Double.parseDouble(String.format("%.2f", shoppingListItem.getCalculatedPrice()).replace(",", ".")));
-            totalPrice += shoppingListItem.getCalculatedPrice();
+            shoppingListItem.setCalculatedPriceInEuros(Double.parseDouble(String.format("%.2f", shoppingListItem.getCalculatedPriceInEuros()).replace(",", ".")));
+            totalPrice += shoppingListItem.getCalculatedPriceInEuros();
         }
         totalPrice = Double.parseDouble(String.format("%.2f", totalPrice).replace(",", "."));
 
@@ -85,7 +85,4 @@ public class ShoppingListController {
         }
         return "redirect:/shoppingList";
     }
-
-
-
 }

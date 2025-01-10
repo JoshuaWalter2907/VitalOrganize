@@ -1,14 +1,13 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.dto.ShoppingListData;
+import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.ShoppingListService;
-import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,21 +18,22 @@ import java.util.List;
 public class ShoppingListApiController {
 
     private final ShoppingListService shoppingListService;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     // Return the whole shopping list
     @GetMapping("/all")
-    public ResponseEntity<?> getAllItems(@AuthenticationPrincipal OAuth2User user,
-                                         OAuth2AuthenticationToken token) {
+    public ResponseEntity<?> getAllItems(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
-            Long userId = userService.getCurrentUser(user, token).getId();
+            String token = shoppingListService.extractAccessToken(authorizationHeader);
+            UserEntity userEntity = userRepository.findByToken(token);
+            Long userId = userEntity.getId();
+
             List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
 
             // Limit prices to 2 decimal places
-            shoppingListItems.forEach(item -> item.setCalculatedPrice(
-                    Double.parseDouble(String.format("%.2f", item.getCalculatedPrice()).replace(",", "."))
+            shoppingListItems.forEach(item -> item.setCalculatedPriceInEuros(
+                    Double.parseDouble(String.format("%.2f", item.getCalculatedPriceInEuros()).replace(",", "."))
             ));
-
             return ResponseEntity.ok(shoppingListItems);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the shopping list.");
@@ -43,10 +43,11 @@ public class ShoppingListApiController {
     // Add an item to the shopping list
     @PostMapping
     public ResponseEntity<?> addItem(@RequestParam("ingredientName") String name,
-                                     @AuthenticationPrincipal OAuth2User user,
-                                     OAuth2AuthenticationToken token) {
+                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
-            Long userId = userService.getCurrentUser(user, token).getId();
+            String token = shoppingListService.extractAccessToken(authorizationHeader);
+            UserEntity userEntity = userRepository.findByToken(token);
+            Long userId = userEntity.getId();
 
             // redirectAttributes null, so the service can give an api adjusted error response
             shoppingListService.addItem(userId, name, null);
@@ -62,10 +63,12 @@ public class ShoppingListApiController {
     // Delete an item from the shopping list
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id,
-                                        @AuthenticationPrincipal OAuth2User user,
-                                        OAuth2AuthenticationToken token) {
+                                        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
-            Long userId = userService.getCurrentUser(user, token).getId();
+            String token = shoppingListService.extractAccessToken(authorizationHeader);
+            UserEntity userEntity = userRepository.findByToken(token);
+            Long userId = userEntity.getId();
+
             shoppingListService.deleteItem(userId, id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
@@ -79,10 +82,12 @@ public class ShoppingListApiController {
     @PutMapping("/{id}/amount")
     public ResponseEntity<?> updateItemAmount(@PathVariable Long id,
                                               @RequestParam("newAmount") String newAmountStr,
-                                              @AuthenticationPrincipal OAuth2User user,
-                                              OAuth2AuthenticationToken token) {
+                                              @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
-            Long userId = userService.getCurrentUser(user, token).getId();
+            String token = shoppingListService.extractAccessToken(authorizationHeader);
+            UserEntity userEntity = userRepository.findByToken(token);
+            Long userId = userEntity.getId();
+
             String error = shoppingListService.updateAmount(userId, id, newAmountStr);
 
             if (!error.isEmpty()) {
@@ -98,10 +103,11 @@ public class ShoppingListApiController {
     // Return an item from the shopping list
     @GetMapping("/{id}")
     public ResponseEntity<?> getItem(@PathVariable Long id,
-                                     @AuthenticationPrincipal OAuth2User user,
-                                     OAuth2AuthenticationToken token) {
+                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
-            Long userId = userService.getCurrentUser(user, token).getId();
+            String token = shoppingListService.extractAccessToken(authorizationHeader);
+            UserEntity userEntity = userRepository.findByToken(token);
+            Long userId = userEntity.getId();
 
             if (!shoppingListService.checkIfIdExists(userId, id)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Item with ID " + id + " not found.");
