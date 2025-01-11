@@ -35,7 +35,7 @@
         </div>
         <form th:action="@{/shoppingList/add}" method="post" class="add-ingredient" style="display: flex; align-items: center;">
             <label for="ingredientName"></label>
-            <input id="ingredientName" name="ingredientName" type="text" placeholder="Zutat hinzufuegen" required>
+            <input id="ingredientName" name="ingredientName" type="text" th:placeholder="#{shoppingListItem.new}" required>
             <button type="submit" class="add-button" style="background: none; border: none;">
                 <span class="add-icon">
                     <!-- Add Icon -->

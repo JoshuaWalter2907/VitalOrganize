@@ -29,6 +29,7 @@ public interface IngredientRepository extends JpaRepository<IngredientEntity, Lo
             "WHERE e.userId = :userId AND e.id = :ingredientId")
     void deleteByUserIdAndIngredientId(@Param("userId") Long userId,
                                        @Param("ingredientId") Long ingredientId);
+
     // Pagination methods
     @Query("SELECT i FROM IngredientEntity i WHERE i.userId = :userId AND i.favourite = true")
     Page<IngredientEntity> findByUserIdAndFavourite(@Param("userId") Long userId, Pageable pageable);

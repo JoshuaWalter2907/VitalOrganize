@@ -1,10 +1,12 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
+import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.service.IngredientListService;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import com.springboot.vitalorganize.service.UserService;
+import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,7 @@ public class IngredientListController {
     private final IngredientListService ingredientService;
     private final UserService userService;
     private final ShoppingListService shoppingListService;
+    private final UserRepositoryService userRepositoryService;
 
     // loads the main ingredients page
     @GetMapping
@@ -39,7 +42,7 @@ public class IngredientListController {
                                   @RequestParam(required=false) String sort,
                                   @RequestParam(required=false) String filter
     ) {
-        int pageSize = 8;
+        int pageSize = 7;
         Long userId = userService.getCurrentUser(user, token).getId();
         HttpSession session = request.getSession();
 
@@ -96,6 +99,9 @@ public class IngredientListController {
         model.addAttribute("filter", filter);
         model.addAttribute("sort", sort);
         model.addAttribute("page", ingredientsPage);
+
+        UserEntity userEntity = userRepositoryService.findUserById(userId);
+        model.addAttribute("priceReportsEnabled", userEntity.isPriceReportsEnabled());
 
         return "ingredientsList/ingredients";
     }
@@ -157,5 +163,26 @@ public class IngredientListController {
         return "redirect:/ingredients";
     }
 
+
+    @PostMapping("/priceReportEmail")
+    public String togglePriceReportEmail(@AuthenticationPrincipal OAuth2User user,
+                                         OAuth2AuthenticationToken token) {
+        Long userId = userService.getCurrentUser(user, token).getId();
+
+        userService.togglePriceReportEmail(userId);
+        return "redirect:/ingredients";
+    }
+
+
+    @PostMapping("/sendPriceReportEmail")
+    public String sendPriceReportEmail(@AuthenticationPrincipal OAuth2User user,
+                                       OAuth2AuthenticationToken token,
+                                       Model model) {
+        Long userId = userService.getCurrentUser(user, token).getId();
+
+        ingredientService.sendEmailWithPrices(userId);
+        model.addAttribute("message", "Email has been sent successfully.");
+        return "redirect:/ingredients";
+    }
 
 }

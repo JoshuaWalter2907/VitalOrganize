@@ -21,7 +21,7 @@ public class IngredientEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name ="price_per_100_grams", nullable = false)
     private double price;
 
     @Column(nullable = false)

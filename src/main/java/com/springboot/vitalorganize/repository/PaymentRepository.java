@@ -47,6 +47,6 @@ public interface PaymentRepository  extends JpaRepository<Payment, Long> {
     @Query("SELECT p.balance " +
             "FROM Payment p " +
             "WHERE p.fund.id = :fundId " +
-            "AND p.date >= :startDate " +
+            "AND p.date <= :startDate " +
             "ORDER BY p.date ASC LIMIT 1")
     Optional<Double> findBalanceByDate(@Param("fundId") Long fundId, @Param("startDate") LocalDateTime startDate);}

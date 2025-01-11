@@ -37,6 +37,10 @@ public class StatisticsController {
                                  Model model) {
         Long userId  = userService.getCurrentUser(user, token).getId();
 
+        // premium function, requires membership
+        if(!userService.getCurrentUser(user, token).isMember()){
+            return "home";
+        }
         List<Long> fundIds = paymentRepository.findFundsByUser(userId);
 
         LocalDateTime startDate = LocalDateTime.now().minusDays(30);

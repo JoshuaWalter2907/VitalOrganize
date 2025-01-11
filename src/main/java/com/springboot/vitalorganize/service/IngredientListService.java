@@ -1,6 +1,7 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.model.IngredientEntity;
+import com.springboot.vitalorganize.model.UserEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ public class IngredientListService {
     private final IngredientRepository ingredientRepository;
     private final SpoonacularService spoonacularService;
     private final TranslationService translationService;
+    private final SenderService senderService;
+    private final UserService userService;
 
     // Methode zum Hinzufügen einer Zutat
     // limited to 100 api calls per day
@@ -113,5 +116,30 @@ public class IngredientListService {
 
         // without filters
         return ingredientRepository.findAllByUserId(userId, sortedPageable);
+    }
+
+    // send an email with all the prices of your favorite ingredients
+    public void sendEmailWithPrices(Long userId){
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<IngredientEntity> favoriteIngredients = ingredientRepository.findByUserIdAndFavourite(userId, pageable);
+        StringBuilder emailText = new StringBuilder("Dear Customer,\n\nthese are the current prices for all your favourite ingredients: \n\n------------------------------\n");
+
+        for (int i=0; i<favoriteIngredients.getTotalPages(); i++) {
+            favoriteIngredients = ingredientRepository.findByUserIdAndFavourite(userId, pageable.withPage(i));
+
+            for (IngredientEntity ingredient : favoriteIngredients.getContent()) {
+                emailText.append(String.format("%s: %.2f€/100g\n", ingredient.getName(), ingredient.getPrice()));
+            }
+        }
+        emailText.append("------------------------------\n\nKind regards,\nYour VitalOrganize Team");
+        // Email abrufen
+        UserEntity userEntity = userService.getUserById(userId);
+        String email = userEntity.getEmail();
+        // Alternative E-Mail für bestimmte Provider verwenden
+        if ("github".equals(userEntity.getProvider()) && userEntity.getSendtoEmail() != null) {
+            email = userEntity.getSendtoEmail();
+        }
+
+        senderService.sendEmail(email, "Report of your favourite ingredients and their prices", emailText.toString());
     }
 }

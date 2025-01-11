@@ -70,6 +70,9 @@ public class UserEntity {
     @Column(name = "sendtoameil", length = 1024, nullable = true)
     private String sendtoEmail;
 
+    @Column(name = "price_reports_enabled", nullable = false)
+    private boolean priceReportsEnabled = false;
+
     @JsonIgnore
     @ManyToMany
     @JoinTable(

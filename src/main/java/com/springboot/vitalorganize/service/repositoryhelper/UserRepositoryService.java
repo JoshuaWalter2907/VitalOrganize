@@ -115,4 +115,13 @@ public class UserRepositoryService {
         // Sucht nach einem Benutzer mit dem angegebenen Zugangstoken
         return userRepository.findByToken(accessToken);
     }
+
+    public void togglePriceReportsEnabled(Long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userEntity.setPriceReportsEnabled(!userEntity.isPriceReportsEnabled());
+        userRepository.save(userEntity);
+    }
+
 }

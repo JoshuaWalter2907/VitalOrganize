@@ -328,4 +328,10 @@ public class UserService {
         }
         return user.getAttribute("email");
     }
+
+    public void togglePriceReportEmail(Long userId) {
+        userRepositoryService.togglePriceReportsEnabled(userId);
+    }
+
+
 }

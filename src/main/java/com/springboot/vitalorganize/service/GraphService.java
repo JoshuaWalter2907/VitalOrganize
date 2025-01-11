@@ -37,7 +37,7 @@ public class GraphService {
 
         // Preprocess the raw data into the appropriate format for the bar and line charts
         Map<String, Double> barData = preprocessBarChartData(dailyData, startDate); // Preprocess bar chart data
-        Map<String, Double> lineData = preprocessLineChartData(dailyData, startDate); // Preprocess line chart data
+        Map<String, Double> lineData = preprocessLineChartData(dailyData, startDate, fundId); // Preprocess line chart data
 
         // Extract the labels (dates) from the processed data
         List<String> labels = new ArrayList<>(barData.keySet()); // Labels are the dates (keys of the map)
@@ -216,7 +216,7 @@ public class GraphService {
         return dailyNetAmounts;
     }
 
-    private Map<String, Double> preprocessLineChartData(List<Object[]> transactions, LocalDateTime startDate) {
+    private Map<String, Double> preprocessLineChartData(List<Object[]> transactions, LocalDateTime startDate, Long fundId) {
         Map<String, Double> dailyBalances = new LinkedHashMap<>();
 
         // Initialize with all days in the past 30 days
@@ -225,8 +225,9 @@ public class GraphService {
             dailyBalances.put(date.toLocalDate().toString(), null);
         }
 
-        double lastKnownBalance = paymentRepository.findBalanceByDate((Long) transactions.getFirst()[0], startDate).orElse(0.0);;
-        double initialBalance = lastKnownBalance;
+        Optional<Double> initialBalanceOpt = paymentRepository.findBalanceByDate(fundId, startDate);
+        double initialBalance = initialBalanceOpt.orElse(0.0);
+        double lastKnownBalance = initialBalance;
 
         for (Object[] transaction : transactions) {
             LocalDateTime date = ((LocalDateTime) transaction[1]).toLocalDate().atStartOfDay();

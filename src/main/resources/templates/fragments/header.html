@@ -26,6 +26,10 @@
             <input type="hidden" name="theme" value="red">
             <button type="submit" th:text="#{header.theme.rot}">Red</button>
           </form>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="gray">
+            <button type="submit" th:text="#{header.theme.gray}">Gray</button>
+          </form>
         </div>
       </div>
 
@@ -72,8 +76,11 @@
     <a th:text="#{header.chat}" th:href="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip">Chat</a>
     <a th:text="#{header.rezepte}" th:href="@{/}">Rezepte</a>
     <a th:text="#{header.kalender}" th:href="@{/}">Kalender</a>
+    <a th:text="#{header.ingredients}" th:href="@{/ingredients}">Zutatenliste</a>
+    <a th:text="#{header.shoppingList}" th:href="@{/shoppingList}">Einkaufsliste</a>
     <a th:text="#{header.api}" th:href="@{/api-docs}">API</a>
     <a th:text="#{header.einzahlungen}" th:href="@{/fund}">Einzahlungen</a>
+    <a th:text="#{header.statistics}" th:href="@{/statistics}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip">Statistiken</a>
   </div>
 
 </header>
