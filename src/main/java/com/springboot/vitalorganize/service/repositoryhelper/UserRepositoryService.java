@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

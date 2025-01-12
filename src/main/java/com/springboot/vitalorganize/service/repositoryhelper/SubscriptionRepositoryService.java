@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.SubscriptionEntity;
+import com.springboot.vitalorganize.entity.SubscriptionEntity;
 import com.springboot.vitalorganize.repository.SubscriptionRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

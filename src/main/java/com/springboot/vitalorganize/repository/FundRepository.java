@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.model.FundEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.FundEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

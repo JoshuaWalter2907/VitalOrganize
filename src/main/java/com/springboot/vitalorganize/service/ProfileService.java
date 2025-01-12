@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.ProfileRequest;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.model.ProfileRequest;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;

@@ -1,9 +1,8 @@
 package com.springboot.vitalorganize.controller;
 
 import com.paypal.base.rest.PayPalRESTException;
-import com.springboot.vitalorganize.dto.FundDetailsDto;
-import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.repository.FundRepository;
+import com.springboot.vitalorganize.model.FundDetailsDto;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.FundService;
 import com.springboot.vitalorganize.service.PaypalService;
 import com.springboot.vitalorganize.service.UserService;

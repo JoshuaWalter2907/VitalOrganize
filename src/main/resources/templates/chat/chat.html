@@ -15,8 +15,7 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="fragments/header :: header" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
-
+<div th:replace="fragments/header :: header" id="header"></div>
 
 <div class="main-container">
   <div class="left-container">
@@ -38,33 +37,28 @@
           <button type="submit" class="search-button">
             <i class="fa fa-search"></i> <!-- Such-Icon -->
           </button>
-          <input type="text" name="query" th:placeholder="#{chat.search.chat}" th:value="${query}">
+          <input type="text" name="query" th:placeholder="#{chat.search.chat}" th:value="${chatData.query}">
         </div>
       </form>
     </div>
 
     <!-- Chat List -->
     <div class="chat-list">
-      <div th:each="chatDetail : ${chatDetails}" class="chat-box">
+      <div th:each="chatDetail : ${chatData.chatDetails}" class="chat-box">
 
         <!-- Einzelchat -->
         <a th:if="${chatDetail.directChat != null}"
-           th:href="@{/chat(user2=${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.id : chatDetail.directChat.user1.id})}"
+           th:href="@{/chat(user2=${chatDetail.directChat.user1.id == chatData.senderId ? chatDetail.directChat.user2.id : chatDetail.directChat.user1.id})}"
            class="chat-link">
           <div class="chat-details">
-            <!-- Benutzerbild (links) -->
             <div class="user-img">
-              <img th:src="${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.profilePictureUrl : chatDetail.directChat.user1.profilePictureUrl}"
+              <img th:src="${chatDetail.directChat.user1.id == chatData.senderId ? chatDetail.directChat.user2.profilePictureUrl : chatDetail.directChat.user1.profilePictureUrl}"
                    alt="User Image">
             </div>
-
-            <!-- Benutzername und letzte Nachricht -->
             <div class="chat-info">
-              <h4 th:text="${chatDetail.directChat.user1.id == SenderId ? chatDetail.directChat.user2.username : chatDetail.directChat.user1.username}">Participant Name</h4>
+              <h4 th:text="${chatDetail.directChat.user1.id == chatData.senderId ? chatDetail.directChat.user2.username : chatDetail.directChat.user1.username}">Participant Name</h4>
               <p th:text="${chatDetail.lastMessage}">Last message</p>
             </div>
-
-            <!-- Uhrzeit der letzten Nachricht (rechts) -->
             <div class="chat-time">
               <span th:text="${#temporals.format(chatDetail.lastMessageTime, 'HH:mm')}">Time</span>
             </div>
@@ -75,17 +69,13 @@
         <a th:if="${chatDetail.groupChat != null}"
            th:href="@{/chat(group=${chatDetail.groupChat.id})}" class="chat-link">
           <div class="chat-details">
-
             <div class="user-img">
               <img th:src="@{/images/GroupIcon.jpg}" alt="User Image">
             </div>
-            <!-- Gruppenname -->
             <div class="chat-info">
               <h4 th:text="${chatDetail.groupChat.name}">Group Name</h4>
               <p th:text="${chatDetail.lastMessage}">Last message</p>
             </div>
-
-            <!-- Uhrzeit der letzten Nachricht -->
             <div class="chat-time">
               <span th:text="${#temporals.format(chatDetail.lastMessageTime, 'HH:mm')}">Time</span>
             </div>
@@ -95,38 +85,38 @@
     </div>
   </div>
 
-    <div class="right-container">
+  <div class="right-container">
     <!--header -->
-      <div class="chat-header">
-        <div class="img-text">
-          <div th:if="${otherUsername != null}" class="user-img">
-            <img class="dp" th:src="${otherUserPicture}" alt="">
-          </div>
-          <div th:if="${otherUsername == null && GroupId != null}" class="user-img">
-            <img class="dp" th:src="@{/images/GroupIcon.jpg}" alt="">
-          </div>
-          <h4 th:if="${otherUsername != null}">
-            <span th:text="${otherUsername}"></span><br>
-          </h4>
-          <h4 th:if="${otherUsername == null && GroupId != null}">
-            <span th:text="${selectedGroup.name}"></span><br>
-          </h4>
+    <div class="chat-header">
+      <div class="img-text">
+        <div th:if="${chatData.otherUserName != null}" class="user-img">
+          <img class="dp" th:src="${chatData.otherUserPicture}" alt="">
         </div>
-        <div th:if="${otherUsername != null || selectedGroup != null}" class="nav-icons">
-          <form th:action="@{/chat/deleteChat}" method="post">
-            <input type="hidden" th:name="chat-id" th:value="${chatId}">
-            <button type="submit" class="search-button">
-              <span>Delete Chat</span>
-            </button>
-          </form>
+        <div th:if="${chatData.otherUserName == null && chatData.groupId != null}" class="user-img">
+          <img class="dp" th:src="@{/images/GroupIcon.jpg}" alt="">
         </div>
+        <h4 th:if="${chatData.otherUserName != null}">
+          <span th:text="${chatData.otherUserName}"></span><br>
+        </h4>
+        <h4 th:if="${chatData.otherUserName == null && chatData.groupId != null}">
+          <span th:text="${chatData.selectedGroup.name}"></span><br>
+        </h4>
       </div>
+      <div th:if="${chatData.otherUserName != null || chatData.groupId != null}" class="nav-icons">
+        <form th:action="@{/chat/deleteChat}" method="post">
+          <input type="hidden" th:name="chat-id" th:value="${chatData.chatId}">
+          <button type="submit" class="search-button">
+            <span>Delete Chat</span>
+          </button>
+        </form>
+      </div>
+    </div>
 
     <!--chat-container -->
-    <div class="chat-container" th:classappend="${selectedUser == null && selectedGroup == null ? 'empty-chat' : ''}">
-      <div  th:if="${selectedUser != null || selectedGroup != null}"
-            th:each="message : ${messages}"
-            th:classappend="${message.sender.username == currentUser ? 'my-message' : 'friend-message'}"
+    <div class="chat-container" th:classappend="${chatData.selectedUser == null && chatData.selectedGroup == null ? 'empty-chat' : ''}">
+      <div  th:if="${chatData.selectedUser != null || chatData.selectedGroup != null}"
+            th:each="message : ${chatData.messages}"
+            th:classappend="${message.sender.username == chatData.currentUser ? 'my-message' : 'friend-message'}"
             class="message-box">
 
         <p th:if="${message.chatGroup != null}" class="message-sender">
@@ -140,18 +130,18 @@
         <!-- Zeitstempel -->
         <span class="message-time" th:text="${#temporals.format(message.timestamp, 'HH:mm')}"></span>
       </div>
-      <div th:if="${selectedUser == null && selectedGroup == null}">
+      <div th:if="${chatData.selectedUser == null && chatData.selectedGroup == null}">
         <p th:text="#{chat.main.placeholder}">Bitte wählen Sie einen Benutzer oder eine Gruppe, um zu chatten.</p>
       </div>
     </div>
 
     <div class="text-input">
-      <form class="chatbox-input" id="message-form" th:if="${selectedUser != null || selectedGroup != null}" th:action="@{/chat/send}" method="post">
+      <form class="chatbox-input" id="message-form" th:if="${chatData.selectedUser != null || chatData.selectedGroup != null}" th:action="@{/chat/send}" method="post">
         <div class="text-input-container">
           <input type="text" id="message-input" name="message-input" placeholder="Nachricht schreiben..." required>
-          <input type="hidden" id="current-user-id" th:value="${SenderId}">
-          <input type="hidden" id="recipient-id" name="recipient-id" th:value="${RecipientId}">
-          <input type="hidden" id="chat-group-id" th:value="${GroupId}">
+          <input type="hidden" id="current-user-id" th:value="${chatData.senderId}">
+          <input type="hidden" id="recipient-id" name="recipient-id" th:value="${chatData.recipientId}">
+          <input type="hidden" id="chat-group-id" th:value="${chatData.groupId}">
           <button type="submit" class="send-button">
             <i class="fa fa-paper-plane"></i>
           </button>

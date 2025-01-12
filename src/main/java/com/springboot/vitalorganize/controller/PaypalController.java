@@ -1,5 +1,5 @@
 package com.springboot.vitalorganize.controller;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.SubscriptionService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

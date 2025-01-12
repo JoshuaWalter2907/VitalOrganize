@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.IngredientEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.IngredientEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.service.IngredientListService;
 import com.springboot.vitalorganize.service.ShoppingListService;

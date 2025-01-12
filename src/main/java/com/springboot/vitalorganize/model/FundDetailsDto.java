@@ -1,7 +1,7 @@
-package com.springboot.vitalorganize.dto;
+package com.springboot.vitalorganize.model;
 
-import com.springboot.vitalorganize.model.FundEntity;
-import com.springboot.vitalorganize.model.Payment;
+import com.springboot.vitalorganize.entity.FundEntity;
+import com.springboot.vitalorganize.entity.Payment;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

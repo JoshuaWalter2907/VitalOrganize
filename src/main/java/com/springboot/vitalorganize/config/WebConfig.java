@@ -1,10 +1,10 @@
 package com.springboot.vitalorganize.config;
 
 import com.springboot.vitalorganize.component.ApiAuthenticationFilter;
-import com.springboot.vitalorganize.component.UsernameInterceptor;
-import com.springboot.vitalorganize.model.PersonalInformation;
+import com.springboot.vitalorganize.component.RequestInterceptor;
+import com.springboot.vitalorganize.entity.PersonalInformation;
 import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
@@ -44,7 +44,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final UserRepositoryService userRepositoryService;
     private UserRepository userRepository;
 
-    private UsernameInterceptor usernameInterceptor;
+    private RequestInterceptor requestInterceptor;
 
     private UserService userService;
 
@@ -58,10 +58,10 @@ public class WebConfig implements WebMvcConfigurer {
                     registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
 
                     // Geschützte Endpunkte
-                    registry.requestMatchers("/chat/**", "/public-users", "/create-group").access((authenticationSupplier, context) -> {
+                    registry.requestMatchers("/chat/**", "/newChat", "/create-group").access((authenticationSupplier, context) -> {
                         Authentication authentication = authenticationSupplier.get();
                         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
-                            OAuth2User oauthUser = (OAuth2User) oauthToken.getPrincipal();
+                            OAuth2User oauthUser = oauthToken.getPrincipal();
                             UserEntity user = userService.getCurrentUser(oauthUser, oauthToken);
                             return new AuthorizationDecision(user.isMember());
                         }

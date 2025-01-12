@@ -1,4 +1,4 @@
-package com.springboot.vitalorganize.model;
+package com.springboot.vitalorganize.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;

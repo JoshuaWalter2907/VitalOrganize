@@ -1,7 +1,6 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.ZahlungStatistikRequest;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.ZahlungsStatistikRepositoryService;

@@ -1,9 +1,9 @@
-package com.springboot.vitalorganize.dto;
+package com.springboot.vitalorganize.model;
 
-import com.springboot.vitalorganize.model.ChatGroup;
-import com.springboot.vitalorganize.model.DirectChat;
-import com.springboot.vitalorganize.model.MessageEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.ChatGroup;
+import com.springboot.vitalorganize.entity.DirectChat;
+import com.springboot.vitalorganize.entity.MessageEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

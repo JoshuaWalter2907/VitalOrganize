@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.dto.ShoppingListData;
-import com.springboot.vitalorganize.model.ShoppingListItemEntity;
+import com.springboot.vitalorganize.model.ShoppingListData;
+import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -30,7 +30,7 @@ public interface ShoppingListItemRepository extends JpaRepository<ShoppingListIt
             "WHERE s.userId = :userId AND s.ingredientId = :itemId")
     void deleteByUserIdAndItemId(@Param("userId") Long userId,
                                  @Param("itemId") Long itemId);
-    @Query("SELECT new com.springboot.vitalorganize.dto.ShoppingListData(" +
+    @Query("SELECT new com.springboot.vitalorganize.model.ShoppingListData(" +
             "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice)" +
             "FROM ShoppingListItemEntity s " +
             "RIGHT JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +
@@ -38,7 +38,7 @@ public interface ShoppingListItemRepository extends JpaRepository<ShoppingListIt
     List<ShoppingListData> findShoppingListByUserId(@Param("userId") Long userId);
 
 
-    @Query("SELECT new com.springboot.vitalorganize.dto.ShoppingListData(" +
+    @Query("SELECT new com.springboot.vitalorganize.model.ShoppingListData(" +
             "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice) " +
             "FROM ShoppingListItemEntity s " +
             "RIGHT JOIN IngredientEntity i ON s.userId = i.userId AND s.ingredientId = i.id " +

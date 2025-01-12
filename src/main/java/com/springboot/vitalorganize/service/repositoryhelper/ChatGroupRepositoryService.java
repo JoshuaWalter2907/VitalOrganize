@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.ChatGroup;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.ChatGroup;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.repository.ChatGroupRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

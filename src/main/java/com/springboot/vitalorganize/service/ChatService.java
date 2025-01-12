@@ -1,10 +1,7 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.ChatDetail;
-import com.springboot.vitalorganize.dto.ChatDetailsDTO;
-import com.springboot.vitalorganize.dto.CreateGroupRequest;
-import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.repositoryhelper.ChatGroupRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.DirektChatRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.MessageRepositoryService;
@@ -498,4 +495,64 @@ public class ChatService {
         }
         return false; // Weder Gruppenchat noch Direktchat
     }
+
+    public ChatResponseDTO getChatData(Long user2, Long groupId, String query) {
+        UserEntity currentUser = userService.getCurrentUser();
+
+        Long senderId = currentUser.getId();
+
+        // Initialisiere das ResponseDTO
+        ChatResponseDTO responseDTO = new ChatResponseDTO();
+        responseDTO.setCurrentUser(currentUser.getUsername());
+        responseDTO.setSenderId(senderId);
+
+        // Sammle allgemeine Chatdaten und füge sie zum DTO hinzu
+        responseDTO.setChatGroups(getChatGroups(senderId));
+        responseDTO.setDirectChats(getDirectChats(senderId));
+        responseDTO.setChatParticipants(getChatParticipants(senderId));
+        responseDTO.setFilteredChatList(filterChats(senderId, query));
+        responseDTO.setChatDetails(prepareChatDetailsList(responseDTO.getFilteredChatList()));
+
+        // Bereite Chat-Details vor und füge sie zum DTO hinzu
+        if (groupId != null) {
+            ChatGroup selectedGroup = chatGroupRepositoryService.findById(groupId).orElse(null);
+            responseDTO.setSelectedGroup(selectedGroup);
+            responseDTO.setMessages(messageRepositoryService.findChatParticipants(groupId, 0, 50));
+            responseDTO.setChatId(groupId);
+        } else if (user2 != null) {
+            UserEntity selectedUser = userRepositoryService.findUserById(user2);
+            DirectChat selectedDirectChat = direktChatRepositoryService.findDirectChatBetweenUsers(senderId, user2);
+
+            responseDTO.setSelectedUser(selectedUser);
+            responseDTO.setSelectedDirectChat(selectedDirectChat);
+            responseDTO.setMessages(messageRepositoryService.ChatMessagesBetweenUsers(senderId, user2, 0, 50));
+
+            if (selectedUser != null) {
+                responseDTO.setOtherUserName(selectedUser.getUsername());
+                responseDTO.setOtherUserPicture(selectedUser.getProfilePictureUrl());
+            }
+
+            responseDTO.setRecipientId(user2);
+            if (selectedDirectChat != null) {
+                responseDTO.setChatId(selectedDirectChat.getId());
+            }
+        }
+
+        responseDTO.setGroupId(groupId);
+        responseDTO.setQuery(query);
+
+
+        return responseDTO;
+    }
+
+    public NewChatResponseDTO newChat(String currentUrl){
+        NewChatResponseDTO newChatResponseDTO = new NewChatResponseDTO();
+        newChatResponseDTO.setCurrentUrl(currentUrl);
+        newChatResponseDTO.setGroupedUsers(groupUsersByInitial(preparePublicUsersPage(userService.getCurrentUser().getId())));
+        return newChatResponseDTO;
+    }
+
+
+
+
 }

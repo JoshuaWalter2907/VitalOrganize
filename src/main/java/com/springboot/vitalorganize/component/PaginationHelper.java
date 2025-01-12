@@ -18,6 +18,6 @@ public class PaginationHelper {
     }
 
     public <T> T getFirstElement(List<T> list) {
-        return list.isEmpty() ? null : list.get(0);
+        return list.isEmpty() ? null : list.getFirst();
     }
 }

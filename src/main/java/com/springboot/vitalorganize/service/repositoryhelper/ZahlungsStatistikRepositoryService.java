@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.FundEntity;
-import com.springboot.vitalorganize.model.ZahlungStatistik;
+import com.springboot.vitalorganize.entity.FundEntity;
+import com.springboot.vitalorganize.entity.ZahlungStatistik;
 import com.springboot.vitalorganize.repository.ZahlungStatistikRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

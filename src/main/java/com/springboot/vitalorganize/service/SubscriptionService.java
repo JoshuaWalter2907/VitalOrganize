@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.service.repositoryhelper.SubscriptionRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;

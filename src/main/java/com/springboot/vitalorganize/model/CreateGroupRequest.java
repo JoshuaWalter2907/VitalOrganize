@@ -1,4 +1,4 @@
-package com.springboot.vitalorganize.dto;
+package com.springboot.vitalorganize.model;
 
 import lombok.Getter;
 import lombok.Setter;

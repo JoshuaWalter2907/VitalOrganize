@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.DirectChat;
+import com.springboot.vitalorganize.entity.DirectChat;
 import com.springboot.vitalorganize.repository.DirectChatRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

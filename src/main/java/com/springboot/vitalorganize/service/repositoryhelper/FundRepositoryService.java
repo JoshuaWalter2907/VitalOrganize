@@ -1,15 +1,14 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
-import com.springboot.vitalorganize.model.FundEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.FundEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.repository.FundRepository;
 import com.springboot.vitalorganize.repository.PaymentRepository;
-import com.springboot.vitalorganize.model.Payment;
+import com.springboot.vitalorganize.entity.Payment;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service-Klasse zur Verwaltung von Fonds und zugehörigen Zahlungen.

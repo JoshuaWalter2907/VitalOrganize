@@ -1,8 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.dto.ZahlungStatistikRequest;
-import com.springboot.vitalorganize.model.FundEntity;
-import com.springboot.vitalorganize.model.ZahlungStatistik;
+import com.springboot.vitalorganize.entity.FundEntity;
+import com.springboot.vitalorganize.entity.ZahlungStatistik;
 import com.springboot.vitalorganize.service.ZahlungStatistikService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 
@@ -23,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @AllArgsConstructor
-public class ZahlungStatistikController {
+public class PaymentStatisticsAPI {
 
     private final ZahlungStatistikService zahlungStatistikService;
 

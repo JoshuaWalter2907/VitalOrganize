@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.model.DirectChat;
+import com.springboot.vitalorganize.entity.DirectChat;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

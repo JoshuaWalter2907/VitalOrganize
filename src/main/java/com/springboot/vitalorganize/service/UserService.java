@@ -1,11 +1,12 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.ProfileAdditionData;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.model.ProfileAdditionData;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.repositoryhelper.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,6 +112,36 @@ public class UserService {
         // Benutzer anhand der ID abrufen und zurückgeben
         return userRepositoryService.findUserById(id);
     }
+
+    public UserEntity getCurrentUser() {
+        OAuth2AuthenticationToken authentication =
+                (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        OAuth2User user = (OAuth2User) authentication.getPrincipal();
+
+        String provider = authentication.getAuthorizedClientRegistrationId();
+        String email = user.getAttribute("email");
+        Long id;
+
+        // Für verschiedene Anbieter (Google, Discord, GitHub) die Benutzer-ID ermitteln
+        switch (provider) {
+            case "google":
+            case "discord":
+                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                break;
+            case "github":
+                String username = user.getAttribute("login");
+                email = username + "@github.com";
+                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                break;
+            default:
+                throw new IllegalArgumentException("Unbekannter Provider: " + provider);
+        }
+
+        // Benutzer anhand der ID abrufen und zurückgeben
+        return userRepositoryService.findUserById(id);
+    }
+
+
 
     /**
      * Ruft einen Benutzer anhand seiner ID ab.

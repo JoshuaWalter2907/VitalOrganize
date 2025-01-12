@@ -1,9 +1,9 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.ShoppingListData;
-import com.springboot.vitalorganize.model.IngredientEntity;
+import com.springboot.vitalorganize.model.ShoppingListData;
+import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
-import com.springboot.vitalorganize.model.ShoppingListItemEntity;
+import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
 import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

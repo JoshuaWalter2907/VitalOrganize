@@ -1,9 +1,6 @@
 package com.springboot.vitalorganize.controller;
-import com.springboot.vitalorganize.dto.ChatDetail;
-import com.springboot.vitalorganize.dto.ChatDetailsDTO;
-import com.springboot.vitalorganize.dto.CreateGroupRequest;
-import com.springboot.vitalorganize.dto.MessageDTO;
 import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.ChatService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,91 +29,48 @@ public class ChatController {
 
 
     @GetMapping("/chat")
-    public String chat(
-            @RequestParam(value = "user2", required = false) Long user2,
-            @RequestParam(value = "group", required = false) Long groupId,
-            @RequestParam(value = "query", required = false) String query,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            Model model) {
+    public String showChatPage(ChatRequestDTO chatRequestDTO, Model model) {
 
-        // Hole den aktuellen Benutzer
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
-        Long senderId = currentUser.getId();
-        String username = currentUser.getUsername();
+        ChatResponseDTO responseDTO = chatService.getChatData(
+                chatRequestDTO.getUser2(),
+                chatRequestDTO.getGroup(),
+                chatRequestDTO.getQuery()
+        );
 
-        model.addAttribute("currentUser", username);
-        model.addAttribute("SenderId", senderId);
-
-        // Hole alle relevanten Chat-Daten
-        List<ChatGroup> chatGroups = chatService.getChatGroups(senderId);
-        List<DirectChat> directChats = chatService.getDirectChats(senderId);
-        List<UserEntity> chatParticipants = chatService.getChatParticipants(senderId);
-
-        // Hole die gefilterte Liste von Chats, wenn ein Suchbegriff vorliegt
-        List<Object> filteredChatList = chatService.filterChats(senderId, query);
-
-        // Hole die Chat-Details für eine bestimmte Gruppe oder Benutzer
-        ChatDetailsDTO chatDetailsDTO = chatService.prepareChatDetails(senderId, groupId, user2, query);
-
-        // Bereite die Chat-Details vor
-        List<ChatDetail> chatDetailsList = chatService.prepareChatDetailsList(filteredChatList);
-
-        // Füge alle Daten zum Model hinzu
-        model.addAttribute("chatGroups", chatGroups);
-        model.addAttribute("directChats", directChats);
-        model.addAttribute("chatParticipants", chatParticipants);
-        model.addAttribute("messages", chatDetailsDTO.getMessages());
-        model.addAttribute("selectedUser", chatDetailsDTO.getSelectedUser());
-        model.addAttribute("selectedGroup", chatDetailsDTO.getSelectedGroup());
-        model.addAttribute("selectedDirectChat", chatDetailsDTO.getSelectedDirectChat());
-        model.addAttribute("chatDetails", chatDetailsList);
-        model.addAttribute("otherUsername", chatDetailsDTO.getOtherUserName());
-        model.addAttribute("otherUserPicture", chatDetailsDTO.getOtherUserPicture());
-        model.addAttribute("GroupId", chatDetailsDTO.getGroupId());
-        model.addAttribute("chatId", chatDetailsDTO.getChatId());
-        model.addAttribute("RecipientId", chatDetailsDTO.getRecipientId());
+        model.addAttribute("chatData", responseDTO);
 
         return "chat/chat";
     }
 
-    //Endpoint zum erstellen eines neuen Chats
-    @GetMapping("/public-users")
-    public String showPublicUsers(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
+
+
+
+
+    @GetMapping("/newChat")
+    public String newChatPage(
             HttpServletRequest request,
             Model model
     ) {
-        // Logged in User
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
-        //Alle user, die öffentlich sind, einholen
-        List<UserEntity> publicUsers = chatService.preparePublicUsersPage(currentUser.getId());
 
-        //Die User werden nach ihrem ersten Buchstaben in ihrem Usernamen sortiert
-        Map<Character, List<UserEntity>> groupedUsers = chatService.groupUsersByInitial(publicUsers);
-
-        model.addAttribute("groupedUsers", groupedUsers);
-        model.addAttribute("currentUrl", request.getRequestURI());
+        NewChatResponseDTO newChatResponseDTO = chatService.newChat(request.getRequestURI());
+        model.addAttribute("newChat", newChatResponseDTO);
 
         return "chat/newChat";
     }
 
-    //Endpoint um einen neuen Chat/ eine neue Gruppe zu erstellen
+
     @PostMapping("/create-group")
     public String createGroup(
-            @ModelAttribute CreateGroupRequest createGroupRequest,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
+            CreateGroupRequest createGroupRequest,
             Model model
     ) {
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
+        UserEntity currentUser = userService.getCurrentUser();
 
         //Validiert die selektierten User, ob eine direkt Chat, ein Gruppenchat oder
         boolean isValid = chatService.validateCreateGroupRequest(createGroupRequest, model, currentUser);
         // Wenn eingabe nicht valide ist, wird zurückgeleitet
         if (!isValid) {
-            return "redirect:/public-users";
+            return "redirect:/newChat";
         }
 
         // Wenn Eingabe valid ist, wird einen neue Gruppe oder ein neuer Direkt Chat erstellt
@@ -128,11 +82,9 @@ public class ChatController {
     @PostMapping("/chat/deleteChat")
     public String deleteChat(
             @RequestParam("chat-id") Long chatId,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
             Model model
     ) {
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
+        UserEntity currentUser = userService.getCurrentUser();
 
         //Schaut ob der Chat löschbar ist
         boolean isDeleted = chatService.deleteChatById(chatId, currentUser);

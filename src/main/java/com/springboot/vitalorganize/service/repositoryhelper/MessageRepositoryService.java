@@ -1,11 +1,10 @@
 package com.springboot.vitalorganize.service.repositoryhelper;
 
 import com.springboot.vitalorganize.component.PaginationHelper;
-import com.springboot.vitalorganize.model.MessageEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.MessageEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import com.springboot.vitalorganize.repository.MessageRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

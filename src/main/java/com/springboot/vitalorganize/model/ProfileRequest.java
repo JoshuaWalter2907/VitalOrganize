@@ -1,8 +1,7 @@
-package com.springboot.vitalorganize.dto;
+package com.springboot.vitalorganize.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 

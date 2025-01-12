@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,7 +32,7 @@ public class AuthenticationService {
         // Überprüft, ob ein authentifizierter Benutzer oder ein Token vorhanden ist
         if (user != null || authentication != null) {
             // Gibt den aktuellen Benutzer aus dem UserService zurück
-            return userService.getCurrentUser(user, authentication);
+            return userService.getCurrentUser();
         }
         // Gibt null zurück, wenn kein authentifizierter Benutzer vorhanden ist
         return null;

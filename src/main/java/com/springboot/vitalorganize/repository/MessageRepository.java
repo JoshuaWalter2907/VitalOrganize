@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.model.MessageEntity;
-import com.springboot.vitalorganize.model.UserEntity;
+import com.springboot.vitalorganize.entity.MessageEntity;
+import com.springboot.vitalorganize.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

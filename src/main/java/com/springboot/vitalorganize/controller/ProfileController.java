@@ -1,8 +1,8 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.dto.ProfileAdditionData;
-import com.springboot.vitalorganize.dto.ProfileRequest;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.model.ProfileAdditionData;
+import com.springboot.vitalorganize.model.ProfileRequest;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

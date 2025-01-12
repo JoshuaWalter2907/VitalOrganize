@@ -1,9 +1,8 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.dto.FundDetailsDto;
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.model.FundDetailsDto;
+import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

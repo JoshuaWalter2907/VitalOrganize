@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.UserEntity;import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.UserEntity;import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -50,19 +50,16 @@ public class TwoFactorService {
     /**
      * Überprüft, ob der eingegebene Zwei-Faktor-Authentifizierungscode korrekt ist und innerhalb der Gültigkeitsdauer liegt.
      *
-     * @param user Das OAuth2User-Objekt des aktuell angemeldeten Benutzers
-     * @param auth2AuthenticationToken Das OAuth2-Authentifizierungstoken des Benutzers
      * @param digits Eine Map von Zeichen (z.B. "1", "2", etc.), die den eingegebenen Code repräsentieren
      * @param session Die HTTP-Session des Benutzers, um die erfolgreiche Verifizierung zu speichern
      * @return true, wenn der Code korrekt ist und noch gültig ist; andernfalls false
      */
-    public boolean verifyCode(OAuth2User user, OAuth2AuthenticationToken auth2AuthenticationToken,
-                              Map<String, String> digits, HttpSession session) {
+    public boolean verifyCode(Map<String, String> digits, HttpSession session) {
         // Verbindet die einzelnen Ziffern des Codes zu einer vollständigen Zahl
         String code = String.join("", digits.values());
 
         // Holt den aktuellen Benutzer basierend auf dem OAuth2-Token
-        UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
+        UserEntity userEntity = userService.getCurrentUser();
 
         // Überprüft, ob der eingegebene Code mit dem gespeicherten Code übereinstimmt und ob er noch gültig ist
         if (userEntity.getTwoFactorCode().equals(code) &&

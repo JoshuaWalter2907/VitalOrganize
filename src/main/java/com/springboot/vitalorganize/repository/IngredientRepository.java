@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.model.IngredientEntity;
+import com.springboot.vitalorganize.entity.IngredientEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
