@@ -10,6 +10,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,7 +36,6 @@ public class SenderService {
      * Erstellt ein PDF-Dokument mit den Benutzerinformationen und sendet es per E-Mail an den Benutzer.
      * Das PDF wird mit einem zufällig generierten Passwort geschützt, das dem Benutzer per E-Mail zugesendet wird.
      *
-     * @param benutzer Der Benutzer, dessen Informationen im PDF enthalten sein sollen
      */
     @Async
     public void createPdf(UserEntity benutzer) {

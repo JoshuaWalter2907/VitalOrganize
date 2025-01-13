@@ -1,7 +1,9 @@
 package com.springboot.vitalorganize.service;
 
+import com.springboot.vitalorganize.model.FriendStatusRequestDTO;
 import com.springboot.vitalorganize.model.ProfileAdditionData;
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.repositoryhelper.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -33,6 +35,7 @@ public class UserService {
     private final FriendRequestRepositoryService friendRequestRepositoryService;
 
     private final PaypalService paypalService;
+    private final UserRepository userRepository;
 
     /**
      * Ruft die Profildaten des Benutzers basierend auf dem OAuth2User-Objekt ab.
@@ -210,16 +213,11 @@ public class UserService {
         return true;  // Benutzer erfolgreich gelöscht
     }
 
-    /**
-     * Blockiert einen Benutzer und entfernt ihn aus der Freundesliste.
-     *
-     * @param currentUserId Die ID des aktuellen Benutzers
-     * @param targetUserId Die ID des Benutzers, der blockiert werden soll
-     */
+
     @Transactional
-    public void blockUser(Long currentUserId, Long targetUserId) {
-        UserEntity currentUser = userRepositoryService.findUserById(currentUserId);
-        UserEntity targetUser = userRepositoryService.findUserById(targetUserId);
+    public void blockUser(FriendStatusRequestDTO friendRequestDTO) {
+        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
+        UserEntity targetUser = userRepositoryService.findUserById(friendRequestDTO.getId());
 
         if (currentUser.getBlockedUsers().contains(targetUser)) {
             throw new IllegalStateException("User is already blocked");
@@ -241,16 +239,11 @@ public class UserService {
         userRepositoryService.saveUser(targetUser);
     }
 
-    /**
-     * Sendet eine Freundschaftsanfrage an einen anderen Benutzer, wenn noch keine Anfrage existiert.
-     *
-     * @param currentUserId Die ID des aktuellen Benutzers
-     * @param targetUserId Die ID des Benutzers, an den die Freundschaftsanfrage gesendet werden soll
-     */
+
     @Transactional
-    public void addFriend(Long currentUserId, Long targetUserId) {
-        UserEntity currentUser = userRepositoryService.findUserById(currentUserId);
-        UserEntity targetUser = userRepositoryService.findUserById(targetUserId);
+    public void addFriend(FriendStatusRequestDTO friendStatusRequestDTO) {
+        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
+        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
 
         // Überprüft, ob bereits eine Freundschaftsanfrage existiert
         boolean existingRequestReceiver = targetUser.getReceivedFriendRequests().stream()
@@ -282,16 +275,11 @@ public class UserService {
         userRepositoryService.saveUser(targetUser);
     }
 
-    /**
-     * Entfernt einen Benutzer aus der Freundesliste.
-     *
-     * @param currentUserId Die ID des aktuellen Benutzers
-     * @param targetUserId Die ID des Benutzers, der aus der Freundesliste entfernt werden soll
-     */
+
     @Transactional
-    public void unfriendUser(Long currentUserId, Long targetUserId) {
-        UserEntity currentUser = userRepositoryService.findUserById(currentUserId);
-        UserEntity targetUser = userRepositoryService.findUserById(targetUserId);
+    public void unfriendUser(FriendStatusRequestDTO friendStatusRequestDTO) {
+        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
+        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
 
         currentUser.getFriends().remove(targetUser);
         targetUser.getFriends().remove(currentUser);
@@ -300,16 +288,11 @@ public class UserService {
         userRepositoryService.saveUser(targetUser);
     }
 
-    /**
-     * Entblockiert einen zuvor blockierten Benutzer.
-     *
-     * @param currentUserId Die ID des aktuellen Benutzers
-     * @param targetUserId Die ID des Benutzers, der entblockiert werden soll
-     */
+
     @Transactional
-    public void unblockUser(Long currentUserId, Long targetUserId) {
-        UserEntity currentUser = userRepositoryService.findUserById(currentUserId);
-        UserEntity targetUser = userRepositoryService.findUserById(targetUserId);
+    public void unblockUser(FriendStatusRequestDTO friendStatusRequestDTO) {
+        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
+        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
 
         currentUser.getBlockedUsers().remove(targetUser);
 
@@ -365,4 +348,16 @@ public class UserService {
     }
 
 
+    public String getEmail(UserEntity userEntity) {
+        if("github".equals(userEntity.getProvider())){
+            return userEntity.getSendtoEmail();
+        }
+        return userEntity.getEmail();
+    }
+
+    public UserEntity getUser(Long id) {
+        if (id == null)
+            return getCurrentUser();
+        return userRepository.findUserEntityById(id);
+    }
 }

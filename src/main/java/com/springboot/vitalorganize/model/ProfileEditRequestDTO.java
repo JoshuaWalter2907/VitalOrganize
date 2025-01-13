@@ -7,9 +7,10 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class ProfileRequest {
+public class ProfileEditRequestDTO {
     private Long profileId;
     private boolean auth;
+    private boolean fa;
     private String tab;
     private String kind;
     private String username;

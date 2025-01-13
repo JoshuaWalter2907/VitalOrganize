@@ -28,11 +28,10 @@ public class TwoFactorService {
     /**
      * Generiert einen neuen Zwei-Faktor-Authentifizierungscode (2FA) und sendet diesen an die E-Mail des Benutzers.
      * Der Code ist für 5 Minuten gültig.
-     *
-     * @param userEntity Das Benutzerobjekt, für das der 2FA-Code generiert wird
-     * @param email Die E-Mail-Adresse, an die der 2FA-Code gesendet wird
      */
-    public void generateAndSendCode(UserEntity userEntity, String email) {
+    public void generateAndSendCode() {
+        UserEntity userEntity = userService.getCurrentUser();
+        String email = userService.getEmail(userEntity);
         // Generiert einen zufälligen 6-stelligen Code für die Zwei-Faktor-Authentifizierung
         String code = String.format("%06d", new Random().nextInt(999999));
 

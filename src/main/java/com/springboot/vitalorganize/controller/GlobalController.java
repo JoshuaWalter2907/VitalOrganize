@@ -14,10 +14,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 /**
  * Eine globale Controller-Klasse, die globale Attribute für Views bereitstellt.
- *
- * Diese Klasse verwendet die @ControllerAdvice-Annotation, um globale Kontexte
- * für alle Controller bereitzustellen. Dadurch können häufig benötigte Attribute
- * zentral verwaltet und an alle Views übergeben werden.
  */
 @ControllerAdvice
 @AllArgsConstructor
@@ -26,13 +22,13 @@ public class GlobalController {
     private final ThemeService themeService;
     private final AuthenticationService authenticationService;
 
+
     /**
-     * Fügt globale Attribute zu allen Views hinzu.
-     *
-     * @param user der authentifizierte OAuth2-Benutzer (optional)
-     * @param authentication das Authentifizierungs-Token für den OAuth2-Benutzer (optional)
-     * @param request die aktuelle HTTP-Anfrage
-     * @param model das UI-Modell, in das Attribute eingefügt werden
+     * Endpoint zum bereitstellen aller globalen Attribute
+     * @param user Der eingeloggte User
+     * @param authentication Authentifizierung des eingeloggten Users
+     * @param request ServletRequest um die aktuelle URL zu erhalten
+     * @param model Zur Übergabe von Paramtern an das Frontend
      */
     @ModelAttribute
     public void addGlobalAttributes(@AuthenticationPrincipal OAuth2User user,
@@ -41,10 +37,8 @@ public class GlobalController {
                                     Model model
     ) {
 
-        // Aktuelles Theme aus dem ThemeService abrufen und zur Anfrage hinzufügen
         String theme = themeService.getTheme(request);
         request.setAttribute("theme", theme);
-
 
         String lang = "en";
         if(request.getParameter("lang") != null) {
@@ -63,7 +57,7 @@ public class GlobalController {
             model.addAttribute("username", null);
         }
 
-        // HTTP-Servlet-Anfrage als Attribut hinzufügen (z. B. für zusätzliche Metadaten)
+        // HTTP-Servlet-Anfrage als Attribut hinzufügen
         model.addAttribute("httpServletRequest", request);
     }
 

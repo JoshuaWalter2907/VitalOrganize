@@ -23,11 +23,15 @@ import java.util.Map;
 @AllArgsConstructor
 public class ChatController {
 
-    private final UserService userService;
     private final ChatService chatService;
 
 
-
+    /**
+     * Der Hauptendpoint für alles was mit chats zu tun hat
+     * @param chatRequestDTO Alle benötigten Informationen aus dem Frontend um die Seite auch im Nachhinein korrekt zu laden
+     * @param model Model zum hinzufügen von Attributen im Frontend
+     * @return Rückgabe des HTML-files für die Seite Chat
+     */
     @GetMapping("/chat")
     public String showChatPage(ChatRequestDTO chatRequestDTO, Model model) {
 
@@ -42,10 +46,12 @@ public class ChatController {
         return "chat/chat";
     }
 
-
-
-
-
+    /**
+     * Endpoint zum erstellen eines neuen Chats
+     * @param request Request um die aktuelle URL zu erhalten
+     * @param model Model zum hinzufügen von Attributen im Frontend
+     * @return Rückgabe des HTML-files für die Seite Chat
+     */
     @GetMapping("/newChat")
     public String newChatPage(
             HttpServletRequest request,
@@ -59,37 +65,47 @@ public class ChatController {
     }
 
 
+    /**
+     * Conroller nimmt die Anfrage eine neue Gruppe oder einen neuen Direkt Chat zu erstellen an, validiert diese und leitet entsprechend weiter
+     * @param createGroupRequest Alle Informationen die benötigt werden um eine neue Gruppe oder einen neuen Direkt Chat zu erstellen
+     * @param model Model zum hinzufügen von Attributen im Frontend
+     * @return Rückgabe des HTML-files für die Seite Chat
+     */
     @PostMapping("/create-group")
     public String createGroup(
             CreateGroupRequest createGroupRequest,
             Model model
     ) {
-        UserEntity currentUser = userService.getCurrentUser();
 
-        //Validiert die selektierten User, ob eine direkt Chat, ein Gruppenchat oder
-        boolean isValid = chatService.validateCreateGroupRequest(createGroupRequest, model, currentUser);
-        // Wenn eingabe nicht valide ist, wird zurückgeleitet
+        boolean isValid = chatService.validateCreateGroupRequest(createGroupRequest, model);
         if (!isValid) {
             return "redirect:/newChat";
         }
 
-        // Wenn Eingabe valid ist, wird einen neue Gruppe oder ein neuer Direkt Chat erstellt
-        chatService.createChat(createGroupRequest.getSelectedUsers(), createGroupRequest.getChatName(), currentUser);
+        chatService.createChat(
+                createGroupRequest.getSelectedUsers(),
+                createGroupRequest.getChatName());
 
         return "redirect:/chat";
     }
 
+    /**
+     * Endpoint um einen Chat zu löschen, falls diese löschbar ist
+     * @param deleteChatRequestDTO Informationen die benötigt werden um einen Chat zu löschen
+     * @param model Model zum hinzufügen von Attributen im Frontend
+     * @return Rückgabe des HTML-files für die Seite Chat
+     */
     @PostMapping("/chat/deleteChat")
     public String deleteChat(
-            @RequestParam("chat-id") Long chatId,
+            DeleteChatRequestDTO deleteChatRequestDTO,
             Model model
     ) {
-        UserEntity currentUser = userService.getCurrentUser();
 
-        //Schaut ob der Chat löschbar ist
-        boolean isDeleted = chatService.deleteChatById(chatId, currentUser);
-        if (!isDeleted) {
-            //Wenn der Chat nicht gelöscht werden konnte
+        boolean isDeletable = chatService.deleteChatById(
+                deleteChatRequestDTO.getChatId()
+                );
+
+        if (!isDeletable) {
             model.addAttribute("errorMessage", "Chat konnte nicht gelöscht werden.");
             return "redirect:/chat";
         }
@@ -97,7 +113,10 @@ public class ChatController {
         return "redirect:/chat";
     }
 
-    //Empfangen der Nachricht: Wie bereits per Email besprochen, ist das senden der Email mittels Server Sockets umgesetzt um das Frontend besser zu gestalten
+    /**
+     * Endpoint zum empfangen von Nachrichten und verteilen dieser via MessageBroker und Websockets (wie per email besprochen)
+     * @param messageDTO Informationen einer Nachricht
+     */
     @MessageMapping("/chat/send")
     public void sendMessage(@Payload MessageDTO messageDTO) {
         try {

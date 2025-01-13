@@ -104,7 +104,7 @@
       </div>
       <div th:if="${chatData.otherUserName != null || chatData.groupId != null}" class="nav-icons">
         <form th:action="@{/chat/deleteChat}" method="post">
-          <input type="hidden" th:name="chat-id" th:value="${chatData.chatId}">
+          <input type="hidden" th:name="chatId" th:value="${chatData.chatId}">
           <button type="submit" class="search-button">
             <span>Delete Chat</span>
           </button>

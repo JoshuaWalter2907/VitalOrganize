@@ -1,5 +1,6 @@
 package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.SubscriptionRequestDTO;
 import com.springboot.vitalorganize.service.SubscriptionService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 /**
- * Der PaypalController verwaltet alle Endpunkte, die sich auf PayPal-Subscription-Operationen beziehen.
- *
- * Dazu gehören das Erstellen, Bestätigen, Pausieren, Fortsetzen und Stornieren von Abonnements.
+ * Der PaypalController verwaltet alle Endpunkte, die sich auf PayPal-API-Operationen beziehen.
  */
 @Controller
 @AllArgsConstructor
@@ -28,36 +27,23 @@ public class PaypalController {
 
 
     /**
-     * Verarbeitet eine erfolgreiche Bestätigung der Subscription.
-     *
-     * @param subscriptionId die ID des Abonnements
-     * @param token der Authentifizierungstoken
-     * @param redirectAttributes für Flash-Nachrichten während der Weiterleitung
-     * @param user der aktuell authentifizierte Benutzer
-     * @param authentication das OAuth2-Authentifizierungstoken
-     * @return Weiterleitung zur Profilseite bei Erfolg, sonst zur Startseite
+     * Endpoint um bei einer erfolgreiche Subscription weiterzuleiten
+     * @param subscriptionRequestDTO Informationen bei einer Subscription
+     * @return Weiterleitung auf die entsprechende Seite
      */
     @GetMapping("/subscription-success")
     public String handleSubscriptionSuccess(
-            @RequestParam("subscription_id") String subscriptionId,
-            @RequestParam("token") String token,
-            RedirectAttributes redirectAttributes,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication) {
+            SubscriptionRequestDTO subscriptionRequestDTO) {
         try {
-            UserEntity userEntity = userService.getCurrentUser(user, authentication);
-            boolean success = subscriptionService.confirmSubscription(subscriptionId, token, userEntity);
+            boolean success = subscriptionService.confirmSubscription(subscriptionRequestDTO);
 
             if (success) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich!");
                 return "redirect:/profile";
             } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler bei der Bestätigung der Subscription.");
                 return "redirect:/";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
             return "redirect:/";
         }
     }
@@ -73,141 +59,98 @@ public class PaypalController {
     }
 
     /**
-     * Erstellt ein neues Abonnement und leitet den Benutzer zur PayPal-Seite weiter.
-     *
-     * @param user der aktuell authentifizierte Benutzer
-     * @param authentication das OAuth2-Authentifizierungstoken
-     * @param redirectAttributes für Flash-Nachrichten während der Weiterleitung
+     * Erstellt ein neues Abonnement und leitet den Benutzer zur PayPal-Seite weiter
      * @return Weiterleitung zur PayPal-Seite oder zur Startseite im Fehlerfall
      */
     @PostMapping("/create-subscription")
-    public String createSubscription(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            RedirectAttributes redirectAttributes) {
+    public String createSubscription() {
         try {
-            UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
-            String redirectUri = subscriptionService.createSubscriptionRedirect(userEntity);
+            String redirectUri = subscriptionService.createSubscriptionRedirect();
 
             if (redirectUri != null) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich erstellt!");
                 return "redirect:" + redirectUri;
             } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler bei der Erstellung der Subscription.");
                 return "redirect:/";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler bei der Subscription.");
             return "redirect:/";
         }
     }
 
     /**
-     * Storniert ein bestehendes Abonnement.
-     *
-     * @param user der aktuell authentifizierte Benutzer
-     * @param authentication das OAuth2-Authentifizierungstoken
+     * Storniert ein bestehendes Abonnement
      * @param request die aktuelle HTTP-Anfrage
-     * @param redirectAttributes für Flash-Nachrichten während der Weiterleitung
      * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
      */
     @PostMapping("/cancel-subscription")
     public String cancelSubscription(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes) {
+            HttpServletRequest request
+            ) {
+
         String refererUrl = request.getHeader("Referer");
 
-        UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
         try {
-            boolean success = subscriptionService.cancelSubscription(userEntity);
+            boolean success = subscriptionService.cancelSubscription();
 
             if (success) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich storniert!");
                 return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
             } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler beim Stornieren der Subscription.");
                 return "redirect:/";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler beim Stornieren der Subscription.");
             return "redirect:/";
         }
     }
 
     /**
      * Pausiert ein bestehendes Abonnement.
-     *
-     * @param user der aktuell authentifizierte Benutzer
-     * @param authentication das OAuth2-Authentifizierungstoken
      * @param request die aktuelle HTTP-Anfrage
-     * @param redirectAttributes für Flash-Nachrichten während der Weiterleitung
      * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
      */
     @PostMapping("/pause-subscription")
     public String pauseSubscription(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes) {
+            HttpServletRequest request) {
         String refererUrl = request.getHeader("Referer");
 
         try {
-            UserEntity userEntity = userService.getCurrentUser(user, authentication);
 
-            boolean success = subscriptionService.pauseSubscription(userEntity);
+            boolean success = subscriptionService.pauseSubscription();
 
             if (success) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich pausiert!");
                 return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
             } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler beim Pausieren der Subscription.");
                 return "redirect:/";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler beim Pausieren der Subscription.");
             return "redirect:/";
         }
     }
 
     /**
-     * Setzt ein pausiertes Abonnement fort.
-     *
-     * @param user der aktuell authentifizierte Benutzer
-     * @param authentication das OAuth2-Authentifizierungstoken
+     * Setzt ein pausiertes Abonnement fort
      * @param request die aktuelle HTTP-Anfrage
-     * @param redirectAttributes für Flash-Nachrichten während der Weiterleitung
      * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
      */
     @PostMapping("/resume-subscription")
     public String resumeSubscription(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpServletRequest request,
-            RedirectAttributes redirectAttributes) {
+            HttpServletRequest request) {
         String refererUrl = request.getHeader("Referer");
 
         try {
-            UserEntity userEntity = userService.getCurrentUser(user, authentication);
-
-            boolean success = subscriptionService.resumeSubscription(userEntity);
+            boolean success = subscriptionService.resumeSubscription();
 
             if (success) {
-                redirectAttributes.addFlashAttribute("message", "Subscription erfolgreich fortgesetzt!");
                 return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
             } else {
-                redirectAttributes.addFlashAttribute("error", "Fehler beim Fortsetzen der Subscription.");
                 return "redirect:/";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "Fehler beim Fortsetzen der Subscription.");
             return "redirect:/";
         }
     }

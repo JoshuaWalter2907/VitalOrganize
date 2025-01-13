@@ -1,6 +1,7 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.StatisticsDTO;
 import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.ZahlungsStatistikRepositoryService;
@@ -29,46 +30,36 @@ public class ZahlungStatistikService {
      *
      * @return Eine Liste aller Zahlungstatistiken
      */
-    public List<ZahlungStatistik> getAllZahlungStatistiken(Long fundId) {
-        return zahlungsStatistikRepositoryService.findAllByFundId(fundRepositoryService.findFundById(fundId));
+    public List<ZahlungStatistik> getAllZahlungStatistiken(StatisticsDTO statisticDTO) {
+        return zahlungsStatistikRepositoryService.findAllByFundId(fundRepositoryService.findFundById(statisticDTO.getFundId()));
     }
 
     /**
      * Ruft eine Zahlungstatistik basierend auf der ID ab.
      *
-     * @param id Die ID der Zahlungstatistik
      * @return Die Zahlungstatistik mit der angegebenen ID
      */
-    public ZahlungStatistik getZahlungStatistikById(Long id) {
-        return zahlungsStatistikRepositoryService.findById(id);
+    public ZahlungStatistik getZahlungStatistikById(StatisticsDTO statisticDTO) {
+        return zahlungsStatistikRepositoryService.findById(statisticDTO.getId());
     }
 
     /**
      * Löscht eine Zahlungstatistik basierend auf der ID.
      *
-     * @param id Die ID der Zahlungstatistik, die gelöscht werden soll
      */
-    public void deleteZahlungStatistik(Long id) {
-        if (zahlungsStatistikRepositoryService.findById(id) != null) {
-            zahlungsStatistikRepositoryService.deleteById(id);
+    public void deleteZahlungStatistik(StatisticsDTO statisticDTO) {
+        if (zahlungsStatistikRepositoryService.findById(statisticDTO.getId()) != null) {
+            zahlungsStatistikRepositoryService.deleteById(statisticDTO.getId());
         }
     }
 
-    /**
-     * Erstellt eine Zahlungstatistik mit minimalen Eingabedaten.
-     *
-     * @param fundId Die ID des Fonds, für den die Statistik erstellt werden soll
-     * @param startDate Das Startdatum der Zahlungsperiode im Format "yyyy-MM-dd"
-     * @param endDate Das Enddatum der Zahlungsperiode im Format "yyyy-MM-dd"
-     * @return Die erstellte Zahlungstatistik
-     */
-    public ZahlungStatistik createZahlungStatistikWithMinimalInput(Long fundId, String startDate, String endDate) {
-        // Fund abrufen
-        FundEntity fund = fundRepositoryService.findFundById(fundId);
+    public ZahlungStatistik createZahlungStatistik(StatisticsDTO statisticDTO) {
+
+        FundEntity fund = fundRepositoryService.findFundById(statisticDTO.getFundId());
 
         // Start- und Enddatum parsen
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
+        LocalDate start = LocalDate.parse(statisticDTO.getStartDate());
+        LocalDate end = LocalDate.parse(statisticDTO.getEndDate());
 
         // Zahlungen im angegebenen Zeitraum filtern
         List<Payment> paymentsInPeriod = fund.getPayments().stream()
@@ -127,20 +118,19 @@ public class ZahlungStatistikService {
     /**
      * Erstellt oder aktualisiert eine Zahlungstatistik, basierend auf den übermittelten Daten.
      *
-     * @param id Die ID der Zahlungstatistik (null für eine neue Statistik)
      * @return Die erstellte oder aktualisierte Zahlungstatistik
      */
-    public ZahlungStatistik createOrUpdateZahlungStatistik(Long id, Long fundId, String start, String end) {
+    public ZahlungStatistik createOrUpdateZahlungStatistik(StatisticsDTO statisticDTO) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
-        LocalDate startDate = LocalDate.parse(start, formatter);
-        LocalDate endDate = LocalDate.parse(end, formatter);
+        LocalDate startDate = LocalDate.parse(statisticDTO.getStartDate(), formatter);
+        LocalDate endDate = LocalDate.parse(statisticDTO.getEndDate(), formatter);
 
         // Überprüfen, ob eine bestehende Statistik vorhanden ist
-        ZahlungStatistik existing = zahlungsStatistikRepositoryService.findById(id);
+        ZahlungStatistik existing = zahlungsStatistikRepositoryService.findById(statisticDTO.getId());
 
         if (existing != null) {
-            FundEntity fund = fundRepositoryService.findFundById(fundId);
+            FundEntity fund = fundRepositoryService.findFundById(statisticDTO.getFundId());
             // Aktualisieren der bestehenden Statistik
             List<Payment> paymentsInPeriod = fund.getPayments().stream()
                     .filter(payment -> {
@@ -154,7 +144,7 @@ public class ZahlungStatistikService {
             long paymentCount = paymentsInPeriod.size();
             double averageAmount = paymentCount > 0 ? totalAmount / paymentCount : 0.0;
 
-            existing.setFund(fundRepositoryService.findFundById(fundId));
+            existing.setFund(fundRepositoryService.findFundById(statisticDTO.getFundId()));
             existing.setStartDate(startDate);
             existing.setEndDate(endDate);
             existing.setTotalAmount(totalAmount);
@@ -162,7 +152,7 @@ public class ZahlungStatistikService {
             existing.setPaymentCount(paymentCount);
             return zahlungsStatistikRepositoryService.saveStatistic(existing);
         } else {
-            return createZahlungStatistikWithMinimalInput(fundId, start, end);
+            return createZahlungStatistik(statisticDTO);
         }
     }
 

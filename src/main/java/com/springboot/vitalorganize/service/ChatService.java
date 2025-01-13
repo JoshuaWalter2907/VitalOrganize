@@ -147,9 +147,9 @@ public class ChatService {
      *
      * @param selectedUsers die Liste der ausgewählten Benutzer
      * @param chatName der Name des Chats (nur für Gruppen)
-     * @param currentUser der aktuell angemeldete Benutzer
      */
-    public void createChat(List<Long> selectedUsers, String chatName, UserEntity currentUser) {
+    public void createChat(List<Long> selectedUsers, String chatName) {
+        UserEntity currentUser = userService.getCurrentUser();
         if (selectedUsers.size() > 1) {
             if (!selectedUsers.contains(currentUser.getId())) {
                 selectedUsers.add(currentUser.getId());
@@ -447,10 +447,10 @@ public class ChatService {
      *
      * @param request die Anfrage zum Erstellen einer Gruppe
      * @param model das Model, das die Fehlernachricht enthält
-     * @param currentUser der aktuell angemeldete Benutzer
      * @return true, wenn die Anfrage gültig ist, andernfalls false
      */
-    public boolean validateCreateGroupRequest(CreateGroupRequest request, Model model, UserEntity currentUser) {
+    public boolean validateCreateGroupRequest(CreateGroupRequest request, Model model) {
+        UserEntity currentUser = userService.getCurrentUser();
         if (request == null) {
             model.addAttribute("errorMessage", "Ungültige Anfrage. Bitte versuchen Sie es erneut.");
             preparePublicUsersPage(model, currentUser.getId());
@@ -479,10 +479,10 @@ public class ChatService {
      * Löscht einen Chat anhand seiner ID, je nach Typ (Gruppe oder Direktchat).
      *
      * @param chatId die ID des zu löschenden Chats
-     * @param currentUser der aktuell angemeldete Benutzer
      * @return true, wenn der Chat gelöscht wurde, andernfalls false
      */
-    public boolean deleteChatById(Long chatId, UserEntity currentUser) {
+    public boolean deleteChatById(Long chatId) {
+        UserEntity currentUser = userService.getCurrentUser();
         Object chat = getChatById(chatId);
         if (chat == null) {
             return false; // Chat nicht gefunden

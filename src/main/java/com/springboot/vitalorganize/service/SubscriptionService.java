@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.model.SubscriptionRequestDTO;
 import com.springboot.vitalorganize.service.repositoryhelper.SubscriptionRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
@@ -18,16 +19,17 @@ public class SubscriptionService {
 
     // Abhängigkeiten: PayPal-Service, UserRepositoryService und SubscriptionRepositoryService
     private final PaypalService paypalService;
+    private final UserService userService;
     private final UserRepositoryService userRepositoryService;
     private final SubscriptionRepositoryService subscriptionRepositoryService;
 
     /**
      * Überprüft den Status des Abonnements des Benutzers und leitet ihn bei Bedarf zur PayPal-Zahlung um.
      *
-     * @param userEntity Der Benutzer, dessen Abonnement überprüft werden soll
      * @return Eine Weiterleitungs-URL, entweder zur Profilseite oder zur PayPal-Subscription-Seite
      */
-    public String createSubscriptionRedirect(UserEntity userEntity) {
+    public String createSubscriptionRedirect() {
+        UserEntity userEntity = userService.getCurrentUser();
         // Überprüfen, ob der Benutzer bereits eine aktive Subscription hat
         if (userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getStatus().equals("ACTIVE")) {
             return "/profile";  // Wenn das Abonnement aktiv ist, Weiterleitung zur Profilseite
@@ -46,49 +48,44 @@ public class SubscriptionService {
     /**
      * Storniert das Abonnement des Benutzers.
      *
-     * @param userEntity Der Benutzer, dessen Abonnement storniert werden soll
      * @return true, wenn das Abonnement erfolgreich storniert wurde, sonst false
      */
-    public boolean cancelSubscription(UserEntity userEntity) {
+    public boolean cancelSubscription() {
+        UserEntity userEntity = userService.getCurrentUser();
         String subscriptionId = userEntity.getLatestSubscription().getSubscriptionId();
         return paypalService.cancelSubscription(userEntity, subscriptionId);  // Abonnement über PayPal stornieren
     }
 
     /**
      * Pausiert das Abonnement des Benutzers.
-     *
-     * @param userEntity Der Benutzer, dessen Abonnement pausiert werden soll
      * @return true, wenn das Abonnement erfolgreich pausiert wurde, sonst false
      */
-    public boolean pauseSubscription(UserEntity userEntity) {
+    public boolean pauseSubscription() {
+        UserEntity userEntity = userService.getCurrentUser();
         // Logik für das Pausieren der Subscription
         return paypalService.pauseSubscription(userEntity);  // Abonnement über PayPal pausieren
     }
 
     /**
      * Setzt das Abonnement des Benutzers fort.
-     *
-     * @param userEntity Der Benutzer, dessen Abonnement fortgesetzt werden soll
      * @return true, wenn das Abonnement erfolgreich fortgesetzt wurde, sonst false
      */
-    public boolean resumeSubscription(UserEntity userEntity) {
+    public boolean resumeSubscription() {
+        UserEntity userEntity = userService.getCurrentUser();
         String subscriptionId = userEntity.getLatestSubscription().getSubscriptionId();
         // Logik zum Fortsetzen der Subscription
         return paypalService.resumeSubscription(userEntity, subscriptionId);  // Abonnement über PayPal fortsetzen
     }
 
     /**
-     * Bestätigt das Abonnement nach erfolgreicher PayPal-Zahlung.
-     *
-     * @param subscriptionId Die ID des Abonnements
-     * @param token Der Bestätigungstoken von PayPal
-     * @param userEntity Der Benutzer, dessen Abonnement bestätigt wird
+     * Bestätigt das Abonnement nach erfolgreicher PayPal-Zahlung
      * @return true, wenn das Abonnement erfolgreich bestätigt wurde, sonst false
      */
-    public boolean confirmSubscription(String subscriptionId, String token, UserEntity userEntity) {
+    public boolean confirmSubscription(SubscriptionRequestDTO subscriptionRequestDTO) {
+        UserEntity userEntity = userService.getCurrentUser();
         // Payer ID aus dem Abonnement von PayPal abrufen
-        String payerId = paypalService.getPayerIdFromSubscription(subscriptionId);
-        String approvalResponse = paypalService.confirmSubscription(subscriptionId, payerId);
+        String payerId = paypalService.getPayerIdFromSubscription(subscriptionRequestDTO.getSubscriptionId());
+        String approvalResponse = paypalService.confirmSubscription(subscriptionRequestDTO.getSubscriptionId(), payerId);
 
         // Überprüfen, ob das Abonnement von PayPal genehmigt wurde
         if ("approved".equals(approvalResponse)) {
@@ -98,7 +95,7 @@ public class SubscriptionService {
 
             // Erstelle und speichere das Subscription-Objekt in der Datenbank
             SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
-            subscriptionEntity.setSubscriptionId(subscriptionId);
+            subscriptionEntity.setSubscriptionId(subscriptionRequestDTO.getSubscriptionId());
             subscriptionEntity.setPayerId(payerId);
             subscriptionEntity.setPlanId("P-1DP07006BV376124WM5XEB6Q");  // Beispiel Plan ID
             subscriptionEntity.setStatus("ACTIVE");  // Setze den Status auf "ACTIVE"

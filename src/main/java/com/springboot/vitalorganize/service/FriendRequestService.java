@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.FriendRequest;
 import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.model.FriendStatusRequestDTO;
 import com.springboot.vitalorganize.service.repositoryhelper.FriendRequestRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import lombok.AllArgsConstructor;
@@ -17,16 +18,12 @@ public class FriendRequestService {
 
     private final FriendRequestRepositoryService friendRequestRepositoryService;
     private final UserRepositoryService userRepositoryService;
+    private final UserService userService;
 
-    /**
-     * Akzeptiert eine Freundschaftsanfrage und fügt den Absender als Freund des aktuellen Benutzers hinzu.
-     * Die Anfrage wird anschließend gelöscht.
-     *
-     * @param requestId die ID der Freundschaftsanfrage
-     * @param currentUser der aktuell angemeldete Benutzer, der die Anfrage akzeptiert
-     */
-    public void acceptFriendRequest(Long requestId, UserEntity currentUser) {
-        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(requestId);
+
+    public void acceptFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        UserEntity currentUser = userService.getCurrentUser();
+        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
 
         // Freundschaftsanfrage akzeptieren
         friendRequest.setStatus(FriendRequest.RequestStatus.ACCEPTED);
@@ -41,14 +38,9 @@ public class FriendRequestService {
         friendRequestRepositoryService.deleteFriendRequest(friendRequest);
     }
 
-    /**
-     * Lehnt eine Freundschaftsanfrage ab und löscht sie aus der Datenbank.
-     *
-     * @param requestId die ID der Freundschaftsanfrage
-     * @param currentUser der aktuell angemeldete Benutzer, der die Anfrage ablehnt
-     */
-    public void rejectFriendRequest(Long requestId, UserEntity currentUser) {
-        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(requestId);
+
+    public void rejectFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
 
         // Freundschaftsanfrage ablehnen
         friendRequest.setStatus(FriendRequest.RequestStatus.REJECTED);
@@ -58,15 +50,9 @@ public class FriendRequestService {
         friendRequestRepositoryService.deleteFriendRequest(friendRequest);
     }
 
-    /**
-     * Löscht eine Freundschaftsanfrage, die der aktuelle Benutzer gesendet hat.
-     *
-     * @param requestId die ID der Freundschaftsanfrage
-     * @param currentUser der aktuell angemeldete Benutzer, der die Anfrage gelöscht hat
-     * @throws RuntimeException wenn der aktuelle Benutzer nicht der Absender der Anfrage ist
-     */
-    public void cancelFriendRequest(Long requestId, UserEntity currentUser) {
-        FriendRequest request = friendRequestRepositoryService.findFriendRequestById(requestId);
+    public void cancelFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        UserEntity currentUser = userService.getCurrentUser();
+        FriendRequest request = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
 
         // Überprüfen, ob der aktuelle Benutzer der Absender der Anfrage ist
         if (!request.getSender().getId().equals(currentUser.getId())) {

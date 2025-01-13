@@ -39,7 +39,7 @@
       </form>
   </div>
 
-  <div class="right-side" th:if="${showSubscription == 'paymenthistory'}">
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'paymenthistory'}">
     <h1 th:text="#{profile.transactions}">Transaktionen</h1>
     <div class="payment-history-header">
       <form action="/profile-edit" method="get">
@@ -59,7 +59,7 @@
     </div>
     <div class="payment-history-container">
 
-      <div th:if="${historysubscription != null && kind == 'premium'}">
+      <div th:if="${ProfileEditData.historysubscription != null && ProfileEditData.kind == 'premium'}">
         <div class="payment-history-container-table">
           <div class="row">
             <div class="cell header" th:text="#{table.header.person}" style="width: 20%;">Person</div>
@@ -91,7 +91,7 @@
           </form>
         </div>
 
-        <div th:each="payment : ${historysubscription}" class="payment-history-element">
+        <div th:each="payment : ${ProfileEditData.historysubscription}" class="payment-history-element">
           <div class="row">
             <p th:text="${payment.payerEmail}" class="cell" style="width: 20%;"></p>
             <p class="cell" style="width: 30%;" th:text="#{profile.premium}"> Premium Membership</p>
@@ -102,7 +102,7 @@
         </div>
       </div>
 
-      <div th:if="${historysingle != null && kind == 'single'}">
+      <div th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
 
         <div class="payment-history-container-table">
           <div class="row">
@@ -135,7 +135,7 @@
           </form>
         </div>
 
-        <div th:each="payment : ${historysingle}" class="payment-history-container-table">
+        <div th:each="payment : ${ProfileEditData.historysingle}" class="payment-history-container-table">
           <div class="row">
             <div th:text="${payment.user.username}" class="cell" style="width: 20%;"></div>
             <div th:utext="${payment.reason + ' <br>(' + payment.type + ')'}" class="cell" style="width: 30%;"></div>
@@ -150,9 +150,9 @@
     </div>
   </div>
 
-  <div class="right-side" th:if="${showSubscription == 'subscription'}">
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'subscription'}">
     <h1 th:text="#{abos.administer}">Abonnements verwalten</h1>
-    <div th:each="subscription : ${subscriptions}" class="abonements">
+    <div th:each="subscription : ${ProfileEditData.subscriptions}" class="abonements">
       <div class="abonements-left">
         <div class="abo-image">
           <i class="fas fa-crown"></i>
@@ -190,7 +190,7 @@
       </div>
     </div>
   </div>
-  <div class="right-side" th:if="${showSubscription == 'general'}">
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'general'}">
     <h1 th:text="#{profile.accountSettings}"></h1>
     <a class="special" th:text="#{profile.manageAccountDetails}"></a>
 
@@ -198,20 +198,20 @@
       <a th:text="#{profile.accountInfo}"></a>
       <p>
         <span th:text="#{profile.id}"></span>:
-        <span th:text="${profile.token}"></span>
+        <span th:text="${ProfileEditData.profile.token}"></span>
       </p>
       <div class="input-container-profile">
         <div class="input-box-fixed">
           <label th:text="#{profile.username}"></label>
-          <input type="text" id="username" name="username" th:value="${profile.username}" readonly>
+          <input type="text" id="username" name="username" th:value="${ProfileEditData.profile.username}" readonly>
         </div>
         <div class="input-box-fixed">
           <label th:text="#{profile.username}"></label>
-          <input type="text" id="email" name="email"        th:value="${profile.sendtoEmail != null && !profile.sendtoEmail.isEmpty() ?
-                 (#strings.substring(profile.sendtoEmail, 0, 1) + '***' +
-                  #strings.substring(profile.sendtoEmail, profile.sendtoEmail.length() - 10)) :
-                 (#strings.substring(profile.email, 0, 1) + '***' +
-                  #strings.substring(profile.email, profile.email.length() - 10))}"  readonly>
+          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendtoEmail != null && !ProfileEditData.profile.sendtoEmail.isEmpty() ?
+                 (#strings.substring(ProfileEditData.profile.sendtoEmail, 0, 1) + '***' +
+                  #strings.substring(ProfileEditData.profile.sendtoEmail, ProfileEditData.profile.sendtoEmail.length() - 10)) :
+                 (#strings.substring(ProfileEditData.profile.email, 0, 1) + '***' +
+                  #strings.substring(ProfileEditData.profile.email, ProfileEditData.profile.email.length() - 10))}"  readonly>
         </div>
       </div>
     </div>
@@ -223,17 +223,17 @@
           <div class="input-box-profile">
             <label th:text="#{profile.firstName}"></label>
             <input type="text" id="surname" name="surname"
-                   th:value="${profile.personalInformation.firstName != null ?
-                 #strings.substring(profile.personalInformation.firstName, 0, 1) + '***' +
-                 #strings.substring(profile.personalInformation.firstName, profile.personalInformation.firstName.length() - 1) : ''}"
+                   th:value="${ProfileEditData.profile.personalInformation.firstName != null ?
+                 #strings.substring(ProfileEditData.profile.personalInformation.firstName, 0, 1) + '***' +
+                 #strings.substring(ProfileEditData.profile.personalInformation.firstName, ProfileEditData.profile.personalInformation.firstName.length() - 1) : ''}"
                    th:placeholder="#{profile.firstName}">
           </div>
           <div class="input-box-profile">
             <label th:text="#{profile.lastName}"></label>
             <input type="text" id="name" name="name"
-                   th:value="${profile.personalInformation.lastName != null ?
-                 #strings.substring(profile.personalInformation.lastName, 0, 1) + '***' +
-                 #strings.substring(profile.personalInformation.lastName, profile.personalInformation.lastName.length() - 1) : ''}"
+                   th:value="${ProfileEditData.profile.personalInformation.lastName != null ?
+                 #strings.substring(ProfileEditData.profile.personalInformation.lastName, 0, 1) + '***' +
+                 #strings.substring(ProfileEditData.profile.personalInformation.lastName, ProfileEditData.profile.personalInformation.lastName.length() - 1) : ''}"
                    th:placeholder="#{profile.lastName}">
           </div>
         </div>
@@ -245,15 +245,15 @@
           <div class="input-box-profile">
             <label th:text="#{profile.addressLine1}"></label>
             <input type="text" id="address" name="address"
-                   th:value="${profile.personalInformation.address != null ?
-                 profile.personalInformation.address : ''}"
+                   th:value="${ProfileEditData.profile.personalInformation.address != null ?
+                 ProfileEditData.profile.personalInformation.address : ''}"
                    th:placeholder="#{profile.address}">
           </div>
           <div class="input-box-profile">
             <label th:text="#{profile.city}"></label>
             <input type="text" id="city" name="city"
-                   th:value="${profile.personalInformation.city != null ?
-                 profile.personalInformation.city : ''}"
+                   th:value="${ProfileEditData.profile.personalInformation.city != null ?
+                 ProfileEditData.profile.personalInformation.city : ''}"
                    th:placeholder="#{profile.city}">
           </div>
         </div>
@@ -261,26 +261,26 @@
           <div class="input-box-profile">
             <label th:text="#{profile.region}"></label>
             <input type="text" id="region" name="region"
-                   th:value="${profile.personalInformation.region != null ?
-                 profile.personalInformation.region : ''}"
+                   th:value="${ProfileEditData.profile.personalInformation.region != null ?
+                 ProfileEditData.profile.personalInformation.region : ''}"
                    th:placeholder="#{profile.region}">
           </div>
           <div class="input-box-profile">
             <label th:text="#{profile.postalCode}"></label>
             <input type="text" id="postalCode" name="postalCode"
-                   th:value="${profile.personalInformation.postalCode}"
+                   th:value="${ProfileEditData.profile.personalInformation.postalCode}"
                    th:placeholder="#{profile.postalCode}">
 
           </div>
         </div>
         <div class="input-container-profile"
-             th:classappend="${profile.role == 'USER'} ? 'locked' : ''"
-             th:attrappend="data-tooltip=${profile.role == 'USER'} ? #{profile.premiumTooltip} : ''">
+             th:classappend="${ProfileEditData.profile.role == 'USER'} ? 'locked' : ''"
+             th:attrappend="data-tooltip=${ProfileEditData.profile.role == 'USER'} ? #{profile.premiumTooltip} : ''">
           <div class="switch-container">
             <span class="status-text" th:text="#{profile.private}">Private</span>
             <label class="switch">
               <input type="checkbox" id="public-private-toggle" name="publicPrivateToggle"
-                     th:checked="${isProfilePublic}" th:disabled="${profile.role == 'USER'}">
+                     th:checked="${ProfileEditData.isProfilePublic}" th:disabled="${ProfileEditData.profile.role == 'USER'}">
               <span class="slider"></span>
             </label>
             <span class="status-text" th:text="#{profile.public}"></span>
@@ -314,7 +314,7 @@
         </div>
 
         <!-- Download-Button, wenn auth=false -->
-        <form th:unless="${auth}" action="/send-2fa-code" method="post">
+        <form th:unless="${ProfileEditData.auth}" action="/send-2fa-code" method="post">
           <button type="submit" class="form-actions" th:text="#{profile.downloadInformation}"></button>
         </form>
       </div>

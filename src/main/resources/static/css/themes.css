@@ -177,6 +177,8 @@ header nav ul li a:hover, .header-bottom a:hover {
         display: flex;
         align-items: center;
         justify-content: space-evenly;
+        gap: 5px;
+        overflow-x: auto;
     }
 
     .search-button i {

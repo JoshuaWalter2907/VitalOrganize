@@ -1,7 +1,6 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.ProfileAdditionData;
-import com.springboot.vitalorganize.model.ProfileRequest;
+import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.entity.*;
 import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,182 +30,111 @@ public class ProfileController {
 
     /**
      * Zeigt die Profilseite eines Benutzers an.
-     *
-     * @param model                das Model für die View
-     * @param user                 der aktuell authentifizierte Benutzer
-     * @param authenticationToken  das OAuth2-Authentifizierungstoken
-     * @param profileId            die ID des zu betrachtenden Profils (optional)
+     * @param profileRequestDTO DTO für alle Informationen, die benötigt werden um das Profile anzuzeigen
+     * @param model das Model für die View
      * @return die Profil-View
      */
     @GetMapping("/profile")
-    public String profile(Model model, @AuthenticationPrincipal OAuth2User user,
-                          OAuth2AuthenticationToken authenticationToken,
-                          @RequestParam(value = "profileId", required = false) Long profileId) {
-
-        // Hole den aktuell authentifizierten Benutzer
-        UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
-
-        // Bestimme, ob das Profil des aktuellen Benutzers oder eines anderen angezeigt werden soll
-        UserEntity profileUser = profileId != null ?
-                profileService.getProfileUser(user, authenticationToken, profileId) : currentUser;
-
-        // Füge Freunde und zusätzliche Informationen zur Model hinzu, falls kein Fremdprofil betrachtet wird
-        if (profileId == null) {
-            model.addAttribute("blockedUsers", profileService.getBlockedUsers(currentUser));
-            model.addAttribute("potentialFriends", profileService.getPotentialFriends(currentUser));
-            model.addAttribute("friendRequests", profileService.getFriendRequests(currentUser));
-            model.addAttribute("outgoingFriendRequests", profileService.getSentRequests(currentUser));
-        }
-
-        // Füge Freunde und das Benutzerprofil zur Model hinzu
-        model.addAttribute("friends", profileUser.getFriends());
-        model.addAttribute("userEntity", profileUser);
-
+    public String profile(
+            ProfileRequestDTO profileRequestDTO,
+            Model model
+    ) {
+        ProfileResponseDTO profileResponseDTO = profileService.prepareProfilePage(profileRequestDTO);
+        model.addAttribute("profileData", profileResponseDTO);
         return "profile/profile";
     }
 
     /**
-     * Blockiert einen Benutzer.
-     *
-     * @param id                  die ID des zu blockierenden Benutzers
-     * @param user                der aktuell authentifizierte Benutzer
-     * @param authenticationToken das OAuth2-Authentifizierungstoken
-     * @return Weiterleitung zur Profilseite
+     * Blockiert einen Benutzer
+     * @param friendRequestDTO Enthält die Informationen des zu blockierenden Users
+     * @return Profilpage
      */
     @PostMapping("/block/{id}")
-    public String blockUser(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                            OAuth2AuthenticationToken authenticationToken) {
-        userService.blockUser(getCurrentUserId(user, authenticationToken), id);
+    public String blockUser(
+            FriendStatusRequestDTO friendRequestDTO
+    ) {
+        userService.blockUser(friendRequestDTO);
         return redirectToProfile();
     }
 
     /**
-     * Sendet eine Freundschaftsanfrage.
+     * Befreundet einen Benutzer
+     * @param friendStatusRequestDTO Enthält die Informationen des zu befreundenden Users
+     * @return Profilpage
      */
     @PostMapping("/addFriend/{id}")
-    public String addFriend(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                            OAuth2AuthenticationToken authenticationToken) {
-        userService.addFriend(getCurrentUserId(user, authenticationToken), id);
+    public String addFriend(FriendStatusRequestDTO friendStatusRequestDTO) {
+        userService.addFriend(friendStatusRequestDTO);
         return redirectToProfile();
     }
 
     /**
-     * Entfernt einen Benutzer aus der Freundesliste.
+     * Entfreundet einen Benutzer
+     * @param friendStatusRequestDTO Enthält die Informationen des zu entfreundung Users
+     * @return Profilpage
      */
     @PostMapping("/unfriend/{id}")
-    public String unfriendUser(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                               OAuth2AuthenticationToken authenticationToken) {
-        userService.unfriendUser(getCurrentUserId(user, authenticationToken), id);
+    public String unfriendUser(FriendStatusRequestDTO friendStatusRequestDTO) {
+        userService.unfriendUser(friendStatusRequestDTO);
         return redirectToProfile();
     }
 
     /**
-     * Entblockiert einen Benutzer.
+     * Blockiert einen Nutzer
+     * @param friendStatusRequestDTO Enthält die Informationen um einen Nutzer zu blockiern
+     * @return ProfilePage
      */
     @PostMapping("/unblock/{id}")
-    public String unblockUser(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                              OAuth2AuthenticationToken authenticationToken) {
-        userService.unblockUser(getCurrentUserId(user, authenticationToken), id);
+    public String unblockUser(FriendStatusRequestDTO friendStatusRequestDTO) {
+        userService.unblockUser(friendStatusRequestDTO);
         return redirectToProfile();
     }
 
 
     /**
-     * Akzeptiert eine eingehende Freundschaftsanfrage.
+     * Akzeptiert die Freundschaftsanfrage einen Nutzer
+     * @param friendStatusRequestDTO Enthält die Informationen um eine Anfrage zu akzeptieren
+     * @return ProfilePage
      */
     @PostMapping("/acceptRequest/{id}")
-    public String acceptFriendRequest(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                                      OAuth2AuthenticationToken authenticationToken) {
-        UserEntity userEntity = userService.getCurrentUser(user, authenticationToken);
-        friendRequestService.acceptFriendRequest(id, userEntity);
+    public String acceptFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        friendRequestService.acceptFriendRequest(friendStatusRequestDTO);
         return "redirect:/profile";
     }
 
     /**
-     * Lehnt eine eingehende Freundschaftsanfrage ab.
+     * Lehnt die Freundschaftsanfrage einen Nutzers ab
+     * @param friendStatusRequestDTO Enthält die Informationen um eine Anfrage abzulehnen
+     * @return ProfilePage
      */
     @PostMapping("/rejectRequest/{id}")
-    public String rejectFriendRequest(@PathVariable Long id, @AuthenticationPrincipal OAuth2User user,
-                                      OAuth2AuthenticationToken authenticationToken) {
-        UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
-        friendRequestService.rejectFriendRequest(id, currentUser);
+    public String rejectFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        friendRequestService.rejectFriendRequest(friendStatusRequestDTO);
         return "redirect:/profile";
     }
 
 
     /**
-     * Bricht eine ausgehende Freundschaftsanfrage ab.
+     * Löscht eine ausgehende Freundschaftsanfrage
+     * @param friendStatusRequestDTO Informationen die zur Löschung benötigt werden
+     * @return Profilepage
      */
     @PostMapping("/cancelRequest/{id}")
-    public String cancelFriendRequest(@PathVariable("id") Long requestId, @AuthenticationPrincipal OAuth2User user,
-                                      OAuth2AuthenticationToken authenticationToken) {
-        UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
-        friendRequestService.cancelFriendRequest(requestId, currentUser);
+    public String cancelFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
+        friendRequestService.cancelFriendRequest(friendStatusRequestDTO);
         return "redirect:/profile";
     }
 
 
-    /**
-     * Zeigt die Profilbearbeitungsseite an und lädt die erforderlichen Profildaten.
-     *
-     * @param profileRequest die Anfragedaten für das Profil
-     * @param auth gibt an, ob eine Zwei-Faktor-Authentifizierung verwendet wird (optional)
-     * @param user der authentifizierte OAuth2-Benutzer (optional)
-     * @param authentication das Authentifizierungs-Token für den OAuth2-Benutzer
-     * @param model das UI-Modell, in das die Profildaten eingefügt werden
-     * @param request die aktuelle HTTP-Anfrage
-     * @param session die aktuelle HTTP-Session
-     * @return der Name des Thymeleaf-Templates für die Profilbearbeitungsseite
-     */
+
     @GetMapping("/profile-edit")
-    public String profile(ProfileRequest profileRequest,
-                          @RequestParam(value = "fa", required = false) boolean auth,
-                          @AuthenticationPrincipal OAuth2User user,
-                          OAuth2AuthenticationToken authentication,
+    public String profile(ProfileEditRequestDTO profileEditRequestDTO,
                           Model model,
                           HttpServletRequest request,
-                          HttpSession session) {
-
-        // Aktuelle URL in der Sitzung speichern und für die View bereitstellen
-        String currentUrl = request.getRequestURI();
-        session.setAttribute("uri", currentUrl);
-        model.addAttribute("url", currentUrl);
-
-        // Profildaten und Abonnements für den Benutzer abrufen
-        UserEntity profileData = profileService.getProfileData(profileRequest.getProfileId(), user, authentication);
-        List<SubscriptionEntity> subscriptions = profileService.getSubscriptions(profileData);
-
-        // Profildaten und Abonnements in das Modell einfügen
-        model.addAttribute("subscriptions", subscriptions);
-        model.addAttribute("profile", profileData);
-        model.addAttribute("isProfilePublic", profileData.isPublic());
-        model.addAttribute("auth", auth);
-        model.addAttribute("kind", profileRequest.getKind());
-
-        // Transaktions- oder Zahlungshistorie basierend auf dem Profiltyp abrufen
-        if ("premium".equals(profileRequest.getKind())) {
-            List<TransactionSubscription> transactions = profileService.getTransactionHistory(
-                    profileData,
-                    profileRequest.getKind(),
-                    profileRequest.getUsername(),
-                    profileRequest.getDatefrom(),
-                    profileRequest.getDateto(),
-                    profileRequest.getAmount());
-            model.addAttribute("historysubscription", transactions);
-        } else {
-            List<Payment> payments = profileService.getFilteredPayments(
-                    profileData,
-                    profileRequest.getUsername(),
-                    profileRequest.getReason(),
-                    profileRequest.getDatefrom(),
-                    profileRequest.getDateto(),
-                    profileRequest.getAmount());
-            model.addAttribute("historysingle", payments);
-        }
-
-        // Sichtbaren Tab bestimmen und zum Modell hinzufügen
-        String showSubscription = profileService.determineTab(profileRequest.getTab());
-        model.addAttribute("showSubscription", showSubscription);
+                          HttpSession session
+    ) {
+        ProfileEditResponseDTO profileEditResponseDTO = profileService.prepareProfileEditPage(profileEditRequestDTO, request, session);
+        model.addAttribute("ProfileEditData", profileEditResponseDTO);
 
         return "profile/private-profile";
     }
@@ -299,7 +227,7 @@ public class ProfileController {
      * @return eine Weiterleitung zur Profilbearbeitungsseite
      */
     @PostMapping("/save-profile")
-    public String saveProfile(ProfileRequest profileRequest,
+    public String saveProfile(ProfileEditRequestDTO profileRequest,
                               @AuthenticationPrincipal OAuth2User user,
                               OAuth2AuthenticationToken auth2AuthenticationToken) {
 

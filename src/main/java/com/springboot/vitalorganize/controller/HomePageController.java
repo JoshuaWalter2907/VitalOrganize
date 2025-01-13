@@ -1,5 +1,7 @@
 package com.springboot.vitalorganize.controller;
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.FARequestDTO;
+import com.springboot.vitalorganize.model.Verify2FARequestDTO;
 import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -15,9 +17,7 @@ import java.util.Map;
 
 /**
  * Der MainController steuert grundlegende Routen der Anwendung.
- *
- * Dieser Controller enthält Endpunkte für die Startseite, API-Dokumentation,
- * Theme-Änderungen, Login-Seite sowie die Verarbeitung von Zwei-Faktor-Authentifizierung (2FA).
+ * Er stellt die Funktionalität von 2FA Endpunkten dar
  */
 @Controller
 @AllArgsConstructor
@@ -32,7 +32,7 @@ public class HomePageController {
     /**
      * Rendert die Startseite der Anwendung.
      *
-     * @param model das UI-Modell, in das die Benutzerattribute eingefügt werden
+     * @param model Um Attribute an das Frontend zu geben
      * @return der Name der View für die Startseite
      */
     @RequestMapping("/")
@@ -45,7 +45,7 @@ public class HomePageController {
     /**
      * Zeigt die API-Dokumentation an.
      *
-     * @param model das UI-Modell
+     * @param model Um Attribute an das Frontend zu geben
      * @return der Name der View für die API-Dokumentation
      */
     @GetMapping("/api-docs")
@@ -96,64 +96,39 @@ public class HomePageController {
 
 
     /**
-     * Sendet einen Zwei-Faktor-Authentifizierungscode (2FA) an die E-Mail des Benutzers.
-     *
-     * @param email die Ziel-E-Mail-Adresse (optional)
-     * @param inputString eine zusätzliche Eingabe (optional)
-     * @param birthDate das Geburtsdatum (optional)
-     * @param isPublic ein öffentlicher Indikator (optional)
-     * @param user der aktuell authentifizierte Benutzer
-     * @param auth2AuthenticationToken das Authentifizierungs-Token des Benutzers
-     * @param session die aktuelle HTTP-Session
-     * @return eine Weiterleitung zur vorherigen URI mit dem 2FA-Flag
+     * Endpoint um einen 2FA Code an den Benutzer zu senden
+     * @param faRequestDTO 2FA Request DTO mit den relevanten Informationen
+     * @param session Session um Attribute zu speichern
+     * @return Redirect auf die entsprechende Seite
      */
     @PostMapping("/send-2fa-code")
     public String sendTwoFactorCode(
-            @RequestParam(name = "email", required = false) String email,
-            @RequestParam(required = false) String inputString,
-            @RequestParam(required = false) String birthDate,
-            @RequestParam(required = false) Boolean isPublic,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken auth2AuthenticationToken,
+            FARequestDTO faRequestDTO,
             HttpSession session
     ) {
         String uri = (String) session.getAttribute("uri");
 
-        // Attribute in der Session setzen, wenn der Benutzer aus der Profilseite kommt
         if ("/profileaddition".equals(uri)) {
-            session.setAttribute("email", email);
-            session.setAttribute("inputString", inputString);
-            session.setAttribute("birthDate", birthDate);
-            session.setAttribute("isPublic", isPublic);
+            session.setAttribute("email", faRequestDTO.getEmail());
+            session.setAttribute("inputString", faRequestDTO.getInputString());
+            session.setAttribute("birthDate", faRequestDTO.getBirthDate());
+            session.setAttribute("isPublic", faRequestDTO.getIsPublic());
         }
 
-        // Aktuelle Benutzerinformationen abrufen
-        UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
-        if (email == null) {
-            email = userEntity.getEmail();
-        }
-
-        // Alternative E-Mail für bestimmte Provider verwenden
-        if ("github".equals(userEntity.getProvider()) && userEntity.getSendtoEmail() != null) {
-            email = userEntity.getSendtoEmail();
-        }
-
-        // Zwei-Faktor-Code generieren und senden
-        twoFactorService.generateAndSendCode(userEntity, email);
+        twoFactorService.generateAndSendCode();
 
         return "redirect:" + uri + "?fa=true";
     }
 
     /**
-     * Überprüft den eingegebenen Zwei-Faktor-Authentifizierungscode.
-     *
-     * @param digits die vom Benutzer eingegebenen Ziffern
-     * @param session die aktuelle HTTP-Session
-     * @return eine Weiterleitung basierend auf der URI und dem Verifizierungsstatus
+     * Endpooint um eine 2FA Anfrage zu verifizieren
+     * @param verify2FARequestDTO DTO mit allen Informationen, die benötigt werden um zu verifizieren
+     * @param session Um Attribute aus der Session zu holen
+     * @return Redirect auf die entsprechende Seite nach der Verifizierung oder bei falscher Verifizierung
      */
     @PostMapping("/verify-2fa")
     public String verifyTwoFactorCode(
-            @RequestParam Map<String, String> digits,
+            Verify2FARequestDTO verify2FARequestDTO,
             HttpSession session
     ) {
         String email = "";
@@ -169,28 +144,18 @@ public class HomePageController {
             isPublic = (Boolean) session.getAttribute("isPublic");
         }
 
-        // Aktuelle Benutzerinformationen abrufen
-        UserEntity userEntity = userService.getCurrentUser();
+        boolean isVerified = twoFactorService.verifyCode(verify2FARequestDTO.getDigits(), session);
 
-        // Code verifizieren
-        boolean isVerified = twoFactorService.verifyCode(digits, session);
-        System.out.println(isVerified);
-
-        // Verifizierungslogik und Weiterleitungen
         if (isVerified) {
             session.setAttribute("2fa_verified", true);
             if ("/profile-edit".equals(uri)) {
-                senderService.createPdf(userEntity);
+                senderService.createPdf(userService.getCurrentUser());
                 return "redirect:/profile-edit";
             } else if ("/profileaddition".equals(uri)) {
                 return "forward:/profileaddition?inputString=" + username + "&isPublic=" + isPublic + "&birthDate=" + birthdate + "&email=" + email;
             }
         }
-
         return "redirect:/error";
     }
-
-
-
 
 }

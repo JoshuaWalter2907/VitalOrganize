@@ -2,21 +2,19 @@ package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.FundEntity;
 import com.springboot.vitalorganize.entity.ZahlungStatistik;
+import com.springboot.vitalorganize.model.StatisticsDTO;
 import com.springboot.vitalorganize.service.ZahlungStatistikService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 
 
 /**
- * Controller zur Verwaltung von Zahlungsstatistiken und verwandten Aktionen wie dem Erstellen, Abrufen,
- * Aktualisieren und Löschen von Zahlungsstatistiken.
- * Bietet Endpunkte für die Interaktion mit den Zahlungsstatistiken sowie die Abfrage von Fondsstatistiken.
+ * Controller zur Verwaltung des REST Endpoints
  */
 @RestController
 @RequestMapping("/api")
@@ -26,39 +24,24 @@ public class PaymentStatisticsAPI {
     private final ZahlungStatistikService zahlungStatistikService;
 
     /**
-     * Erstellt eine neue Zahlungsstatistik mit minimalem Eingabeaufwand.
-     *
-     * @param fundId    die ID des zugehörigen Fonds
-     * @param startDate das Startdatum der Statistik
-     * @param endDate   das Enddatum der Statistik
-     * @return die erstellte Zahlungsstatistik
+     * Endpoint der REST API um alle Statistiken zu erhalten
+     * @param statisticDTO Alle Informationen, die per Parameter übergeben werden
+     * @return Standardantwort einer REST API
      */
     @PostMapping
-    public ResponseEntity<ZahlungStatistik> createZahlungStatistik(@RequestParam Long fundId,
-                                                                   @RequestParam String startDate,
-                                                                   @RequestParam String endDate) {
-        ZahlungStatistik created = zahlungStatistikService.createZahlungStatistikWithMinimalInput(fundId, startDate, endDate);
+    public ResponseEntity<ZahlungStatistik> createPaymentStatistics(StatisticsDTO statisticDTO) {
+        ZahlungStatistik created = zahlungStatistikService.createZahlungStatistik(statisticDTO);
         return ResponseEntity.ok(created);
     }
 
     /**
-     * Platzhalter-Endpunkt, um auf allgemeine API-Anfragen zu reagieren.
-     *
-     * @return eine Textantwort, dass diese Anfrage nicht relevant ist
-     */
-    @GetMapping
-    public ResponseEntity<String> getAllZahlungStatistik() {
-        return ResponseEntity.ok("not what you are looking for");
-    }
-
-    /**
-     * Gibt eine Liste aller Fondsstatistiken zurück.
+     * Gibt eine Liste aller Fundstatistiken zurück.
      *
      * @param authorizationHeader der Authorization-Header mit Zugriffstoken
-     * @return eine Liste der Fondsstatistiken
+     * @return eine Liste der Statistiken
      */
     @GetMapping("/all/fund")
-    public ResponseEntity<List<FundEntity>> getAllFundStatistik(
+    public ResponseEntity<List<FundEntity>> getAllFundStatistics(
             @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         return ResponseEntity.ok(zahlungStatistikService.getAllFunds(zahlungStatistikService.extractAccessToken(authorizationHeader)));
     }
@@ -70,38 +53,35 @@ public class PaymentStatisticsAPI {
      */
     @GetMapping("/all/statistics")
     public ResponseEntity<List<ZahlungStatistik>> getAllZahlungStatistiken(
-            @RequestParam Long id
+            StatisticsDTO statisticDTO
     ) {
-        List<ZahlungStatistik> list = zahlungStatistikService.getAllZahlungStatistiken(id);
+        List<ZahlungStatistik> list = zahlungStatistikService.getAllZahlungStatistiken(statisticDTO);
         return ResponseEntity.ok(list);
     }
 
     /**
      * Ruft eine spezifische Zahlungsstatistik anhand der ID ab.
      *
-     * @param id die ID der gesuchten Zahlungsstatistik
      * @return die Zahlungsstatistik mit der angegebenen ID
      */
     @GetMapping("/statistics/{id}")
-    public ResponseEntity<ZahlungStatistik> getZahlungStatistikById(@PathVariable Long id) {
-        ZahlungStatistik zahlungStatistik = zahlungStatistikService.getZahlungStatistikById(id);
+    public ResponseEntity<ZahlungStatistik> getZahlungStatistikById(
+            StatisticsDTO statisticDTO
+    ) {
+        ZahlungStatistik zahlungStatistik = zahlungStatistikService.getZahlungStatistikById(statisticDTO);
         return ResponseEntity.ok(zahlungStatistik);
     }
 
     /**
      * Erstellt oder aktualisiert eine Zahlungsstatistik.
      *
-     * @param id      die ID der zu aktualisierenden oder zu erstellenden Zahlungsstatistik
      * @return die erstellte oder aktualisierte Zahlungsstatistik
      */
     @PutMapping("/statistics/{id}")
     public ResponseEntity<ZahlungStatistik> createOrUpdateZahlungStatistik(
-            @PathVariable Long id,
-            @RequestParam(required = false) Long fundId,
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate
-            ) {
-        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(id, fundId, startDate, endDate);
+            StatisticsDTO statisticDTO
+    ) {
+        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(statisticDTO);
         return ResponseEntity.ok(result);
     }
 
@@ -109,12 +89,13 @@ public class PaymentStatisticsAPI {
     /**
      * Löscht eine Zahlungsstatistik anhand ihrer ID.
      *
-     * @param id die ID der zu löschenden Zahlungsstatistik
      * @return eine Antwort ohne Inhalt, um den Erfolg anzuzeigen
      */
     @DeleteMapping("/statistics/{id}")
-    public ResponseEntity<Void> deleteZahlungStatistik(@PathVariable Long id) {
-        zahlungStatistikService.deleteZahlungStatistik(id);
+    public ResponseEntity<Void> deleteZahlungStatistik(
+            StatisticsDTO statisticDTO
+    ) {
+        zahlungStatistikService.deleteZahlungStatistik(statisticDTO);
         return ResponseEntity.noContent().build();
     }
 

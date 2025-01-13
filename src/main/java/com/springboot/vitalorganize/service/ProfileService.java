@@ -1,10 +1,15 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.ProfileRequest;
+import com.springboot.vitalorganize.model.*;
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
 import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.websocket.Session;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -27,6 +32,7 @@ public class ProfileService {
     private final UserService userService;
     private final PaypalService paypalService;
     private final PaymentRepositoryService paymentRepositoryService;
+    private final UserRepository userRepository;
 
     /**
      * Holt das Benutzerprofil des aktuellen Benutzers oder eines angegebenen Benutzers.
@@ -39,9 +45,8 @@ public class ProfileService {
     public UserEntity getProfileUser(OAuth2User user, OAuth2AuthenticationToken authenticationToken, Long profileId) {
         UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
 
-        // Überprüft, ob das Profil des aktuellen Benutzers angezeigt wird
         if (profileId != null && profileId.equals(currentUser.getId())) {
-            return currentUser; // Gibt das Profil des aktuellen Benutzers zurück
+            return currentUser;
         }
 
         // Holt den Benutzer mit der angegebenen Profil-ID
@@ -102,19 +107,10 @@ public class ProfileService {
         return currentUser.getBlockedUsers();
     }
 
-    /**
-     * Holt die Profildaten eines Benutzers basierend auf der angegebenen Profil-ID.
-     * Wenn keine ID angegeben ist, werden die Profildaten des aktuell angemeldeten Benutzers abgerufen.
-     *
-     * @param profileId        Die ID des angeforderten Benutzerprofils
-     * @param user             Das OAuth2User-Objekt des aktuellen Benutzers
-     * @param authentication   Das OAuth2AuthenticationToken des aktuellen Benutzers
-     * @return Das Benutzerobjekt des angeforderten Profils
-     */
-    public UserEntity getProfileData(Long profileId, OAuth2User user, OAuth2AuthenticationToken authentication) {
+    public UserEntity getProfileData(Long profileId) {
         UserEntity profileData;
         if (profileId == null) {
-            profileData = userService.getProfileData(user, authentication);
+            profileData = userService.getCurrentUser();
         } else {
             profileData = userService.getUserById(profileId);
         }
@@ -225,7 +221,7 @@ public class ProfileService {
      * @param userEntity     Das Benutzerobjekt, dessen Profil aktualisiert wird
      * @param profileRequest Das Profil-Request-Objekt mit den neuen Daten
      */
-    public void updateUserProfile(UserEntity userEntity, ProfileRequest profileRequest) {
+    public void updateUserProfile(UserEntity userEntity, ProfileEditRequestDTO profileRequest) {
         PersonalInformation personalInformation = userEntity.getPersonalInformation();
 
         System.out.println(profileRequest.getPublicPrivateToggle());
@@ -243,5 +239,64 @@ public class ProfileService {
 
         userEntity.setPersonalInformation(personalInformation);
         userRepositoryService.saveUser(userEntity);
+    }
+
+    public ProfileResponseDTO prepareProfilePage(
+            ProfileRequestDTO profileRequestDTO
+    ) {
+        ProfileResponseDTO profileResponseDTO = new ProfileResponseDTO();
+        UserEntity userEntity = profileRequestDTO.getProfileId() != null ?
+                userRepository.findUserEntityById(profileRequestDTO.getProfileId()) : userService.getCurrentUser();
+
+        profileResponseDTO.setUserEntity(userEntity);
+        if(profileRequestDTO.getProfileId() == null){
+            profileResponseDTO.setBlockedUsers(getBlockedUsers(userEntity));
+            profileResponseDTO.setPotentialFriends(getPotentialFriends(userEntity));
+            profileResponseDTO.setFriendRequests(getFriendRequests(userEntity));
+            profileResponseDTO.setOutgoingFriendRequests(getSentRequests(userEntity));
+        }
+        profileResponseDTO.setFriends(userEntity.getFriends());
+        return profileResponseDTO;
+    }
+
+    public ProfileEditResponseDTO prepareProfileEditPage(ProfileEditRequestDTO profileEditRequestDTO, HttpServletRequest request, HttpSession session) {
+
+        ProfileEditResponseDTO profileEditResponseDTO = new ProfileEditResponseDTO();
+
+        session.setAttribute("uri", request.getRequestURI());
+        profileEditResponseDTO.setUrl(request.getRequestURI());
+
+        UserEntity userEntity = userService.getUser(profileEditRequestDTO.getProfileId());
+        List<SubscriptionEntity> subscriptions = getSubscriptions(userEntity);
+
+        profileEditResponseDTO.setSubscriptions(subscriptions);
+        profileEditResponseDTO.setProfile(userEntity);
+        profileEditResponseDTO.setProfilePublic(userEntity.isPublic());
+        profileEditResponseDTO.setAuth(profileEditRequestDTO.isAuth());
+        profileEditResponseDTO.setKind(profileEditRequestDTO.getKind());
+
+        if("premium".equals(profileEditRequestDTO.getKind())){
+            List<TransactionSubscription> transactionSubscriptions = getTransactionHistory(
+                    userEntity,
+                    profileEditRequestDTO.getKind(),
+                    profileEditRequestDTO.getUsername(),
+                    profileEditRequestDTO.getDatefrom(),
+                    profileEditRequestDTO.getDateto(),
+                    profileEditRequestDTO.getAmount()
+            );
+            profileEditResponseDTO.setHistorysubscription(transactionSubscriptions);
+        }else{
+            List<Payment> payments = getFilteredPayments(
+                    userEntity,
+                    profileEditRequestDTO.getUsername(),
+                    profileEditRequestDTO.getReason(),
+                    profileEditRequestDTO.getDatefrom(),
+                    profileEditRequestDTO.getDateto(),
+                    profileEditRequestDTO.getAmount()
+            );
+            profileEditResponseDTO.setHistorysingle(payments);
+        }
+        profileEditResponseDTO.setShowSubscription(determineTab(profileEditRequestDTO.getTab()));
+        return profileEditResponseDTO;
     }
 }

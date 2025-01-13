@@ -257,7 +257,6 @@ public class WebConfig implements WebMvcConfigurer {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
     }
 
-    // Filter für alle API anfragen
     @Bean
     public FilterRegistrationBean<ApiAuthenticationFilter> loggingFilter() {
         FilterRegistrationBean<ApiAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
