@@ -18,24 +18,24 @@
 
 <div class="wrapper">
     <h1 th:text="#{profile.completeProfile}"></h1>
-    <form th:action="${provider != null ? '/send-2fa-code' : '/profileaddition'}" method="post">
+    <form th:action="${RegistrationAdditionData.provider != null ? '/send-2fa-code' : '/profileaddition'}" method="post">
         <div class="input-container-profile-addition">
-            <div th:if="${provider}">
+            <div th:if="${RegistrationAdditionData.provider}">
                 <a th:text="#{profile.githubLoginPrompt}"></a>
                 <div class="input-box-profile">
                     <label for="email" th:text="#{profile.emailAddress}"></label>
-                    <input type="email" id="email" name="email" th:value="${email != null ? email : ''}">
+                    <input type="email" id="email" name="email" th:value="${RegistrationAdditionData.email != null ? RegistrationAdditionData.email : ''}">
                 </div>
             </div>
             <div class="input-box-profile">
                 <label th:text="#{profile.username}"></label>
-                <input type="text" id="inputString" name="inputString" th:value="${username != null ? username : ''}" required>
+                <input type="text" id="inputString" name="inputString" th:value="${RegistrationAdditionData.username != null ? RegistrationAdditionData.username : ''}" required>
             </div>
             <!-- Display error message -->
-            <p th:if="${error}" th:text="${error}" style="color:red;"></p>
+            <p th:if="${RegistrationAdditionData.error}" th:text="${RegistrationAdditionData.error}" style="color:red;"></p>
             <div class="input-box-profile">
                 <label th:text="#{profile.birthDate}"></label>
-                <input type="date" id="birthDate" name="birthDate" th:value="${birthday != null ? birthday : ''}" required>
+                <input type="date" id="birthDate" name="birthDate" th:value="${RegistrationAdditionData.birthday != null ? RegistrationAdditionData.birthday : ''}" required>
             </div>
         </div>
         <button type="submit" class="form-actions" th:text="#{profile.save}"></button>

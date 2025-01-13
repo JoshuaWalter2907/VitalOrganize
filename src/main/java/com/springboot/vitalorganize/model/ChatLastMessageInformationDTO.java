@@ -1,33 +1,33 @@
 package com.springboot.vitalorganize.model;
 
-import com.springboot.vitalorganize.entity.DirectChat;
-import com.springboot.vitalorganize.entity.ChatGroup;
+import com.springboot.vitalorganize.entity.DirectChatEntity;
+import com.springboot.vitalorganize.entity.ChatGroupEntity;
 
 import java.time.LocalDateTime;
 
 public class ChatDetail {
-    private DirectChat directChat;
-    private ChatGroup groupChat;
+    private DirectChatEntity directChat;
+    private ChatGroupEntity groupChat;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
 
-    public ChatDetail(DirectChat directChat, String lastMessage, LocalDateTime lastMessageTime) {
+    public ChatDetail(DirectChatEntity directChat, String lastMessage, LocalDateTime lastMessageTime) {
         this.directChat = directChat;
         this.lastMessage = lastMessage;
         this.lastMessageTime = lastMessageTime;
     }
 
-    public ChatDetail(ChatGroup groupChat, String lastMessage, LocalDateTime lastMessageTime) {
+    public ChatDetail(ChatGroupEntity groupChat, String lastMessage, LocalDateTime lastMessageTime) {
         this.groupChat = groupChat;
         this.lastMessage = lastMessage;
         this.lastMessageTime = lastMessageTime;
     }
 
-    public DirectChat getDirectChat() {
+    public DirectChatEntity getDirectChat() {
         return directChat;
     }
 
-    public ChatGroup getGroupChat() {
+    public ChatGroupEntity getGroupChat() {
         return groupChat;
     }
 
