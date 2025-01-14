@@ -226,6 +226,10 @@ public class ProfileService {
         profileEditResponseDTO.setAuth(profileEditRequestDTO.isAuth());
         profileEditResponseDTO.setKind(profileEditRequestDTO.getKind());
 
+        int pageNumber = profileEditRequestDTO.getPage();
+        int pageSize = profileEditRequestDTO.getSize();
+        profileEditResponseDTO.setPageSize(pageSize);
+
         if("premium".equals(profileEditRequestDTO.getKind())){
             List<TransactionSubscriptionEntity> transactionSubscriptions = getTransactionHistory(
                     userEntity,
@@ -235,7 +239,20 @@ public class ProfileService {
                     profileEditRequestDTO.getDateto(),
                     profileEditRequestDTO.getAmount()
             );
-            profileEditResponseDTO.setHistorysubscription(transactionSubscriptions);
+            int totalSubscriptions = transactionSubscriptions.size();
+            int totalSubscriptionPages = (int) Math.ceil((double) totalSubscriptions / pageSize);
+
+            int startIndexSubscriptions = pageNumber * pageSize;
+            int endIndexSubscriptions = Math.min(startIndexSubscriptions + pageSize, totalSubscriptions);
+
+            List<TransactionSubscriptionEntity> pagedSubscriptions = transactionSubscriptions.subList(startIndexSubscriptions, endIndexSubscriptions);
+
+            profileEditResponseDTO.setTotalSubscriptions(totalSubscriptions);
+            profileEditResponseDTO.setTotalSubscriptionPages(totalSubscriptionPages);
+            profileEditResponseDTO.setStartIndexSubscriptions(startIndexSubscriptions);
+            profileEditResponseDTO.setEndIndexSubscriptions(endIndexSubscriptions);
+            profileEditResponseDTO.setHistorysubscription(pagedSubscriptions);
+
         }else{
             List<PaymentEntity> payments = getFilteredPayments(
                     userEntity,
@@ -245,7 +262,26 @@ public class ProfileService {
                     profileEditRequestDTO.getDateto(),
                     profileEditRequestDTO.getAmount()
             );
-            profileEditResponseDTO.setHistorysingle(payments);
+
+            int totalPayments = payments.size();
+            int totalPaymentsPages = (int) Math.ceil((double) totalPayments / pageSize);
+
+            int startIndexPayments = pageNumber * pageSize;
+            int endIndexPayments = Math.min(startIndexPayments + pageSize, totalPayments);
+
+            List<PaymentEntity> pagedPayments = payments.subList(startIndexPayments, endIndexPayments);
+
+            profileEditResponseDTO.setTotalPayments(totalPayments);
+            profileEditResponseDTO.setTotalPaymentsPages(totalPaymentsPages);
+            profileEditResponseDTO.setStartIndexPayments(startIndexPayments);
+            profileEditResponseDTO.setEndIndexPayments(endIndexPayments);
+            profileEditResponseDTO.setHistorysingle(pagedPayments);
+            profileEditResponseDTO.setPageNumber(pageNumber);
+            profileEditResponseDTO.setUsername(profileEditRequestDTO.getUsername());
+            profileEditResponseDTO.setReason(profileEditRequestDTO.getReason());
+            profileEditResponseDTO.setDatefrom(profileEditRequestDTO.getDatefrom());
+            profileEditResponseDTO.setDateto(profileEditRequestDTO.getDateto());
+            profileEditResponseDTO.setAmount(profileEditRequestDTO.getAmount());
         }
         profileEditResponseDTO.setShowSubscription(determineTab(profileEditRequestDTO.getTab()));
         return profileEditResponseDTO;

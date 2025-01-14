@@ -186,7 +186,7 @@ public class PaypalService {
      * @param fundId  Die ID des Fonds, auf den die Zahlung angewendet wird
      */
     public void addPayment(PaymentEntity payment, Long fundId) {
-        PaymentEntity latestTransaction = paymentRepository.findLatestTransactionByFundId(fundId);
+        PaymentEntity latestTransaction = paymentRepository.findFirstByFundIdOrderByDateDesc(fundId);
         double lastBalance = (latestTransaction == null) ? 0 : latestTransaction.getBalance();
 
         if (payment.getType() == PaymentTypeEnumeration.EINZAHLEN) {
@@ -203,10 +203,13 @@ public class PaypalService {
      * @return Das aktuelle Guthaben des Fonds
      */
     public double getCurrentBalance() {
-        // Gibt das Guthaben der letzten Transaktion zurück, wenn vorhanden
-        if(paymentRepository.findLatestTransaction() == null)
+        PaymentEntity latestTransaction = paymentRepository.findFirstByOrderByDateDesc();
+
+        if (latestTransaction == null) {
             return 0.0;
-        return paymentRepository.findLatestTransaction().getBalance();
+        }
+
+        return latestTransaction.getBalance();
     }
 
     /**

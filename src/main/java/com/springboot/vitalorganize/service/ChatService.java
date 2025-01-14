@@ -11,6 +11,8 @@ import com.springboot.vitalorganize.repository.DirectChatRepository;
 import com.springboot.vitalorganize.repository.MessageRepository;
 import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,11 +43,24 @@ public class ChatService {
     /**
      * Gibt eine Liste der Chat-Teilnehmer eines Benutzers zurück.
      *
-     * @param user der Benutzer
+     * @param userId der Benutzer
      * @return eine Liste von Benutzern
      */
-    public List<UserEntity> getChatParticipants(Long user) {
-        return messageRepository.findChatParticipants(user);
+    public List<UserEntity> getChatParticipants(Long userId) {
+        List<MessageEntity> messages = messageRepository.findBySenderIdOrRecipientId(userId, userId);
+
+        List<UserEntity> participants = new ArrayList<>();
+
+        for (MessageEntity message : messages) {
+            if (message.getSender() != null && !Objects.equals(message.getSender().getId(), userId)) {
+                participants.add(message.getSender());
+            }
+            if (message.getRecipient() != null && !Objects.equals(message.getRecipient().getId(), userId)) {
+                participants.add(message.getRecipient());
+            }
+        }
+
+        return participants;
     }
 
     /**
@@ -241,9 +256,9 @@ public class ChatService {
      * @return die letzte Nachricht des Direktchats
      */
     public MessageEntity getLastMessage(Long chatId) {
-        Pageable pageable = paginationHelper.createSingleItemPageable("timestamp", Sort.Direction.DESC);
-        List<MessageEntity> messages = messageRepository.findLastMessageForDirectChat(chatId, pageable);
-        return paginationHelper.getFirstElement(messages);
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "timestamp"));
+        Page<MessageEntity> messagesPage = messageRepository.findByDirectChatId(chatId, pageable);
+        return messagesPage.getContent().isEmpty() ? null : messagesPage.getContent().getFirst();
     }
 
     /**
@@ -253,10 +268,11 @@ public class ChatService {
      * @return die letzte Nachricht der Gruppe
      */
     public MessageEntity getLastGroupMessage(Long groupId) {
-        Pageable pageable = paginationHelper.createSingleItemPageable("timestamp", Sort.Direction.DESC);
-        List<MessageEntity> messages = messageRepository.findLastMessageForChatGroup(groupId, pageable);
-        return paginationHelper.getFirstElement(messages);
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "timestamp"));
+        Page<MessageEntity> messagesPage = messageRepository.findByChatGroupId(groupId, pageable);
+        return messagesPage.getContent().isEmpty() ? null : messagesPage.getContent().getFirst();
     }
+
 
     /**
      * Bereitet die öffentliche Benutzerseite für einen Benutzer vor und fügt sie dem Model hinzu.
@@ -453,12 +469,10 @@ public class ChatService {
 
     /**
      * Holt die relevanten Chats des eingeloggten users entweder aus einem Gruppenchat oder aus einem direct Chat
-     * @param user2 BenutzerId
-     * @param groupId GruppenId
-     * @param query Suchkriterium
+     * @param chatRequestDTO Benötigte informationen
      * @return relevante Chats
      */
-    public ChatResponseDTO getChatData(Long user2, Long groupId, String query) {
+    public ChatResponseDTO getChatData(ChatRequestDTO chatRequestDTO) {
         UserEntity currentUser = userService.getCurrentUser();
 
         Long senderId = currentUser.getId();
@@ -470,42 +484,85 @@ public class ChatService {
         responseDTO.setChatGroups(getChatGroups(senderId));
         responseDTO.setDirectChats(getDirectChats(senderId));
         responseDTO.setChatParticipants(getChatParticipants(senderId));
-        responseDTO.setFilteredChatList(filterChats(senderId, query));
+        responseDTO.setFilteredChatList(filterChats(senderId, chatRequestDTO.getQuery()));
         responseDTO.setChatDetails(prepareChatDetailsList(responseDTO.getFilteredChatList()));
 
-        if (groupId != null) {
-            ChatGroupEntity selectedGroup = chatGroupRepository.findById(groupId).orElse(null);
+        if (chatRequestDTO.getGroup() != null) {
+            ChatGroupEntity selectedGroup = chatGroupRepository.findById(chatRequestDTO.getGroup()).orElse(null);
             responseDTO.setSelectedGroup(selectedGroup);
-            Pageable pageable = paginationHelper.createPageable(0, 50, "timestamp", Sort.Direction.ASC);
-            List<MessageEntity> groupMessages = messageRepository.findByChatGroup_Id(groupId, pageable);
-            responseDTO.setMessages(groupMessages);
-            responseDTO.setChatId(groupId);
-        } else if (user2 != null) {
-            UserEntity selectedUser = userRepository.findUserEntityById(user2);
-            DirectChatEntity selectedDirectChat =  directChatRepository.findByUser1IdAndUser2Id(senderId, user2);
+            Sort sort = Sort.by(Sort.Direction.DESC, "timestamp");
+            int pageNumber = chatRequestDTO.getPage();
+            int pageSize = 20;
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+            Page<MessageEntity> messagesPage = messageRepository.findByChatGroup_Id(chatRequestDTO.getGroup(), pageable);
+
+            List<MessageEntity> allMessages = new ArrayList<>();
+
+            if (chatRequestDTO.getPage() > 0) {
+                Pageable previousPageable = PageRequest.of(0, pageSize * chatRequestDTO.getPage(), sort);
+                Page<MessageEntity> previousMessages = messageRepository.findByChatGroup_Id(chatRequestDTO.getGroup(), previousPageable);
+                allMessages.addAll(previousMessages.getContent());
+            }
+
+            allMessages.addAll(messagesPage.getContent());
+
+            Collections.reverse(allMessages);
+
+
+            responseDTO.setMessages(allMessages);
+            responseDTO.setPage(chatRequestDTO.getPage());
+            responseDTO.setTotalMessages(messagesPage.getTotalElements());
+            responseDTO.setChatId(chatRequestDTO.getGroup());
+
+        } else if (chatRequestDTO.getUser2() != null) {
+            UserEntity selectedUser = userRepository.findUserEntityById(chatRequestDTO.getUser2());
+            DirectChatEntity selectedDirectChat =  directChatRepository.findByUser1IdAndUser2Id(senderId, chatRequestDTO.getUser2());
             if (selectedDirectChat == null) {
-                selectedDirectChat = directChatRepository.findByUser2IdAndUser1Id(senderId, user2);
+                selectedDirectChat = directChatRepository.findByUser2IdAndUser1Id(senderId, chatRequestDTO.getUser2());
             }
 
             responseDTO.setSelectedUser(selectedUser);
             responseDTO.setSelectedDirectChat(selectedDirectChat);
-            Pageable pageable = paginationHelper.createPageable(0, 50, "timestamp", Sort.Direction.DESC);
-            List<MessageEntity> directChatMessages = messageRepository.findChatMessages(senderId, user2, pageable).getContent();
-            responseDTO.setMessages(directChatMessages);
+            Sort sort = Sort.by(Sort.Direction.DESC, "timestamp");
+            int pageNumber = chatRequestDTO.getPage();
+            int pageSize = 20;
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+            Page<MessageEntity> messagesPage = messageRepository.findBySenderIdAndRecipientIdOrRecipientIdAndSenderId(senderId, chatRequestDTO.getUser2(), senderId, chatRequestDTO.getUser2(), pageable);
+
+            List<MessageEntity> allMessages = new ArrayList<>();
+
+            if (chatRequestDTO.getPage() > 0) {
+                Pageable previousPageable = PageRequest.of(0, pageSize * chatRequestDTO.getPage(), sort);
+                Page<MessageEntity> previousMessages = messageRepository.findBySenderIdAndRecipientIdOrRecipientIdAndSenderId(
+                        senderId, chatRequestDTO.getUser2(), senderId, chatRequestDTO.getUser2(), previousPageable);
+                allMessages.addAll(previousMessages.getContent());
+            }
+
+            allMessages.addAll(messagesPage.getContent());
+
+            Collections.reverse(allMessages);
+
+            responseDTO.setMessages(allMessages);
+            responseDTO.setPage(chatRequestDTO.getPage());
+            responseDTO.setTotalMessages(messagesPage.getTotalElements());
 
             if (selectedUser != null) {
                 responseDTO.setOtherUserName(selectedUser.getUsername());
                 responseDTO.setOtherUserPicture(selectedUser.getProfilePictureUrl());
             }
 
-            responseDTO.setRecipientId(user2);
+            responseDTO.setRecipientId(chatRequestDTO.getUser2());
             if (selectedDirectChat != null) {
                 responseDTO.setChatId(selectedDirectChat.getId());
             }
         }
 
-        responseDTO.setGroupId(groupId);
-        responseDTO.setQuery(query);
+
+        responseDTO.setGroupId(chatRequestDTO.getGroup());
+        responseDTO.setQuery(chatRequestDTO.getQuery());
+        responseDTO.setRecipientId(chatRequestDTO.getUser2());
 
 
         return responseDTO;

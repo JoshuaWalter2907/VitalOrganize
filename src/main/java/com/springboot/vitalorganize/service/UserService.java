@@ -2,6 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.Chat.ChatGroupEntity;
 import com.springboot.vitalorganize.entity.Fund_Payments.FundEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentEntity;
 import com.springboot.vitalorganize.entity.Profile_User.FriendRequestEntity;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.model.Profile.FriendStatusRequestDTO;
@@ -141,7 +142,7 @@ public class UserService {
 
         Long id = user.getId();
 
-        List<ChatGroupEntity> chatGroups = chatGroupRepository.findAllByUserId(id);
+        List<ChatGroupEntity> chatGroups = chatGroupRepository.findByUsers_Id(id);
         List<Long> chatGroupIds = chatGroups.stream()
                 .map(ChatGroupEntity::getId)
                 .toList();
@@ -153,10 +154,17 @@ public class UserService {
         messageRepository.deleteBySender_Id(id);
         chatGroupRepository.deleteAllByIdIn(chatGroupIds);
         directChatRepository.deleteById(id);
-        subscriptionRepository.deleteById(id);
-        paymentRepository.updateUserReferencesToNull(id);
         friendRequestRepository.deleteById(id);
         userRepository.deleteById(id);
+        List<PaymentEntity> payments = paymentRepository.findByUserId(id);
+
+        // Setze das 'user' Feld auf null
+        for (PaymentEntity payment : payments) {
+            payment.setUser(null);
+        }
+
+        // Speichere alle geänderten Zahlungen
+        paymentRepository.saveAll(payments);
 
         return true;
     }

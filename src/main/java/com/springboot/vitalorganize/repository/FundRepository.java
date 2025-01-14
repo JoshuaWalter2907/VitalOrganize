@@ -10,11 +10,10 @@ import java.util.List;
 
 public interface FundRepository extends JpaRepository<FundEntity, Long> {
 
-    @Query("SELECT f FROM FundEntity f JOIN f.users u WHERE u.id = :userId")
-    List<FundEntity> findFundsByUserId(@Param("userId") Long userId);
-
     List<FundEntity> findByAdmin(UserEntity admin);
 
     @Query("SELECT f.name FROM FundEntity f WHERE f.id = :id")
     String findNameById(@Param("id") Long id);
+
+    List<FundEntity> findByUsers_Id(Long id);
 }

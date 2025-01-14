@@ -22,13 +22,13 @@
     <div class="left-side">
         <h1>
             <span th:text="#{fund.delete.message}"></span>
-            <br><span th:text="${balance}"></span>€
+            <br><span th:text="${DeleteFundData.balance}"></span>€
         </h1>
         <form method="post" th:action="@{/fund/payinto}" class="form-card">
             <label th:text="#{fund.to}">An wen soll das restliche Geld gesendet werden</label>
-            <input type="hidden" name="fundid" th:value="${id}">
+            <input type="hidden" name="fundid" th:value="${DeleteFundData.id}">
             <input type="hidden" name="type" value="AUSZAHLEN">
-            <input type="hidden" class="form-control" name="amount" th:value="${balance}">
+            <input type="hidden" class="form-control" name="amount" th:value="${DeleteFundData.balance}">
             <input type="hidden" class="form-control" name="description" value="Auszahlung des Restlichen Geld innerhalb des Funds">
             <div class="input-box">
                 <input type="text" class="form-control" name="email" placeholder="E-mail">

@@ -17,7 +17,7 @@ public class FundRequestDTO {
     private LocalDate datefrom;
     private LocalDate dateto;
     private Long amount;
-    int page = 0;
-    int size = 3;
+    private int page = 0;
+    private int size = 5;
 
 }

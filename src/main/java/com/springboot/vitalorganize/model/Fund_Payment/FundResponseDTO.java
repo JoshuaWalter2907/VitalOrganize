@@ -6,6 +6,7 @@ import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -23,5 +24,10 @@ public class FundResponseDTO {
     private int pageNumber;
     private int pageSize;
     private int totalPages;
+    private String username;
+    private String reason;
+    private LocalDate datefrom;
+    private LocalDate dateto;
+    private Long amount;
 
 }

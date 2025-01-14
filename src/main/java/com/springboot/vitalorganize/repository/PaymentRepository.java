@@ -13,18 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository  extends JpaRepository<PaymentEntity, Long> {
-    @Query("SELECT p FROM PaymentEntity p ORDER BY p.date DESC LIMIT 1")
-    PaymentEntity findLatestTransaction();
 
+    PaymentEntity findFirstByOrderByDateDesc();
+    PaymentEntity findFirstByFundIdOrderByDateDesc(Long fundId);
 
     List<PaymentEntity> findAllByUser(UserEntity profileData);
 
-    @Modifying
-    @Query("UPDATE PaymentEntity o SET o.user = NULL WHERE o.user.id = :userId")
-    void updateUserReferencesToNull(@Param("userId") Long userId);
-
-    @Query("SELECT p FROM PaymentEntity p WHERE p.fund.id = :id ORDER BY p.date DESC LIMIT 1")
-    PaymentEntity findLatestTransactionByFundId(@Param("id") Long id);
+    List<PaymentEntity> findByUserId(Long userId);
 
 
     @Query("SELECT p.fund.id, p.date, " +

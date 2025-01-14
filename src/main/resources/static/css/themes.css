@@ -110,7 +110,7 @@ header nav ul li a:hover, .header-bottom a:hover {
 
 
 
-@media (max-width: 768px) {
+@media (max-width: 1286px) {
     * {
         font-size: 8px;
     }
@@ -254,6 +254,7 @@ header nav ul li a:hover, .header-bottom a:hover {
 
     .column{
         max-width: 50%;
+        word-break: break-word;
     }
 
     .column ul{

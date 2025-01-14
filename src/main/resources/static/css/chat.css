@@ -617,3 +617,20 @@ h2{
     color: var(--text-color-light);
 }
 
+.load-more-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.load-more-button{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--text-color-light);
+}
+
+.load-more-button:hover{
+    background-color: rgba(0, 0, 0, 0.3);
+}

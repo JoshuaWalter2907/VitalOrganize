@@ -33,7 +33,7 @@ public class FundService {
         UserEntity user = userService.getCurrentUser();
         boolean error = false;
 
-        List<FundEntity> funds = fundRepository.findFundsByUserId(user.getId());
+        List<FundEntity> funds = fundRepository.findByUsers_Id(user.getId());
         if (fundRequestDTO.getQuery() != null) {
             funds = funds.stream()
                     .filter(f -> f.getName().toLowerCase().contains(fundRequestDTO.getQuery().toLowerCase()))
@@ -57,12 +57,13 @@ public class FundService {
 
         int pageNumber = fundRequestDTO.getPage();
         int pageSize = fundRequestDTO.getSize();
+        fundResponseDTO.setPageSize(pageSize);
 
         int totalPayments = filteredPayments.size();
         int totalPages = (int) Math.ceil((double) totalPayments / pageSize);
 
         int startIndex = pageNumber * pageSize;
-        int endIndex = Math.min(startIndex + pageSize, filteredPayments.size());
+        int endIndex = Math.min(startIndex + pageSize, totalPayments);
 
         List<PaymentEntity> pagedPayments = filteredPayments.subList(startIndex, endIndex);
 
@@ -76,7 +77,11 @@ public class FundService {
         fundResponseDTO.setTotalPayments(totalPayments);
         fundResponseDTO.setTotalPages(totalPages);
         fundResponseDTO.setPageNumber(pageNumber);
-        fundResponseDTO.setPageSize(pageSize);
+        fundResponseDTO.setUsername(fundRequestDTO.getUsername());
+        fundResponseDTO.setReason(fundRequestDTO.getReason());
+        fundResponseDTO.setDatefrom(fundRequestDTO.getDatefrom());
+        fundResponseDTO.setDateto(fundRequestDTO.getDateto());
+        fundResponseDTO.setAmount(fundRequestDTO.getAmount());
 
         return fundResponseDTO;
     }

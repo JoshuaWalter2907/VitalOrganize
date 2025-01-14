@@ -102,8 +102,43 @@
         </div>
       </div>
 
-      <div th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
+      <div class="pagination-pages" th:if="${ProfileEditData.historysubscription != null && ProfileEditData.kind == 'premium'}">
+        <form th:action="@{/profile-edit}" method="get">
+          <input type="hidden" name="tab" value="paymenthistory">
+          <input type="hidden" name="kind" value="premium">
+          <input type="hidden" name="show" th:value="true">
+          <input type="hidden" name="username" th:value="${ProfileEditData.username}" />
+          <input type="hidden" name="reason" th:value="${ProfileEditData.reason}" />
+          <input type="hidden" name="datefrom" th:value="${ProfileEditData.datefrom}" />
+          <input type="hidden" name="dateto" th:value="${ProfileEditData.dateto}" />
+          <input type="hidden" name="amount" th:value="${ProfileEditData.amount}" />
+          <input type="hidden" name="show" th:value="true">
 
+          <div class="items-per-page">
+            <label for="size" th:text="#{pagination.elements}">Elemente pro Seite:</label>
+            <label>
+              <select name="size" class="pagination-select"
+                      th:value="${ProfileEditData.pageSize}" onchange="this.form.submit()">
+                <option th:value="2" th:text="2" th:selected="${ProfileEditData.pageSize == 2}"></option>
+                <option th:value="5" th:text="5" th:selected="${ProfileEditData.pageSize == 5}"></option>
+                <option th:value="20" th:text="20" th:selected="${ProfileEditData.pageSize == 20}"></option>
+                <option th:value="50" th:text="50" th:selected="${ProfileEditData.pageSize == 50}"></option>
+              </select>
+            </label>
+          </div>
+
+
+          <div class="page-links">
+            <span th:each="i : ${#numbers.sequence(0, ProfileEditData.totalSubscriptionPages - 1)}">
+                <button type="submit" th:value="${i}" name="page" class="pagination-link"
+                        th:text="${i + 1}" th:classappend="${i == ProfileEditData.pageNumber ? ' active' : ''}"></button>
+            </span>
+          </div>
+        </form>
+      </div>
+
+
+      <div th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
         <div class="payment-history-container-table">
           <div class="row">
             <div class="cell header" th:text="#{table.header.person}" style="width: 20%;">Person</div>
@@ -144,6 +179,38 @@
             <div th:text="${payment.balance}" class="cell" style="width: 12%;"></div>
           </div>
         </div>
+      </div>
+
+      <div class="pagination-pages" th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
+        <form th:action="@{/profile-edit}" method="get">
+          <input type="hidden" name="tab" value="paymenthistory">
+          <input type="hidden" name="kind" value="single">
+          <input type="hidden" name="username" th:value="${ProfileEditData.username}" />
+          <input type="hidden" name="reason" th:value="${ProfileEditData.reason}" />
+          <input type="hidden" name="datefrom" th:value="${ProfileEditData.datefrom}" />
+          <input type="hidden" name="dateto" th:value="${ProfileEditData.dateto}" />
+          <input type="hidden" name="amount" th:value="${ProfileEditData.amount}" />
+          <input type="hidden" name="show" th:value="true">
+
+          <div class="items-per-page">
+            <label for="size" th:text="#{pagination.elements}">Elemente pro Seite:</label>
+            <select name="size" id="size" class="pagination-select"
+                    th:value="${ProfileEditData.pageSize}" onchange="this.form.submit()">
+              <option th:value="2" th:text="2" th:selected="${ProfileEditData.pageSize == 2}"></option>
+              <option th:value="5" th:text="5" th:selected="${ProfileEditData.pageSize == 5}"></option>
+              <option th:value="20" th:text="20" th:selected="${ProfileEditData.pageSize == 20}"></option>
+              <option th:value="50" th:text="50" th:selected="${ProfileEditData.pageSize == 50}"></option>
+            </select>
+          </div>
+
+          <div class="page-links">
+            <span th:each="i : ${#numbers.sequence(0, ProfileEditData.totalPaymentsPages - 1)}">
+                <button type="submit" th:value="${i}" name="page" class="pagination-link"
+                        th:text="${i + 1}" th:classappend="${i == ProfileEditData.pageNumber ? ' active' : ''}"></button>
+            </span>
+
+          </div>
+        </form>
       </div>
 
 

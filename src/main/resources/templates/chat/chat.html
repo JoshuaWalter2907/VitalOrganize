@@ -114,6 +114,15 @@
 
     <!--chat-container -->
     <div class="chat-container" th:classappend="${chatData.selectedUser == null && chatData.selectedGroup == null ? 'empty-chat' : ''}">
+      <div class="load-more-container" th:if="${chatData.totalMessages > (chatData.page + 1) * 20}">
+        <form th:action="@{/chat}" method="get">
+          <input type="hidden" name="page" th:value="${chatData.page + 1}">
+          <input type="hidden" name="group" th:value="${chatData.groupId}">
+          <input type="hidden" name="user2" th:value="${chatData.recipientId}">
+          <button type="submit" class="load-more-button">Weitere Nachrichten laden</button>
+        </form>
+      </div>
+
       <div  th:if="${chatData.selectedUser != null || chatData.selectedGroup != null}"
             th:each="message : ${chatData.messages}"
             th:classappend="${message.sender.username == chatData.currentUser ? 'my-message' : 'friend-message'}"

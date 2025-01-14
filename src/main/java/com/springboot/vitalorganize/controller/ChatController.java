@@ -27,9 +27,7 @@ public class ChatController {
     public String showChatPage(ChatRequestDTO chatRequestDTO, Model model) {
 
         ChatResponseDTO responseDTO = chatService.getChatData(
-                chatRequestDTO.getUser2(),
-                chatRequestDTO.getGroup(),
-                chatRequestDTO.getQuery()
+                chatRequestDTO
         );
 
         model.addAttribute("chatData", responseDTO);

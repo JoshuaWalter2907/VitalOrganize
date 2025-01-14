@@ -10,5 +10,7 @@ public class ChatRequestDTO {
     private Long user2;
     private Long group;
     private String query;
+    private int size = 20;
+    private int page = 0;
 
 }

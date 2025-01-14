@@ -1,9 +1,11 @@
 package com.springboot.vitalorganize.model.Profile;
 
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentEntity;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,6 +27,9 @@ public class ProfileEditRequestDTO {
     private String surname;
     private String name;
     private String publicPrivateToggle;
+    private int page = 0;
+    private int size = 5;
+
 
     // Getter und Setter
 }

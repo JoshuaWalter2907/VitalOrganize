@@ -29,6 +29,8 @@ public class ChatResponseDTO {
     private Long chatId;
     private Long recipientId;
     private String query;
+    private int page;
+    private Long totalMessages;
 
     @Override
     public String toString() {

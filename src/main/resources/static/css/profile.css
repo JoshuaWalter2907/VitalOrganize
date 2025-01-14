@@ -744,3 +744,39 @@ input:checked ~ #status-text {
     pointer-events: auto; /* Tooltip ist sichtbar */
     position: relative; /* Tooltip benötigt dies */
 }
+
+
+.pagination-pages{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    font-size: 18px;
+}
+
+.pagination-link{
+    padding: 5px;
+    border: var(--text-color-light) solid 1px;
+    border-radius: 5px;
+    min-width: 40px;
+    background-color: transparent;
+    color: var(--text-color-light);
+}
+
+.pagination-link:hover{
+    background-color: var(--color-slightly-dark);
+    cursor: pointer;
+}
+
+.items-per-page select{
+    color: var(--text-color-light);
+    background-color: transparent;
+    border:  var(--text-color-light) solid 1px;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+.items-per-page select option{
+    background-color: transparent;
+}
+

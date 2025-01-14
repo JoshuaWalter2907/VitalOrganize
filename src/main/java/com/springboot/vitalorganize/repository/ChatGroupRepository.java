@@ -16,8 +16,5 @@ public interface ChatGroupRepository extends JpaRepository<ChatGroupEntity, Long
 
     List<ChatGroupEntity> findByNameContaining(String query);
 
-    @Query("SELECT c FROM ChatGroupEntity c JOIN c.users u WHERE u.id = :userId")
-    List<ChatGroupEntity> findAllByUserId(@Param("userId") Long userId);
-
     void deleteAllByIdIn(List<Long> chatGroupIds);
 }
