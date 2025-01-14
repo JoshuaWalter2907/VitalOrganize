@@ -1,18 +1,12 @@
 package com.springboot.vitalorganize.controller;
-import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.model.SubscriptionRequestDTO;
+import com.springboot.vitalorganize.model.Fund_Payment.SubscriptionRequestDTO;
 import com.springboot.vitalorganize.service.SubscriptionService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 /**

@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.component;
 
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;

@@ -1,59 +1,52 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.entity.UserEntity;
-import com.springboot.vitalorganize.model.SubscriptionRequestDTO;
-import com.springboot.vitalorganize.service.repositoryhelper.SubscriptionRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Fund_Payment.SubscriptionRequestDTO;
+import com.springboot.vitalorganize.repository.SubscriptionRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 /**
- * Service-Klasse zur Verwaltung von Abonnements (Subscriptions).
- * Diese Klasse bietet Methoden zur Erstellung, Bestätigung, Stornierung, Pausierung und Fortsetzung von Abonnements.
+ * Service-Klasse zur Verwaltung von Abonnements
  */
 @Service
 @AllArgsConstructor
 public class SubscriptionService {
 
-    // Abhängigkeiten: PayPal-Service, UserRepositoryService und SubscriptionRepositoryService
     private final PaypalService paypalService;
     private final UserService userService;
-    private final UserRepositoryService userRepositoryService;
-    private final SubscriptionRepositoryService subscriptionRepositoryService;
+    private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     /**
      * Überprüft den Status des Abonnements des Benutzers und leitet ihn bei Bedarf zur PayPal-Zahlung um.
-     *
      * @return Eine Weiterleitungs-URL, entweder zur Profilseite oder zur PayPal-Subscription-Seite
      */
     public String createSubscriptionRedirect() {
         UserEntity userEntity = userService.getCurrentUser();
-        // Überprüfen, ob der Benutzer bereits eine aktive Subscription hat
         if (userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getStatus().equals("ACTIVE")) {
-            return "/profile";  // Wenn das Abonnement aktiv ist, Weiterleitung zur Profilseite
+            return "/profile";
         }
 
-        // Überprüfen, ob die Subscription noch nicht abgelaufen ist
         if (userEntity.getLatestSubscription() != null && userEntity.getLatestSubscription().getEndTime().isAfter(LocalDateTime.now())) {
-            return null;  // Keine neue Subscription erstellen, da die aktuelle noch gültig ist
+            return null;
         }
 
-        // Wenn keine gültige Subscription vorhanden ist, wird eine neue Subscription über PayPal erstellt
-        String planId = "P-1DP07006BV376124WM5XEB6Q";  // Beispiel Plan ID
-        return paypalService.createSubscription(planId, userEntity);  // Weiterleitung zur PayPal-Subscription-Seite
+        String planId = "P-1DP07006BV376124WM5XEB6Q";
+        return paypalService.createSubscription(planId, userEntity);
     }
 
     /**
      * Storniert das Abonnement des Benutzers.
-     *
      * @return true, wenn das Abonnement erfolgreich storniert wurde, sonst false
      */
     public boolean cancelSubscription() {
         UserEntity userEntity = userService.getCurrentUser();
         String subscriptionId = userEntity.getLatestSubscription().getSubscriptionId();
-        return paypalService.cancelSubscription(userEntity, subscriptionId);  // Abonnement über PayPal stornieren
+        return paypalService.cancelSubscription(userEntity, subscriptionId);
     }
 
     /**
@@ -62,8 +55,7 @@ public class SubscriptionService {
      */
     public boolean pauseSubscription() {
         UserEntity userEntity = userService.getCurrentUser();
-        // Logik für das Pausieren der Subscription
-        return paypalService.pauseSubscription(userEntity);  // Abonnement über PayPal pausieren
+        return paypalService.pauseSubscription(userEntity);
     }
 
     /**
@@ -73,8 +65,7 @@ public class SubscriptionService {
     public boolean resumeSubscription() {
         UserEntity userEntity = userService.getCurrentUser();
         String subscriptionId = userEntity.getLatestSubscription().getSubscriptionId();
-        // Logik zum Fortsetzen der Subscription
-        return paypalService.resumeSubscription(userEntity, subscriptionId);  // Abonnement über PayPal fortsetzen
+        return paypalService.resumeSubscription(userEntity, subscriptionId);
     }
 
     /**
@@ -83,33 +74,32 @@ public class SubscriptionService {
      */
     public boolean confirmSubscription(SubscriptionRequestDTO subscriptionRequestDTO) {
         UserEntity userEntity = userService.getCurrentUser();
-        // Payer ID aus dem Abonnement von PayPal abrufen
         String payerId = paypalService.getPayerIdFromSubscription(subscriptionRequestDTO.getSubscriptionId());
         String approvalResponse = paypalService.confirmSubscription(subscriptionRequestDTO.getSubscriptionId(), payerId);
 
-        // Überprüfen, ob das Abonnement von PayPal genehmigt wurde
-        if ("approved".equals(approvalResponse)) {
-            // Benutzerrolle auf "MEMBER" ändern
-            userEntity.setRole("MEMBER");
-            userRepositoryService.saveUser(userEntity);  // Benutzer in der Datenbank speichern
 
-            // Erstelle und speichere das Subscription-Objekt in der Datenbank
+        if ("approved".equals(approvalResponse)) {
+
+            userEntity.setRole("MEMBER");
+            userRepository.save(userEntity);
+
+
             SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
             subscriptionEntity.setSubscriptionId(subscriptionRequestDTO.getSubscriptionId());
             subscriptionEntity.setPayerId(payerId);
-            subscriptionEntity.setPlanId("P-1DP07006BV376124WM5XEB6Q");  // Beispiel Plan ID
-            subscriptionEntity.setStatus("ACTIVE");  // Setze den Status auf "ACTIVE"
-            subscriptionEntity.setStartTime(String.valueOf(LocalDateTime.now()));  // Startzeit des Abonnements
-            subscriptionEntity.setNextBillingTime(String.valueOf(LocalDateTime.now().plusMonths(1).withHour(1).withMinute(0).withSecond(0).withNano(0)));  // Nächste Abrechnung
-            subscriptionEntity.setEndTime(LocalDateTime.now().plusMonths(1).withHour(0).withMinute(1).withSecond(0).withNano(0));  // Endzeit des Abonnements
-            subscriptionEntity.setUser(userEntity);  // Verknüpfung mit dem Benutzer
+            subscriptionEntity.setPlanId("P-1DP07006BV376124WM5XEB6Q");
+            subscriptionEntity.setStatus("ACTIVE");
+            subscriptionEntity.setStartTime(String.valueOf(LocalDateTime.now()));
+            subscriptionEntity.setNextBillingTime(String.valueOf(LocalDateTime.now().plusMonths(1).withHour(1).withMinute(0).withSecond(0).withNano(0)));
+            subscriptionEntity.setEndTime(LocalDateTime.now().plusMonths(1).withHour(0).withMinute(1).withSecond(0).withNano(0));
+            subscriptionEntity.setUser(userEntity);
 
-            subscriptionRepositoryService.saveSubscription(subscriptionEntity);  // Subscription in der DB speichern
+            subscriptionRepository.save(subscriptionEntity);
 
-            return true;  // Erfolgreiche Bestätigung des Abonnements
+            return true;
         }
 
-        return false;  // Fehler bei der Bestätigung des Abonnements
+        return false;
     }
 
 }

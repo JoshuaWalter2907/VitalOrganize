@@ -1,12 +1,18 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.service.repositoryhelper.ChatGroupRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.DirektChatRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.MessageRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.component.PaginationHelper;
+import com.springboot.vitalorganize.entity.Chat.ChatGroupEntity;
+import com.springboot.vitalorganize.entity.Chat.DirectChatEntity;
+import com.springboot.vitalorganize.entity.Chat.MessageEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Chat.*;
+import com.springboot.vitalorganize.repository.ChatGroupRepository;
+import com.springboot.vitalorganize.repository.DirectChatRepository;
+import com.springboot.vitalorganize.repository.MessageRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -22,35 +28,24 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class ChatService {
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final DirectChatRepository directChatRepository;
+    private final ChatGroupRepository chatGroupRepository;
 
-    private final UserRepositoryService userRepositoryService;
-    private final MessageRepositoryService messageRepositoryService;
-    private final DirektChatRepositoryService direktChatRepositoryService;
-    private final ChatGroupRepositoryService chatGroupRepositoryService;
     private SimpMessagingTemplate brokerMessagingTemplate;
     private final UserService userService;
+    private final PaginationHelper paginationHelper;
 
-    /**
-     * Gibt eine Liste von Nachrichten zwischen zwei Benutzern zurück.
-     *
-     * @param user1 der erste Benutzer
-     * @param user2 der zweite Benutzer
-     * @param page die Seitenzahl für die Paginierung
-     * @param size die Seitengröße für die Paginierung
-     * @return eine Liste von Nachrichten
-     */
-    public List<MessageEntity> getMessages(Long user1, Long user2, int page, int size) {
-        return messageRepositoryService.ChatMessagesBetweenUsers(user1, user2, page, size);
-    }
 
     /**
      * Gibt eine Liste der Chat-Teilnehmer eines Benutzers zurück.
      *
-     * @param user1 der Benutzer
+     * @param user der Benutzer
      * @return eine Liste von Benutzern
      */
-    public List<UserEntity> getChatParticipants(Long user1) {
-        return messageRepositoryService.ChatParticipants(user1);
+    public List<UserEntity> getChatParticipants(Long user) {
+        return messageRepository.findChatParticipants(user);
     }
 
     /**
@@ -62,10 +57,13 @@ public class ChatService {
      * @return die gesendete Nachricht
      */
     public MessageEntity sendMessage(Long senderId, Long recipientId, String content) {
-        UserEntity sender = userRepositoryService.findUserById(senderId);
-        UserEntity recipient = userRepositoryService.findUserById(recipientId);
+        UserEntity sender = userRepository.findUserEntityById(senderId);
+        UserEntity recipient = userRepository.findUserEntityById(recipientId);
 
-        DirectChat directChat = direktChatRepositoryService.findDirectChatBetweenUsers(senderId, recipientId);
+        DirectChatEntity directChat = directChatRepository.findByUser1IdAndUser2Id(senderId, recipientId);
+        if (directChat == null) {
+            directChat = directChatRepository.findByUser2IdAndUser1Id(senderId, recipientId);
+        }
 
         MessageEntity message = new MessageEntity();
         message.setSender(sender);
@@ -74,7 +72,7 @@ public class ChatService {
         message.setTimestamp(LocalDateTime.now());
         message.setDirectChat(directChat);
 
-        return messageRepositoryService.saveMessage(message);
+        return messageRepository.save(message);
     }
 
     /**
@@ -86,8 +84,8 @@ public class ChatService {
      * @return die gesendete Gruppen-Nachricht
      */
     public MessageEntity sendGroupMessage(Long senderId, Long groupId, String content) {
-        UserEntity sender = userRepositoryService.findUserById(senderId);
-        ChatGroup group = chatGroupRepositoryService.findById(groupId)
+        UserEntity sender = userRepository.findUserEntityById(senderId);
+        ChatGroupEntity group = chatGroupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Gruppe nicht gefunden"));
 
         MessageEntity message = new MessageEntity();
@@ -96,19 +94,7 @@ public class ChatService {
         message.setContent(content);
         message.setTimestamp(LocalDateTime.now());
 
-        return messageRepositoryService.saveMessage(message);
-    }
-
-    /**
-     * Gibt eine Liste der Nachrichten einer Gruppe zurück.
-     *
-     * @param groupId die ID der Gruppe
-     * @param page die Seitenzahl für die Paginierung
-     * @param size die Seitengröße für die Paginierung
-     * @return eine Liste von Nachrichten
-     */
-    public List<MessageEntity> getGroupMessages(Long groupId, int page, int size) {
-        return messageRepositoryService.findChatParticipants(groupId, page, size);
+        return messageRepository.save(message);
     }
 
     /**
@@ -117,8 +103,8 @@ public class ChatService {
      * @param userId die ID des Benutzers
      * @return eine Liste von Chat-Gruppen
      */
-    public List<ChatGroup> getChatGroups(Long userId) {
-        return chatGroupRepositoryService.findChatGroups(userId);
+    public List<ChatGroupEntity> getChatGroups(Long userId) {
+        return chatGroupRepository.findByUsers_Id(userId);
     }
 
     /**
@@ -127,8 +113,8 @@ public class ChatService {
      * @param userId die ID des Benutzers
      * @return eine Liste von Direktchats
      */
-    public List<DirectChat> getDirectChats(Long userId) {
-        return direktChatRepositoryService.findDirectChats(userId);
+    public List<DirectChatEntity> getDirectChats(Long userId) {
+        return directChatRepository.findByUser1IdOrUser2Id(userId, userId);
     }
 
     /**
@@ -138,8 +124,12 @@ public class ChatService {
      * @param user2Id die ID des zweiten Benutzers
      * @return den entsprechenden Direktchat
      */
-    public DirectChat getDirectChat(Long user1Id, Long user2Id) {
-        return direktChatRepositoryService.findDirectChatBetweenUsers(user1Id, user2Id);
+    public DirectChatEntity getDirectChat(Long user1Id, Long user2Id) {
+        DirectChatEntity directChat = directChatRepository.findByUser1IdAndUser2Id(user1Id, user2Id);
+        if (directChat == null) {
+            directChat = directChatRepository.findByUser2IdAndUser1Id(user1Id, user2Id);
+        }
+        return directChat;
     }
 
     /**
@@ -155,36 +145,39 @@ public class ChatService {
                 selectedUsers.add(currentUser.getId());
             }
 
-            List<UserEntity> users = userRepositoryService.findUsersByIds(selectedUsers);
+            List<UserEntity> users = userRepository.findAllById(selectedUsers);
 
-            Optional<ChatGroup> existingGroup = chatGroupRepositoryService.findByUsersInAndName(users, chatName);
+            Optional<ChatGroupEntity> existingGroup = chatGroupRepository.findByUsersInAndName(users, chatName);
             if (existingGroup.isPresent()) {
                 existingGroup.get();
             } else {
-                ChatGroup chatGroup = new ChatGroup();
+                ChatGroupEntity chatGroup = new ChatGroupEntity();
                 chatGroup.setName(chatName);
                 chatGroup.setUsers(users);
 
-                chatGroupRepositoryService.saveChatGroup(chatGroup);
+                chatGroupRepository.save(chatGroup);
             }
         } else {
-            Long selectedUserId = selectedUsers.get(0);
+            Long selectedUserId = selectedUsers.getFirst();
 
             if (selectedUserId.equals(currentUser.getId())) {
                 return;
             }
 
-            UserEntity otherUser = userRepositoryService.findUserById(selectedUserId);
+            UserEntity otherUser = userRepository.findUserEntityById(selectedUserId);
 
-            DirectChat existingDirectChat = direktChatRepositoryService.findDirectChatBetweenUsers(currentUser.getId(), otherUser.getId());
+            DirectChatEntity existingDirectChat = directChatRepository.findByUser1IdAndUser2Id(currentUser.getId(), otherUser.getId());
+            if (existingDirectChat == null) {
+                existingDirectChat = directChatRepository.findByUser2IdAndUser1Id(currentUser.getId(), otherUser.getId());
+            }
 
             if (existingDirectChat != null) {
             } else {
-                DirectChat directChat = new DirectChat();
+                DirectChatEntity directChat = new DirectChatEntity();
                 directChat.setUser1(currentUser);
                 directChat.setUser2(otherUser);
 
-                direktChatRepositoryService.saveDirectChat(directChat);
+                directChatRepository.save(directChat);
             }
         }
     }
@@ -196,12 +189,12 @@ public class ChatService {
      * @return den Chat, entweder eine Gruppe oder ein Direktchat
      */
     public Object getChatById(Long chatId) {
-        Optional<ChatGroup> chatGroup = chatGroupRepositoryService.findById(chatId);
+        Optional<ChatGroupEntity> chatGroup = chatGroupRepository.findById(chatId);
         if (chatGroup.isPresent()) {
             return chatGroup.get();
         }
 
-        Optional<DirectChat> directChat = direktChatRepositoryService.findById(chatId);
+        Optional<DirectChatEntity> directChat = directChatRepository.findById(chatId);
         if (directChat.isPresent()) {
             return directChat.get();
         }
@@ -210,15 +203,15 @@ public class ChatService {
     }
 
     /**
-     * Löscht einen Gruppenchat, wenn der aktuelle Benutzer berechtigt ist.
+     * Löscht einen Gruppenchat
      *
      * @param group die zu löschende Gruppe
      * @param currentUser der aktuell angemeldete Benutzer
      * @return true, wenn die Gruppe gelöscht wurde, andernfalls false
      */
-    public boolean deleteGroupChat(ChatGroup group, UserEntity currentUser) {
+    public boolean deleteGroupChat(ChatGroupEntity group, UserEntity currentUser) {
         if (group.getUsers().contains(currentUser)) {
-            chatGroupRepositoryService.deleteChatGroup(group);
+            chatGroupRepository.delete(group);
         } else {
             throw new IllegalStateException("Du bist nicht berechtigt, diese Gruppe zu löschen.");
         }
@@ -226,15 +219,15 @@ public class ChatService {
     }
 
     /**
-     * Löscht einen Direktchat, wenn der aktuelle Benutzer berechtigt ist.
+     * Löscht einen Direktchat
      *
      * @param chat der zu löschende Direktchat
      * @param currentUser der aktuell angemeldete Benutzer
      * @return true, wenn der Direktchat gelöscht wurde, andernfalls false
      */
-    public boolean deleteDirectChat(DirectChat chat, UserEntity currentUser) {
+    public boolean deleteDirectChat(DirectChatEntity chat, UserEntity currentUser) {
         if (chat.getUser1().equals(currentUser) || chat.getUser2().equals(currentUser)) {
-            direktChatRepositoryService.deleteDirectChat(chat);
+            directChatRepository.delete(chat);
         } else {
             throw new IllegalStateException("Du bist nicht berechtigt, diesen Direkt-Chat zu löschen.");
         }
@@ -248,7 +241,9 @@ public class ChatService {
      * @return die letzte Nachricht des Direktchats
      */
     public MessageEntity getLastMessage(Long chatId) {
-        return messageRepositoryService.getLastDirectChatMessage(chatId);
+        Pageable pageable = paginationHelper.createSingleItemPageable("timestamp", Sort.Direction.DESC);
+        List<MessageEntity> messages = messageRepository.findLastMessageForDirectChat(chatId, pageable);
+        return paginationHelper.getFirstElement(messages);
     }
 
     /**
@@ -258,7 +253,9 @@ public class ChatService {
      * @return die letzte Nachricht der Gruppe
      */
     public MessageEntity getLastGroupMessage(Long groupId) {
-        return messageRepositoryService.getLastGroupChatMessage(groupId);
+        Pageable pageable = paginationHelper.createSingleItemPageable("timestamp", Sort.Direction.DESC);
+        List<MessageEntity> messages = messageRepository.findLastMessageForChatGroup(groupId, pageable);
+        return paginationHelper.getFirstElement(messages);
     }
 
     /**
@@ -290,15 +287,15 @@ public class ChatService {
             List<UserEntity> filteredUsers = userService.findByUsername(query);
 
             for (UserEntity filteredUser : filteredUsers) {
-                DirectChat directChat = getDirectChat(senderId, filteredUser.getId());
+                DirectChatEntity directChat = getDirectChat(senderId, filteredUser.getId());
                 if (directChat != null) {
                     filteredChatList.add(directChat);
                 }
             }
 
-            List<ChatGroup> filteredChatGroups = chatGroupRepositoryService.findChatGroupsContaining(query);
+            List<ChatGroupEntity> filteredChatGroups = chatGroupRepository.findByNameContaining(query);
 
-            for (ChatGroup chatGroup : filteredChatGroups) {
+            for (ChatGroupEntity chatGroup : filteredChatGroups) {
                 if (getChatGroups(senderId).contains(chatGroup)) {
                     filteredChatList.add(chatGroup);
                 }
@@ -312,75 +309,34 @@ public class ChatService {
     }
 
     /**
-     * Bereitet die Details für einen bestimmten Chat vor (entweder eine Gruppe oder ein Direktchat).
-     *
-     * @param senderId die ID des Absenders
-     * @param groupId die ID der Gruppe
-     * @param user2 die ID des zweiten Benutzers (für Direktchats)
-     * @param query der Suchbegriff
-     * @return ein DTO mit den Chat-Details
-     */
-    public ChatDetailsDTO prepareChatDetails(Long senderId, Long groupId, Long user2, String query) {
-        List<MessageEntity> messages = null;
-        UserEntity selectedUser = null;
-        ChatGroup selectedGroup = null;
-        DirectChat selectedDirectChat = null;
-        String otherUserName = null;
-        String otherUserPicture = null;
-        Long chatId = null;
-        Long recipientId = null;
-
-        if (groupId != null) {
-            selectedGroup = chatGroupRepositoryService.findById(groupId).orElse(null);
-            messages = messageRepositoryService.findChatParticipants(groupId, 0, 50);
-            chatId = groupId;
-        } else if (user2 != null) {
-            selectedUser = userRepositoryService.findUserById(user2);
-            selectedDirectChat = direktChatRepositoryService.findDirectChatBetweenUsers(senderId, user2);
-            messages = messageRepositoryService.ChatMessagesBetweenUsers(senderId, user2, 0, 50);
-
-            if (selectedUser != null) {
-                otherUserName = selectedUser.getUsername();
-                otherUserPicture = selectedUser.getProfilePictureUrl();
-            }
-
-            recipientId = user2;
-            if (selectedDirectChat != null) {
-                chatId = selectedDirectChat.getId();
-            }
-        }
-        return new ChatDetailsDTO(selectedGroup, selectedUser, selectedDirectChat, messages, otherUserName, otherUserPicture, groupId, chatId, recipientId);
-    }
-
-    /**
      * Bereitet eine Liste von Chat-Details für die Anzeige vor.
      *
      * @param filteredChatList die Liste der gefilterten Chats
      * @return eine Liste von ChatDetails-Objekten
      */
-    public List<ChatDetail> prepareChatDetailsList(List<Object> filteredChatList) {
-        List<ChatDetail> chatDetailsList = new ArrayList<>();
+    public List<ChatLastMessageInformationDTO> prepareChatDetailsList(List<Object> filteredChatList) {
+        List<ChatLastMessageInformationDTO> chatDetailsList = new ArrayList<>();
 
         for (Object chat : filteredChatList) {
             String lastMessageContent = "No messages yet";
             LocalDateTime lastMessageTime = null;
 
-            if (chat instanceof DirectChat) {
-                DirectChat directChat = (DirectChat) chat;
+            if (chat instanceof DirectChatEntity) {
+                DirectChatEntity directChat = (DirectChatEntity) chat;
                 MessageEntity lastMessage = getLastMessage(directChat.getId());
                 if (lastMessage != null) {
                     lastMessageContent = lastMessage.getContent();
                     lastMessageTime = lastMessage.getTimestamp();
                 }
-                chatDetailsList.add(new ChatDetail(directChat, lastMessageContent, lastMessageTime));
-            } else if (chat instanceof ChatGroup) {
-                ChatGroup chatGroup = (ChatGroup) chat;
+                chatDetailsList.add(new ChatLastMessageInformationDTO(directChat, lastMessageContent, lastMessageTime));
+            } else if (chat instanceof ChatGroupEntity) {
+                ChatGroupEntity chatGroup = (ChatGroupEntity) chat;
                 MessageEntity lastMessage = getLastGroupMessage(chatGroup.getId());
                 if (lastMessage != null) {
                     lastMessageContent = lastMessage.getContent();
                     lastMessageTime = lastMessage.getTimestamp();
                 }
-                chatDetailsList.add(new ChatDetail(chatGroup, lastMessageContent, lastMessageTime));
+                chatDetailsList.add(new ChatLastMessageInformationDTO(chatGroup, lastMessageContent, lastMessageTime));
             }
         }
         return chatDetailsList;
@@ -401,7 +357,7 @@ public class ChatService {
 
         if (messageDTO.getChatGroupId() != null) {
             // Gruppen-Nachricht senden
-            UserEntity sender = userRepositoryService.findUserById(messageDTO.getSenderId());
+            UserEntity sender = userRepository.findUserEntityById(messageDTO.getSenderId());
             savedMessage = sendGroupMessage(messageDTO.getSenderId(), messageDTO.getChatGroupId(), messageDTO.getContent());
             savedMessage.setSender(sender);
             brokerMessagingTemplate.convertAndSend("/topic/messages/group/" + messageDTO.getChatGroupId(), savedMessage);
@@ -417,11 +373,9 @@ public class ChatService {
 
     /**
      * Bereitet die öffentliche Benutzerseite vor und gibt die Mitglieder als Liste zurück.
-     *
-     * @param userId die ID des Benutzers
      * @return eine Liste von Benutzern, die Mitglieder sind
      */
-    public List<UserEntity> preparePublicUsersPage(Long userId) {
+    public List<UserEntity> preparePublicUsersPage() {
         List<UserEntity> publicUsers = userService.getPublicUsers();
 
         List<UserEntity> members = publicUsers.stream()
@@ -449,7 +403,7 @@ public class ChatService {
      * @param model das Model, das die Fehlernachricht enthält
      * @return true, wenn die Anfrage gültig ist, andernfalls false
      */
-    public boolean validateCreateGroupRequest(CreateGroupRequest request, Model model) {
+    public boolean validateCreateGroupRequest(CreateChatGroupRequestDTO request, Model model) {
         UserEntity currentUser = userService.getCurrentUser();
         if (request == null) {
             model.addAttribute("errorMessage", "Ungültige Anfrage. Bitte versuchen Sie es erneut.");
@@ -488,44 +442,56 @@ public class ChatService {
             return false; // Chat nicht gefunden
         }
 
-        if (chat instanceof ChatGroup) {
-            return deleteGroupChat((ChatGroup) chat, currentUser);
-        } else if (chat instanceof DirectChat) {
-            return deleteDirectChat((DirectChat) chat, currentUser);
+        if (chat instanceof ChatGroupEntity) {
+            return deleteGroupChat((ChatGroupEntity) chat, currentUser);
+        } else if (chat instanceof DirectChatEntity) {
+            return deleteDirectChat((DirectChatEntity) chat, currentUser);
         }
         return false; // Weder Gruppenchat noch Direktchat
     }
 
+
+    /**
+     * Holt die relevanten Chats des eingeloggten users entweder aus einem Gruppenchat oder aus einem direct Chat
+     * @param user2 BenutzerId
+     * @param groupId GruppenId
+     * @param query Suchkriterium
+     * @return relevante Chats
+     */
     public ChatResponseDTO getChatData(Long user2, Long groupId, String query) {
         UserEntity currentUser = userService.getCurrentUser();
 
         Long senderId = currentUser.getId();
 
-        // Initialisiere das ResponseDTO
         ChatResponseDTO responseDTO = new ChatResponseDTO();
         responseDTO.setCurrentUser(currentUser.getUsername());
         responseDTO.setSenderId(senderId);
 
-        // Sammle allgemeine Chatdaten und füge sie zum DTO hinzu
         responseDTO.setChatGroups(getChatGroups(senderId));
         responseDTO.setDirectChats(getDirectChats(senderId));
         responseDTO.setChatParticipants(getChatParticipants(senderId));
         responseDTO.setFilteredChatList(filterChats(senderId, query));
         responseDTO.setChatDetails(prepareChatDetailsList(responseDTO.getFilteredChatList()));
 
-        // Bereite Chat-Details vor und füge sie zum DTO hinzu
         if (groupId != null) {
-            ChatGroup selectedGroup = chatGroupRepositoryService.findById(groupId).orElse(null);
+            ChatGroupEntity selectedGroup = chatGroupRepository.findById(groupId).orElse(null);
             responseDTO.setSelectedGroup(selectedGroup);
-            responseDTO.setMessages(messageRepositoryService.findChatParticipants(groupId, 0, 50));
+            Pageable pageable = paginationHelper.createPageable(0, 50, "timestamp", Sort.Direction.ASC);
+            List<MessageEntity> groupMessages = messageRepository.findByChatGroup_Id(groupId, pageable);
+            responseDTO.setMessages(groupMessages);
             responseDTO.setChatId(groupId);
         } else if (user2 != null) {
-            UserEntity selectedUser = userRepositoryService.findUserById(user2);
-            DirectChat selectedDirectChat = direktChatRepositoryService.findDirectChatBetweenUsers(senderId, user2);
+            UserEntity selectedUser = userRepository.findUserEntityById(user2);
+            DirectChatEntity selectedDirectChat =  directChatRepository.findByUser1IdAndUser2Id(senderId, user2);
+            if (selectedDirectChat == null) {
+                selectedDirectChat = directChatRepository.findByUser2IdAndUser1Id(senderId, user2);
+            }
 
             responseDTO.setSelectedUser(selectedUser);
             responseDTO.setSelectedDirectChat(selectedDirectChat);
-            responseDTO.setMessages(messageRepositoryService.ChatMessagesBetweenUsers(senderId, user2, 0, 50));
+            Pageable pageable = paginationHelper.createPageable(0, 50, "timestamp", Sort.Direction.DESC);
+            List<MessageEntity> directChatMessages = messageRepository.findChatMessages(senderId, user2, pageable).getContent();
+            responseDTO.setMessages(directChatMessages);
 
             if (selectedUser != null) {
                 responseDTO.setOtherUserName(selectedUser.getUsername());
@@ -545,10 +511,15 @@ public class ChatService {
         return responseDTO;
     }
 
+    /**
+     * Gibt alle user zurück, mit denen ein neuer Chat erstellt werden kann.
+     * @param currentUrl Aktuelle Url
+     * @return Alle User
+     */
     public NewChatResponseDTO newChat(String currentUrl){
         NewChatResponseDTO newChatResponseDTO = new NewChatResponseDTO();
         newChatResponseDTO.setCurrentUrl(currentUrl);
-        newChatResponseDTO.setGroupedUsers(groupUsersByInitial(preparePublicUsersPage(userService.getCurrentUser().getId())));
+        newChatResponseDTO.setGroupedUsers(groupUsersByInitial(preparePublicUsersPage()));
         return newChatResponseDTO;
     }
 

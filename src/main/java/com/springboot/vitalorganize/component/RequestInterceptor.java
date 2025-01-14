@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.component;
 
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;

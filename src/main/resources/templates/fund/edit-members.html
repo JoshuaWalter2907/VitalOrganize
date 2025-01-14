@@ -34,13 +34,13 @@
     <form id="user-selection-form" method="post" action="/fund/edit-fund" class="create-group-form">
       <input type="hidden" name="fundId" th:value="${id}">
       <div class="user-list">
-        <div th:each="entry : ${friends}">
+        <div th:each="entry : ${editFundData.friends}">
           <label class="user-label">
             <img th:src="${entry.profilePictureUrl}" alt="UserImage" class="profile-image">
             <span class="username" th:text="${entry.username}">Benutzername</span>
             <!-- Überprüfen, ob der Friend in fund.users ist und wenn ja, das Checkbox ankreuzen -->
             <input type="checkbox" name="selectedUsers" th:value="${entry.id}" class="user-checkbox"
-                   th:checked="${fund.users.contains(entry)}">
+                   th:checked="${editFundData.fund.users.contains(entry)}">
           </label>
         </div>
       </div>

@@ -1,19 +1,13 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.Profile.*;
 import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Controller zur Verwaltung von Benutzerprofilen und verwandten Aktionen wie Freundschaftsanfragen,
@@ -126,7 +120,14 @@ public class ProfileController {
     }
 
 
-
+    /**
+     * Endpoint der für Änderungen im Profil des Nutzers zuständig ist
+     * @param profileEditRequestDTO Informationen, die benötigt werden
+     * @param model das Model für die View
+     * @param request für die Rücksprungadresse
+     * @param session für gespeicherte Informationen in der Session
+     * @return profileSeite
+     */
     @GetMapping("/profile-edit")
     public String profile(ProfileEditRequestDTO profileEditRequestDTO,
                           Model model,
@@ -140,100 +141,52 @@ public class ProfileController {
     }
 
 
-    @GetMapping("/profileaddition")
-    public String profileAdditionGet(@RequestParam(name = "nousername", required = false) boolean nousername,
-                                     @RequestParam(value = "fa", required = false) boolean auth,
+    /**
+     * Seite für zusätzliche Informationen, die zu registrierung eines Benuters benötigt werden
+     * @param registrationAdditionRequestDTO Informationen dazu
+     * @param model das Model für die View
+     * @param request für die Rücksprungadresse
+     * @param session für gespeicherte Informationen in der Session
+     * @return Registration Additions
+     */
+    @GetMapping("/additional-registration")
+    public String profileAdditionGet(RegistrationAdditionRequestDTO registrationAdditionRequestDTO,
                                      Model model,
-                                     @AuthenticationPrincipal OAuth2User user,
-                                     OAuth2AuthenticationToken authentication,
                                      HttpServletRequest request,
                                      HttpSession session) {
-
-        // Authentifizierungsdetails aus der Sitzung abrufen und für die View bereitstellen
-        if (auth) {
-            String email = session.getAttribute("email").toString();
-            String username = session.getAttribute("inputString").toString();
-            String birthdate = session.getAttribute("birthDate").toString();
-            Boolean isPublic = (Boolean) session.getAttribute("isPublic");
-            model.addAttribute("email", email);
-            model.addAttribute("username", username);
-            model.addAttribute("birthday", birthdate);
-            model.addAttribute("isPublic", isPublic);
-        }
-
-        // Aktuelle URL speichern und Profildaten abrufen
-        String uri = request.getRequestURI();
-        session.setAttribute("uri", uri);
-        UserEntity userEntity = userService.getCurrentUser(user, authentication);
-
-        // Anbieterinformationen und Profilerweiterungsdaten zur View hinzufügen
-        if (userEntity.getProvider().equals("github")) {
-            model.addAttribute("provider", userEntity.getProvider());
-        }
-        ProfileAdditionData profileData = userService.getProfileAdditionData(user, authentication);
-
-        // Weiterleitung, wenn das Profil vollständig ist
-        if (profileData.isProfileComplete()) {
+        RegistrationAdditionResponseDTO registrationAdditionResponseDTO = profileService.prepareRegistrationAdditionPage(registrationAdditionRequestDTO, request, session);
+        if(registrationAdditionResponseDTO.isProfileComplete())
             return "redirect:/profile";
-        }
 
-        // Profildaten zur View hinzufügen
-        model.addAttribute("user", profileData.getUserEntity());
-        model.addAttribute("birthDate", profileData.getBirthDate());
-        model.addAttribute("auth", auth);
-
-        return "profile/Profile Additions";
+        model.addAttribute("RegistrationAdditionData", registrationAdditionResponseDTO);
+        return "profile/Registration Additions";
     }
 
 
     /**
-     * Verarbeitet das Absenden der Profilerweiterung.
-     *
-     * @param inputString der eingegebene Benutzername
-     * @param birthDate das eingegebene Geburtsdatum
-     * @param email die eingegebene E-Mail-Adresse (optional)
-     * @param user der authentifizierte OAuth2-Benutzer
-     * @param authentication das Authentifizierungs-Token für den OAuth2-Benutzer
-     * @param model das UI-Modell, um Fehlermeldungen an die View zu übergeben
-     * @return der Name des Templates oder eine Weiterleitung
+     * Endpoint um zusätzliche Informationen während des Registriervorgangs zu speichern
+     * @param registrationAdditionResponseDTO Informationen
+     * @return Weiterleitung zum Profil
      */
-    @PostMapping("/profileaddition")
-    public String profileAddition(@RequestParam(value = "inputString") String inputString,
-                                  @RequestParam(value = "birthDate") String birthDate,
-                                  @RequestParam(value = "email", required = false, defaultValue = "") String email,
-                                  @AuthenticationPrincipal OAuth2User user,
-                                  OAuth2AuthenticationToken authentication,
-                                  Model model) {
+    @PostMapping("/additional-registration")
+    public String profileAddition(
+            RegistrationAdditionResponseDTO registrationAdditionResponseDTO
+    ) {
+        profileService.updateUserProfile(registrationAdditionResponseDTO);
 
-        // Profil aktualisieren und Benutzername überprüfen
-        boolean usernameExists = profileService.updateUserProfile(user, authentication, inputString, birthDate, email);
-
-        // Fehlerbehandlung bei vorhandenem Benutzernamen
-        if (usernameExists) {
-            model.addAttribute("error", "Der Benutzername existiert bereits. Bitte wählen Sie einen anderen.");
-            return "Profile Additions";
-        }
-
-        // Weiterleitung zum Profil bei erfolgreicher Aktualisierung
         return "redirect:/profile";
     }
 
     /**
      * Speichert Änderungen am Profil des Benutzers.
      *
-     * @param profileRequest die aktualisierten Profildaten
-     * @param user der authentifizierte OAuth2-Benutzer
-     * @param auth2AuthenticationToken das Authentifizierungs-Token für den OAuth2-Benutzer
+     * @param profileEditRequestDTO die aktualisierten Profildaten
      * @return eine Weiterleitung zur Profilbearbeitungsseite
      */
     @PostMapping("/save-profile")
-    public String saveProfile(ProfileEditRequestDTO profileRequest,
-                              @AuthenticationPrincipal OAuth2User user,
-                              OAuth2AuthenticationToken auth2AuthenticationToken) {
+    public String saveProfile(ProfileEditRequestDTO profileEditRequestDTO) {
 
-        // Benutzer-Entity abrufen und Profil aktualisieren
-        UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
-        profileService.updateUserProfile(userEntity, profileRequest);
+        profileService.updateUserProfile(profileEditRequestDTO);
 
         return "redirect:/profile-edit";
     }
@@ -241,31 +194,23 @@ public class ProfileController {
 
     /**
      * Löscht das Profil des Benutzers.
-     *
-     * @param user der authentifizierte OAuth2-Benutzer
-     * @param auth2AuthenticationToken das Authentifizierungs-Token für den OAuth2-Benutzer
      * @return eine Weiterleitung basierend auf dem Löschstatus
      */
     @PostMapping("/profile-edit/delete")
-    public String deleteProfile(
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken auth2AuthenticationToken) {
+    public String deleteProfile() {
 
-        // Benutzer-Entity abrufen und Profil löschen
-        UserEntity userEntity = userService.getCurrentUser(user, auth2AuthenticationToken);
-        Boolean allDone = userService.deleteUser(userEntity);
+        Boolean allDone = userService.deleteUser();
 
-        // Weiterleitung abhängig vom Löschstatus
         if (!allDone) {
             return "redirect:/fund?delete=true";
         }
         return "redirect:/logout";
     }
 
-    private Long getCurrentUserId(OAuth2User user, OAuth2AuthenticationToken authenticationToken) {
-        return userService.getCurrentUser(user, authenticationToken).getId();
-    }
-
+    /**
+     * Hilfsmethode für Freundschaftsanfragen
+     * @return Profilepage
+     */
     private String redirectToProfile() {
         return "redirect:/profile";
     }

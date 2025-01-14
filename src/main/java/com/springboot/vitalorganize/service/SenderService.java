@@ -4,14 +4,12 @@ import com.lowagie.text.Document;
 import com.lowagie.text.Font;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
-import com.springboot.vitalorganize.entity.PersonalInformation;
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.PersonalInformation;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -29,7 +27,6 @@ import java.security.SecureRandom;
 @AllArgsConstructor
 public class SenderService {
 
-    // Abhängigkeit: Service zum Versenden von E-Mails
     private final JavaMailSender mailSender;
 
     /**
@@ -40,43 +37,36 @@ public class SenderService {
     @Async
     public void createPdf(UserEntity benutzer) {
         String email = benutzer.getEmail();
-        // Wenn der Benutzer über GitHub authentifiziert wurde, verwenden wir die SendtoEmail-Adresse
         if (benutzer.getProvider().equals("github"))
             email = benutzer.getSendtoEmail();
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
-            // Generiere ein zufälliges Passwort für die PDF-Datei
             String password = generateRandomPassword();
 
-            // Sende dem Benutzer das Passwort für das PDF per E-Mail
             sendEmail(
                     email,
                     "Ihr PDF Passwort",
                     "Das Passwort für Ihr PDF lautet: " + password
             );
 
-            // Erstelle das PDF-Dokument
             Document document = new Document();
             PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 
-            // Verschlüssele das PDF mit dem generierten Passwort
             writer.setEncryption(
                     password.getBytes(),
-                    null, // Benutzer-Passwort (Owner Passwort bleibt leer)
+                    null,
                     PdfWriter.ALLOW_PRINTING,
                     PdfWriter.ENCRYPTION_AES_128
             );
 
             document.open();
 
-            // Füge Benutzerinformationen in das PDF-Dokument ein
             document.add(new Paragraph("Benutzerinformationen", new Font(Font.HELVETICA, 16, Font.BOLD)));
             document.add(new Paragraph("Email: " + benutzer.getEmail()));
             document.add(new Paragraph("Nutzername: " + (benutzer.getUsername() != null ? benutzer.getUsername() : "N/A")));
             document.add(new Paragraph("Geburtstag: " + (benutzer.getBirthday() != null ? benutzer.getBirthday().toString() : "N/A")));
 
-            // Füge persönliche Informationen hinzu, falls verfügbar
             if (benutzer.getPersonalInformation() != null) {
                 PersonalInformation personalInfo = benutzer.getPersonalInformation();
                 document.add(new Paragraph("\nPersönliche Informationen", new Font(Font.HELVETICA, 14, Font.BOLD)));
@@ -93,7 +83,6 @@ public class SenderService {
 
             document.close();
 
-            // Sende das PDF-Dokument per E-Mail an den Benutzer
             sendEmailWithAttachment(
                     email,
                     "Ihre Benutzerinformationen",
@@ -107,7 +96,7 @@ public class SenderService {
     }
 
     /**
-     * Sendet eine E-Mail mit einem Anhang (z.B. PDF).
+     * Sendet eine E-Mail mit einem Anhang
      *
      * @param to E-Mail-Adresse des Empfängers
      * @param subject Betreff der E-Mail

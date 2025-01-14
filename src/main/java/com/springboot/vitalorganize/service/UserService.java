@@ -1,11 +1,13 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.FriendStatusRequestDTO;
-import com.springboot.vitalorganize.model.ProfileAdditionData;
-import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.service.repositoryhelper.*;
+import com.springboot.vitalorganize.entity.Chat.ChatGroupEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.FundEntity;
+import com.springboot.vitalorganize.entity.Profile_User.FriendRequestEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Profile.FriendStatusRequestDTO;
+import com.springboot.vitalorganize.repository.*;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,78 +18,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 /**
- * Service-Klasse für die Verwaltung von Benutzeroperationen.
- * Diese Klasse bietet Methoden zum Abrufen, Bearbeiten und Löschen von Benutzerdaten,
- * zum Verwalten von Freundschaftsanfragen, Blockierungen und Abonnements.
+ * Service-Klasse für die Verwaltung von Benutzeroperationen
  */
 @Service
 @AllArgsConstructor
 public class UserService {
 
-    // Abhängigkeiten: Repository-Services für Benutzer, Nachrichten, Chats, Abonnements und Zahlungen
-    private final UserRepositoryService userRepositoryService;
-    private final MessageRepositoryService messageRepositoryService;
-    private final DirektChatRepositoryService direktChatRepositoryService;
-    private final ChatGroupRepositoryService chatGroupRepositoryService;
-    private final FundRepositoryService fundRepositoryService;
-    private final SubscriptionRepositoryService subscriptionRepositoryService;
-    private final PaymentRepositoryService paymentRepositoryService;
-    private final FriendRequestRepositoryService friendRequestRepositoryService;
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final DirectChatRepository directChatRepository;
+    private final ChatGroupRepository chatGroupRepository;
+    private final FundRepository fundRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final PaymentRepository paymentRepository;
+    private final FriendRequestRepository friendRequestRepository;
 
     private final PaypalService paypalService;
-    private final UserRepository userRepository;
 
-    /**
-     * Ruft die Profildaten des Benutzers basierend auf dem OAuth2User-Objekt ab.
-     *
-     * @param user Das OAuth2User-Objekt des aktuell angemeldeten Benutzers
-     * @param authentication Das OAuth2-Authentifizierungstoken
-     * @return Das Benutzerobjekt, das die Profildaten enthält
-     */
-    public UserEntity getProfileData(OAuth2User user, OAuth2AuthenticationToken authentication) {
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = user.getAttribute("email");
-
-        // Für GitHub: Dummy-E-Mail-Adresse mit dem GitHub-Benutzernamen erstellen
-        if ("github".equals(provider)) {
-            String username = user.getAttribute("login");
-            email = username + "@github.com";
-        }
-
-        // Benutzer anhand der E-Mail und des Anbieters suchen
-        UserEntity userEntity = userRepositoryService.findByEmailAndProvider(email, provider);
-        if (userEntity == null) {
-            throw new IllegalStateException("Benutzer nicht gefunden.");
-        }
-        return userEntity;
-    }
-
-    /**
-     * Ruft die Profilerweiterungsdaten ab, z. B. ob das Profil des Benutzers bereits vollständig ist.
-     *
-     * @param user Das OAuth2User-Objekt des aktuell angemeldeten Benutzers
-     * @param authentication Das OAuth2-Authentifizierungstoken
-     * @return Ein Objekt mit zusätzlichen Profildaten und einem Status, ob das Profil vollständig ist
-     */
-    public ProfileAdditionData getProfileAdditionData(OAuth2User user, OAuth2AuthenticationToken authentication) {
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String email = user.getAttribute("email");
-
-        // Für GitHub: Dummy-E-Mail-Adresse mit dem GitHub-Benutzernamen erstellen
-        if ("github".equals(provider)) {
-            String username = user.getAttribute("login");
-            email = username + "@github.com";
-        }
-
-        UserEntity existingUser = userRepositoryService.findByEmailAndProvider(email, provider);
-
-        boolean isProfileComplete = existingUser != null && !existingUser.getUsername().isEmpty();
-        return new ProfileAdditionData(existingUser, isProfileComplete);
-    }
 
     /**
      * Ruft den aktuellen Benutzer basierend auf dem OAuth2User-Objekt und dem Authentifizierungstoken ab.
-     *
      * @param user Das OAuth2User-Objekt des aktuell angemeldeten Benutzers
      * @param authentication Das OAuth2-Authentifizierungstoken
      * @return Das Benutzerobjekt des aktuell angemeldeten Benutzers
@@ -97,91 +47,90 @@ public class UserService {
         String email = user.getAttribute("email");
         Long id;
 
-        // Für verschiedene Anbieter (Google, Discord, GitHub) die Benutzer-ID ermitteln
         switch (provider) {
             case "google":
             case "discord":
-                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                id = userRepository.findByEmailAndProvider(email, provider).getId();
                 break;
             case "github":
                 String username = user.getAttribute("login");
                 email = username + "@github.com";
-                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                id = userRepository.findByEmailAndProvider(email, provider).getId();
                 break;
             default:
                 throw new IllegalArgumentException("Unbekannter Provider: " + provider);
         }
 
-        // Benutzer anhand der ID abrufen und zurückgeben
-        return userRepositoryService.findUserById(id);
+        return userRepository.findUserEntityById(id);
     }
 
+    /**
+     * Holt den aktuellen Nutzer
+     * @return der Benutzer
+     */
     public UserEntity getCurrentUser() {
+        if(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+
         OAuth2AuthenticationToken authentication =
                 (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        OAuth2User user = (OAuth2User) authentication.getPrincipal();
+        OAuth2User user = authentication.getPrincipal();
 
         String provider = authentication.getAuthorizedClientRegistrationId();
         String email = user.getAttribute("email");
         Long id;
 
-        // Für verschiedene Anbieter (Google, Discord, GitHub) die Benutzer-ID ermitteln
         switch (provider) {
             case "google":
             case "discord":
-                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                id = userRepository.findByEmailAndProvider(email, provider).getId();
                 break;
             case "github":
                 String username = user.getAttribute("login");
                 email = username + "@github.com";
-                id = userRepositoryService.findByEmailAndProvider(email, provider).getId();
+                id = userRepository.findByEmailAndProvider(email, provider).getId();
                 break;
             default:
                 throw new IllegalArgumentException("Unbekannter Provider: " + provider);
         }
 
-        // Benutzer anhand der ID abrufen und zurückgeben
-        return userRepositoryService.findUserById(id);
+        return userRepository.findUserEntityById(id);
     }
 
 
 
     /**
      * Ruft einen Benutzer anhand seiner ID ab.
-     *
      * @param userId Die ID des Benutzers
      * @return Das Benutzerobjekt für die angegebene ID
      */
     public UserEntity getUserById(Long userId) {
-        return userRepositoryService.findUserById(userId);
+        return userRepository.findUserEntityById(userId);
     }
 
     /**
      * Ruft alle öffentlichen Benutzer ab.
-     *
      * @return Eine Liste öffentlicher Benutzer
      */
     public List<UserEntity> getPublicUsers() {
-        return userRepositoryService.findPublicUsers(true);
+        return userRepository.findAllByisPublic(true);
     }
 
     /**
      * Löscht einen Benutzer und alle zugehörigen Daten, wenn der Benutzer keine administrativen Aufgaben hat.
-     *
-     * @param user Das Benutzerobjekt, das gelöscht werden soll
      * @return true, wenn der Benutzer erfolgreich gelöscht wurde, andernfalls false
      */
     @Transactional
-    public Boolean deleteUser(UserEntity user) {
+    public Boolean deleteUser() {
+        UserEntity user = getCurrentUser();
 
-        // Überprüft, ob der Benutzer ein Administrator eines Fonds ist
-        List<FundEntity> funds = fundRepositoryService.findByAdmin(user);
+        List<FundEntity> funds = fundRepository.findByAdmin(user);
         if(!funds.isEmpty()) {
-            return false;  // Benutzer hat noch administrative Aufgaben
+            return false;
         }
 
-        // Entfernt den Benutzer aus den Mitgliedschaften in Fonds
-        List<FundEntity> memberfunds = fundRepositoryService.findALl();
+        List<FundEntity> memberfunds = fundRepository.findAll();
         memberfunds = memberfunds.stream()
                 .filter(f -> f.getUsers().contains(user))
                 .toList();
@@ -192,38 +141,39 @@ public class UserService {
 
         Long id = user.getId();
 
-        // Entfernt den Benutzer aus den Chat-Gruppen, Nachrichten und anderen Entitäten
-        List<ChatGroup> chatGroups = chatGroupRepositoryService.findAllByUserId(id);
+        List<ChatGroupEntity> chatGroups = chatGroupRepository.findAllByUserId(id);
         List<Long> chatGroupIds = chatGroups.stream()
-                .map(ChatGroup::getId)
+                .map(ChatGroupEntity::getId)
                 .toList();
 
         if(user.getRole().equals("MEMBER"))
             paypalService.cancelSubscription(user, user.getLatestSubscription().getSubscriptionId());
 
-        messageRepositoryService.deleteByRecipient_Id(id);
-        messageRepositoryService.deleteBySender_Id(id);
-        chatGroupRepositoryService.deleteAllByIdIn(chatGroupIds);
-        direktChatRepositoryService.deleteById(id);
-        subscriptionRepositoryService.deleteById(id);
-        paymentRepositoryService.updateUserReferencesToNull(id);
-        friendRequestRepositoryService.deleteById(id);
-        userRepositoryService.deleteById(id);
+        messageRepository.deleteByRecipient_Id(id);
+        messageRepository.deleteBySender_Id(id);
+        chatGroupRepository.deleteAllByIdIn(chatGroupIds);
+        directChatRepository.deleteById(id);
+        subscriptionRepository.deleteById(id);
+        paymentRepository.updateUserReferencesToNull(id);
+        friendRequestRepository.deleteById(id);
+        userRepository.deleteById(id);
 
-        return true;  // Benutzer erfolgreich gelöscht
+        return true;
     }
 
 
-    @Transactional
+    /**
+     * blockiert einen Nutzer
+     * @param friendRequestDTO Die benötigten Informationen
+     */
     public void blockUser(FriendStatusRequestDTO friendRequestDTO) {
-        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
-        UserEntity targetUser = userRepositoryService.findUserById(friendRequestDTO.getId());
+        UserEntity currentUser = userRepository.findUserEntityById(getCurrentUser().getId());
+        UserEntity targetUser = userRepository.findUserEntityById(friendRequestDTO.getId());
 
         if (currentUser.getBlockedUsers().contains(targetUser)) {
             throw new IllegalStateException("User is already blocked");
         }
 
-        // Entfernt den Benutzer aus der Freundesliste und den Freundschaftsanfragen
         currentUser.getFriends().remove(targetUser);
         targetUser.getFriends().remove(currentUser);
 
@@ -232,84 +182,88 @@ public class UserService {
         targetUser.getSentFriendRequests().removeIf(request -> request.getReceiver().equals(currentUser));
         targetUser.getReceivedFriendRequests().removeIf(request -> request.getSender().equals(currentUser));
 
-        // Fügt den Benutzer zu den blockierten Benutzern hinzu
         currentUser.getBlockedUsers().add(targetUser);
 
-        userRepositoryService.saveUser(currentUser);
-        userRepositoryService.saveUser(targetUser);
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
     }
 
 
-    @Transactional
+    /**
+     * Fügt einen neuen Freund hinzu oder sendet eine Freundschaftsanfrage
+     * @param friendStatusRequestDTO Benötigte Informationen
+     */
     public void addFriend(FriendStatusRequestDTO friendStatusRequestDTO) {
-        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
-        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
+        UserEntity currentUser = userRepository.findUserEntityById(getCurrentUser().getId());
+        UserEntity targetUser = userRepository.findUserEntityById(friendStatusRequestDTO.getId());
 
-        // Überprüft, ob bereits eine Freundschaftsanfrage existiert
         boolean existingRequestReceiver = targetUser.getReceivedFriendRequests().stream()
-                .anyMatch(request -> request.getSender().equals(currentUser) && request.getStatus() == FriendRequest.RequestStatus.PENDING);
+                .anyMatch(request -> request.getSender().equals(currentUser) && request.getStatus() == FriendRequestEntity.RequestStatus.PENDING);
 
         boolean existingRequestSender = currentUser.getSentFriendRequests().stream()
-                .anyMatch(request -> request.getReceiver().equals(targetUser) && request.getStatus() == FriendRequest.RequestStatus.PENDING);
+                .anyMatch(request -> request.getReceiver().equals(targetUser) && request.getStatus() == FriendRequestEntity.RequestStatus.PENDING);
 
         if (existingRequestReceiver || existingRequestSender) {
-            return;  // Keine doppelte Anfrage zulassen
+            return;
         }
 
         if (targetUser.isPublic()) {
-            // Direkt Freundschaft hinzufügen, wenn das Profil öffentlich ist
             currentUser.getFriends().add(targetUser);
             targetUser.getFriends().add(currentUser);
         } else {
-            // Sonst Freundschaftsanfrage senden
-            FriendRequest friendRequest = new FriendRequest();
+            FriendRequestEntity friendRequest = new FriendRequestEntity();
             friendRequest.setSender(currentUser);
             friendRequest.setReceiver(targetUser);
             friendRequest.setRequestDate(LocalDateTime.now());
-            friendRequest.setStatus(FriendRequest.RequestStatus.PENDING);
+            friendRequest.setStatus(FriendRequestEntity.RequestStatus.PENDING);
 
             currentUser.getSentFriendRequests().add(friendRequest);
         }
 
-        userRepositoryService.saveUser(currentUser);
-        userRepositoryService.saveUser(targetUser);
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
     }
 
 
-    @Transactional
+    /**
+     * Löscht eine Freunschaft
+     * @param friendStatusRequestDTO benötigte Informationen
+     */
     public void unfriendUser(FriendStatusRequestDTO friendStatusRequestDTO) {
-        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
-        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
+        UserEntity currentUser = userRepository.findUserEntityById(getCurrentUser().getId());
+        UserEntity targetUser = userRepository.findUserEntityById(friendStatusRequestDTO.getId());
 
         currentUser.getFriends().remove(targetUser);
         targetUser.getFriends().remove(currentUser);
 
-        userRepositoryService.saveUser(currentUser);
-        userRepositoryService.saveUser(targetUser);
+        userRepository.save(currentUser);
+        userRepository.save(targetUser);
     }
 
 
-    @Transactional
+    /**
+     * Löscht die Blockierung eines Nutzers
+     * @param friendStatusRequestDTO benötigte Informationen
+     */
     public void unblockUser(FriendStatusRequestDTO friendStatusRequestDTO) {
-        UserEntity currentUser = userRepositoryService.findUserById(getCurrentUser().getId());
-        UserEntity targetUser = userRepositoryService.findUserById(friendStatusRequestDTO.getId());
+        UserEntity currentUser = userRepository.findUserEntityById(getCurrentUser().getId());
+        UserEntity targetUser = userRepository.findUserEntityById(friendStatusRequestDTO.getId());
 
         currentUser.getBlockedUsers().remove(targetUser);
 
-        userRepositoryService.saveUser(currentUser);
+        userRepository.save(currentUser);
     }
 
     /**
      * Ruft eine Liste von Benutzern ab, die entweder öffentlich sind oder mit dem aktuellen Benutzer befreundet sind.
-     *
      * @param userId Die ID des aktuellen Benutzers
      * @return Eine Liste der öffentlichen Benutzer oder Freunde des aktuellen Benutzers
      */
     public List<UserEntity> getUsersWithFriendsOrPublic(Long userId) {
-        UserEntity currentUser = userRepositoryService.findUserById(userId);
+        UserEntity currentUser = userRepository.findUserEntityById(userId);
 
         // Öffentliche Benutzer und Freunde des Benutzers abrufen
-        List<UserEntity> publicUsers = userRepositoryService.findPublicUsers(true);
+        List<UserEntity> publicUsers = userRepository.findAllByisPublic(true);
         List<UserEntity> friends = currentUser.getFriends();
 
         publicUsers.addAll(friends);
@@ -320,40 +274,22 @@ public class UserService {
 
     /**
      * Sucht Benutzer nach ihrem Benutzernamen.
-     *
      * @param query Der Suchbegriff für den Benutzernamen
      * @return Eine Liste der Benutzer, deren Benutzernamen den Suchbegriff enthalten
      */
     public List<UserEntity> findByUsername(String query){
-        return userRepositoryService.findByUsernameContaining(query);
+        return userRepository.findByUsernameContainingIgnoreCase(query);
     }
 
-    /**
-     * Ruft die E-Mail-Adresse des Benutzers basierend auf dem OAuth2Provider ab.
-     *
-     * @param user Das OAuth2User-Objekt des aktuell angemeldeten Benutzers
-     * @param provider Der Name des Anbieters (z.B. GitHub)
-     * @return Die E-Mail-Adresse des Benutzers
-     */
-    public String getEmailForUser(OAuth2User user, String provider) {
-        if ("github".equals(provider)) {
-            String username = user.getAttribute("login");
-            return username + "@github.com";  // Dummy-E-Mail für GitHub
-        }
-        return user.getAttribute("email");
-    }
 
     public void togglePriceReportEmail(Long userId) {
-        userRepositoryService.togglePriceReportsEnabled(userId);
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userEntity.setPriceReportsEnabled(!userEntity.isPriceReportsEnabled());
+        userRepository.save(userEntity);
     }
 
-
-    public String getEmail(UserEntity userEntity) {
-        if("github".equals(userEntity.getProvider())){
-            return userEntity.getSendtoEmail();
-        }
-        return userEntity.getEmail();
-    }
 
     public UserEntity getUser(Long id) {
         if (id == null)

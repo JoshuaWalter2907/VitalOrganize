@@ -389,3 +389,25 @@ h4 {
     margin-bottom: 10px;
 }
 
+.pagination-pages{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    font-size: 18px;
+}
+
+.pagination-link{
+    padding: 5px;
+    border: var(--text-color-light) solid 1px;
+    border-radius: 5px;
+    min-width: 40px;
+    background-color: transparent;
+    color: var(--text-color-light);
+}
+
+.pagination-link:hover{
+    background-color: var(--color-slightly-dark);
+    cursor: pointer;
+}
+

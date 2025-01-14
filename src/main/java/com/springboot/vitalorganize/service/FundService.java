@@ -1,14 +1,15 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.FundDetailsDto;
-import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.Fund_Payments.FundEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Fund_Payment.*;
+import com.springboot.vitalorganize.repository.FundRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,112 +21,95 @@ import java.util.List;
 @AllArgsConstructor
 public class FundService {
 
-    private final FundRepositoryService fundRepositoryService;
-    private final UserRepositoryService userRepositoryService;
-    private final PaypalService paypalService;
 
-    /**
-     * Holt die Details eines Fonds einschließlich Zahlungen und Benutzer.
-     * Es können optionale Filter angewendet werden (z.B. nach Name des Fonds, Benutzername, Zahlungen).
-     *
-     * @param user der aktuell angemeldete Benutzer
-     * @param id ID des Fonds, dessen Details abgerufen werden sollen
-     * @param query optionaler Filter für den Fondsnamen
-     * @param username optionaler Filter für den Benutzernamen in Zahlungen
-     * @param reason optionaler Filter für den Grund in Zahlungen
-     * @param dateFrom optionaler Startdatum-Filter für Zahlungen
-     * @param dateTo optionaler Enddatum-Filter für Zahlungen
-     * @param amount optionaler Filter für den Betrag der Zahlungen
-     * @return ein DTO mit den angeforderten Fondsdaten
-     */
-    public FundDetailsDto getFundDetails(
-            UserEntity user,
-            Long id,
-            String query,
-            String username,
-            String reason,
-            LocalDate dateFrom,
-            LocalDate dateTo,
-            Long amount
-    ) {
+    private final UserRepository userRepository;
+    private final FundRepository fundRepository;
+    private final PaypalService paypalService;
+    private final UserService userService;
+
+
+    public FundResponseDTO getFundDetails(FundRequestDTO fundRequestDTO) {
+        FundResponseDTO fundResponseDTO = new FundResponseDTO();
+        UserEntity user = userService.getCurrentUser();
         boolean error = false;
 
-        // Fonds abrufen und optional filtern
-        List<FundEntity> funds = fundRepositoryService.findFundsByUserId(user.getId());
-        if (query != null) {
+        List<FundEntity> funds = fundRepository.findFundsByUserId(user.getId());
+        if (fundRequestDTO.getQuery() != null) {
             funds = funds.stream()
-                    .filter(f -> f.getName().toLowerCase().contains(query.toLowerCase()))
+                    .filter(f -> f.getName().toLowerCase().contains(fundRequestDTO.getQuery().toLowerCase()))
                     .toList();
         }
 
-        List<Payment> filteredPayments = new ArrayList<>();
+        List<PaymentEntity> filteredPayments = new ArrayList<>();
         FundEntity myFund = null;
 
-        if (id != null) {
-            FundEntity fund = fundRepositoryService.findFundById(id);
+        if (fundRequestDTO.getId() != null) {
+            FundEntity fund = fundRepository.findById(fundRequestDTO.getId()).orElse(null);
+            assert fund != null;
             if (!fund.getUsers().contains(user)) {
                 error = true;
             } else {
                 myFund = fund;
                 filteredPayments = paypalService.filterPayments(
-                        fund.getPayments(), username, reason, dateFrom, dateTo, amount);
+                        fund.getPayments(), fundRequestDTO.getUsername(), fundRequestDTO.getReason(), fundRequestDTO.getDatefrom(), fundRequestDTO.getDateto(), fundRequestDTO.getAmount());
             }
         }
 
-        // Zusammenstellen der Daten für das Frontend
-        return new FundDetailsDto(funds, myFund, filteredPayments, paypalService.getCurrentBalance(), error);
+        int pageNumber = fundRequestDTO.getPage();
+        int pageSize = fundRequestDTO.getSize();
+
+        int totalPayments = filteredPayments.size();
+        int totalPages = (int) Math.ceil((double) totalPayments / pageSize);
+
+        int startIndex = pageNumber * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, filteredPayments.size());
+
+        List<PaymentEntity> pagedPayments = filteredPayments.subList(startIndex, endIndex);
+
+        fundResponseDTO.setLoggedInUser(user);
+        fundResponseDTO.setFunds(funds);
+        fundResponseDTO.setMyfunds(myFund);
+        fundResponseDTO.setFundpayments(pagedPayments);
+        fundResponseDTO.setBalance(paypalService.getCurrentBalance());
+        fundResponseDTO.setError(error);
+        fundResponseDTO.setShow(fundRequestDTO.isShow());
+        fundResponseDTO.setTotalPayments(totalPayments);
+        fundResponseDTO.setTotalPages(totalPages);
+        fundResponseDTO.setPageNumber(pageNumber);
+        fundResponseDTO.setPageSize(pageSize);
+
+        return fundResponseDTO;
     }
 
-    /**
-     * Filtert die Freunde des aktuellen Benutzers basierend auf einem optionalen Suchbegriff.
-     *
-     * @param currentUser der aktuell angemeldete Benutzer
-     * @param query optionaler Suchbegriff für die Benutzernamen der Freunde
-     * @return eine Liste der gefilterten Freunde
-     */
-    public List<UserEntity> getFilteredFriends(UserEntity currentUser, String query) {
+    public List<UserEntity> getFilteredFriends(NewFundRequestDTO newFundRequestDTO) {
+        UserEntity currentUser = userService.getCurrentUser();
         List<UserEntity> friends = currentUser.getFriends();
 
         // Falls ein Query-Parameter gesetzt ist, filtere die Freunde
-        if (query != null && !query.isBlank()) {
+        if (newFundRequestDTO.getQuery() != null && !newFundRequestDTO.getQuery().isBlank()) {
             friends = friends.stream()
                     .filter(friend -> friend.getUsername() != null &&
-                            friend.getUsername().toLowerCase().contains(query.toLowerCase()))
+                            friend.getUsername().toLowerCase().contains(newFundRequestDTO.getQuery().toLowerCase()))
                     .toList();
         }
 
         return friends;
     }
 
-    /**
-     * Löscht einen Fund aus der Datenbank.
-     *
-     * @param fundId die ID des zu löschenden Fonds
-     */
-    public void processFundDeletion(Long fundId) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId);
-        fundRepositoryService.deleteFund(fund);
-    }
 
-    /**
-     * Erstellt einen neuen Fund und fügt Benutzer hinzu.
-     *
-     * @param fundname der Name des Fonds
-     * @param userIds eine Liste von Benutzer-IDs, die dem Fund hinzugefügt werden sollen
-     * @param loggedInUser der aktuell angemeldete Benutzer, der den Fund erstellt
-     */
-    public void createFund(String fundname, List<Long> userIds, UserEntity loggedInUser) {
+    public void createFund(CreateFundRequestDTO createFundRequestDTO) {
+        UserEntity loggedInUser = userService.getCurrentUser();
         FundEntity fund = new FundEntity();
-        fund.setName(fundname);
+        fund.setName(createFundRequestDTO.getFundname());
         fund.setAdmin(loggedInUser);
         fund.getUsers().add(loggedInUser);
 
-        if (userIds != null) {
-            List<UserEntity> users = userRepositoryService.findUsersByIds(userIds);
+        if (createFundRequestDTO.getSelectedUsers() != null) {
+            List<UserEntity> users = userRepository.findAllById(createFundRequestDTO.getSelectedUsers());
             fund.getUsers().addAll(users);
         }
 
-        fundRepositoryService.saveFund(fund);
+        fundRepository.save(fund);
     }
 
     /**
@@ -135,7 +119,7 @@ public class FundService {
      * @return der Fund mit der angegebenen ID
      */
     public FundEntity getFund(Long fundId) {
-        return fundRepositoryService.findFundById(fundId);
+        return fundRepository.findById(fundId).orElse(null);
     }
 
     /**
@@ -149,31 +133,24 @@ public class FundService {
         return fund.getAdmin().equals(user);
     }
 
-    /**
-     * Bearbeitet einen Fund, fügt Benutzer hinzu und aktualisiert den Fundnamen.
-     * Dieser Vorgang wird in einer Transaktion ausgeführt.
-     *
-     * @param fundId die ID des Fonds, der bearbeitet werden soll
-     * @param userIds eine Liste von Benutzer-IDs, die dem Fund hinzugefügt werden sollen
-     * @param name der neue Name des Fonds
-     * @param loggedInUser der aktuell angemeldete Benutzer, der die Änderungen vornimmt
-     */
-    @Transactional
-    public void editFund(Long fundId, List<Long> userIds, String name, UserEntity loggedInUser) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId);
 
-        // Benutzer finden und hinzufügen
-        List<UserEntity> users = userRepositoryService.findUsersByIds(userIds);
+    @Transactional
+    public void editFund(EditFundRequestDTO editFundRequestDTO) {
+        UserEntity loggedInUser = userService.getCurrentUser();
+        FundEntity fund = fundRepository.findById(editFundRequestDTO.getFundId()).orElse(null);
+        assert fund != null;
+
+        List<UserEntity> users = userRepository.findAllById(editFundRequestDTO.getSelectedUsers());
         if (!users.contains(loggedInUser)) {
             users.add(loggedInUser); // Füge den Admin hinzu
         }
 
-        if(name != null && !name.isBlank()) {
-            fund.setName(name);
+        if(editFundRequestDTO.getFundname() != null && !editFundRequestDTO.getFundname().isBlank()) {
+            fund.setName(editFundRequestDTO.getFundname());
         }
         fund.setUsers(users);
 
-        fundRepositoryService.saveFund(fund);
+        fundRepository.save(fund);
     }
 
     /**
@@ -183,28 +160,73 @@ public class FundService {
      * @return der aktuelle Kontostand des Fonds
      */
     public double getLatestFundBalance(FundEntity fund) {
-        return fundRepositoryService.getLatestBalanceForFund(fund);
+        if (fund.getPayments().isEmpty()) {
+            return 0.0;
+        }
+        return fund.getPayments().getLast().getBalance();
     }
 
     /**
      * Löscht einen Fund aus der Datenbank. Nur der Administrator des Fonds kann diesen Vorgang durchführen.
      * Dieser Vorgang wird in einer Transaktion ausgeführt.
      *
-     * @param fundId die ID des Fonds, der gelöscht werden soll
+     * @param fundId       die ID des Fonds, der gelöscht werden soll
      * @param loggedInUser der aktuell angemeldete Benutzer, der den Fund löschen möchte
-     * @param balance der aktuelle Kontostand des Fonds
-     * @return true, wenn der Fund erfolgreich gelöscht wurde
+     * @param balance      der aktuelle Kontostand des Fonds
      * @throws SecurityException wenn der Benutzer nicht der Administrator des Fonds ist
      */
     @Transactional
-    public boolean deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
-        FundEntity fund = fundRepositoryService.findFundById(fundId);
+    public void deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
+        FundEntity fund = fundRepository.findById(fundId).orElse(null);
 
+        assert fund != null;
         if (!isUserAdminOfFund(loggedInUser, fund)) {
             throw new SecurityException("Nicht autorisiert, um den Fund zu löschen.");
         }
 
-        fundRepositoryService.deleteFund(fund);
-        return true;
+        fundRepository.delete(fund);
+    }
+
+    public EditFundResponseDTO prepareEditFund(NewFundRequestDTO newFundRequestDTO) {
+        EditFundResponseDTO editFundResponseDTO = new EditFundResponseDTO();
+
+        FundEntity fund = getFund(newFundRequestDTO.getFundId());
+
+        List<UserEntity> filteredUsers = getFilteredFriends(newFundRequestDTO);
+
+        editFundResponseDTO.setFund(fund);
+        editFundResponseDTO.setFriends(filteredUsers);
+        editFundResponseDTO.setId(fund.getId());
+
+        return editFundResponseDTO;
+    }
+
+    @Transactional
+    public DeleteFundResponseDTO prepareDeleteFund(DeleteFundRequestDTO deleteFundRequestDTO) {
+        DeleteFundResponseDTO deleteFundResponseDTO = new DeleteFundResponseDTO();
+
+        FundEntity fund = getFund(deleteFundRequestDTO.getFundId());
+        if(getLatestFundBalance(fund) != 0) {
+            deleteFundResponseDTO.setId(deleteFundResponseDTO.getId());
+            deleteFundResponseDTO.setBalance(getLatestFundBalance(fund));
+            return deleteFundResponseDTO;
+        }else {
+            deleteFund(deleteFundRequestDTO.getFundId(), userService.getCurrentUser(), deleteFundRequestDTO.getBalance());
+            return deleteFundResponseDTO;
+        }
+    }
+
+    public PaymentInformationSessionDTO preparePaymentInformationSessionDTO(PaymentInformationRequestDTO paymentInformationRequestDTO) {
+        PaymentInformationSessionDTO paymentInformationSessionDTO = new PaymentInformationSessionDTO();
+        paymentInformationSessionDTO.setAmount(paymentInformationRequestDTO.getAmount());
+        paymentInformationSessionDTO.setDescription(paymentInformationRequestDTO.getDescription());
+        paymentInformationSessionDTO.setType(paymentInformationRequestDTO.getType());
+        paymentInformationSessionDTO.setId(userService.getCurrentUser().getId());
+        if(paymentInformationRequestDTO.getEmail() != null)
+            paymentInformationSessionDTO.setReceiverEmail(paymentInformationRequestDTO.getEmail());
+        if (paymentInformationRequestDTO.getFundid() != null)
+            paymentInformationSessionDTO.setFundid(paymentInformationRequestDTO.getFundid());
+
+        return paymentInformationSessionDTO;
     }
 }

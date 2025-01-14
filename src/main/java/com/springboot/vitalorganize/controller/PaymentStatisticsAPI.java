@@ -1,8 +1,8 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.entity.FundEntity;
-import com.springboot.vitalorganize.entity.ZahlungStatistik;
-import com.springboot.vitalorganize.model.StatisticsDTO;
+import com.springboot.vitalorganize.entity.Fund_Payments.FundEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentStatisticsEntity;
+import com.springboot.vitalorganize.model.API.StatisticsDTO;
 import com.springboot.vitalorganize.service.ZahlungStatistikService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -29,8 +29,8 @@ public class PaymentStatisticsAPI {
      * @return Standardantwort einer REST API
      */
     @PostMapping
-    public ResponseEntity<ZahlungStatistik> createPaymentStatistics(StatisticsDTO statisticDTO) {
-        ZahlungStatistik created = zahlungStatistikService.createZahlungStatistik(statisticDTO);
+    public ResponseEntity<PaymentStatisticsEntity> createPaymentStatistics(StatisticsDTO statisticDTO) {
+        PaymentStatisticsEntity created = zahlungStatistikService.createZahlungStatistik(statisticDTO);
         return ResponseEntity.ok(created);
     }
 
@@ -52,10 +52,10 @@ public class PaymentStatisticsAPI {
      * @return eine Liste von Zahlungsstatistiken
      */
     @GetMapping("/all/statistics")
-    public ResponseEntity<List<ZahlungStatistik>> getAllZahlungStatistiken(
+    public ResponseEntity<List<PaymentStatisticsEntity>> getAllZahlungStatistiken(
             StatisticsDTO statisticDTO
     ) {
-        List<ZahlungStatistik> list = zahlungStatistikService.getAllZahlungStatistiken(statisticDTO);
+        List<PaymentStatisticsEntity> list = zahlungStatistikService.getAllZahlungStatistiken(statisticDTO);
         return ResponseEntity.ok(list);
     }
 
@@ -65,11 +65,11 @@ public class PaymentStatisticsAPI {
      * @return die Zahlungsstatistik mit der angegebenen ID
      */
     @GetMapping("/statistics/{id}")
-    public ResponseEntity<ZahlungStatistik> getZahlungStatistikById(
+    public ResponseEntity<PaymentStatisticsEntity> getZahlungStatistikById(
             StatisticsDTO statisticDTO
     ) {
-        ZahlungStatistik zahlungStatistik = zahlungStatistikService.getZahlungStatistikById(statisticDTO);
-        return ResponseEntity.ok(zahlungStatistik);
+        PaymentStatisticsEntity paymentStatisticsEntity = zahlungStatistikService.getZahlungStatistikById(statisticDTO);
+        return ResponseEntity.ok(paymentStatisticsEntity);
     }
 
     /**
@@ -78,10 +78,10 @@ public class PaymentStatisticsAPI {
      * @return die erstellte oder aktualisierte Zahlungsstatistik
      */
     @PutMapping("/statistics/{id}")
-    public ResponseEntity<ZahlungStatistik> createOrUpdateZahlungStatistik(
+    public ResponseEntity<PaymentStatisticsEntity> createOrUpdateZahlungStatistik(
             StatisticsDTO statisticDTO
     ) {
-        ZahlungStatistik result = zahlungStatistikService.createOrUpdateZahlungStatistik(statisticDTO);
+        PaymentStatisticsEntity result = zahlungStatistikService.createOrUpdateZahlungStatistik(statisticDTO);
         return ResponseEntity.ok(result);
     }
 

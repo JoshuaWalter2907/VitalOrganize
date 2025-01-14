@@ -1,12 +1,12 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.IngredientListService;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import com.springboot.vitalorganize.service.UserService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class IngredientListController {
     private final IngredientListService ingredientService;
     private final UserService userService;
     private final ShoppingListService shoppingListService;
-    private final UserRepositoryService userRepositoryService;
+    private final UserRepository userRepository;
 
     // loads the main ingredients page
     @GetMapping
@@ -100,7 +100,7 @@ public class IngredientListController {
         model.addAttribute("sort", sort);
         model.addAttribute("page", ingredientsPage);
 
-        UserEntity userEntity = userRepositoryService.findUserById(userId);
+        UserEntity userEntity = userRepository.findUserEntityById(userId);
         model.addAttribute("priceReportsEnabled", userEntity.isPriceReportsEnabled());
 
         return "ingredientsList/ingredients";

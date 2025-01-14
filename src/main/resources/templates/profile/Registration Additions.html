@@ -18,7 +18,7 @@
 
 <div class="wrapper">
     <h1 th:text="#{profile.completeProfile}"></h1>
-    <form th:action="${RegistrationAdditionData.provider != null ? '/send-2fa-code' : '/profileaddition'}" method="post">
+    <form th:action="${RegistrationAdditionData.provider != null ? '/send-2fa-code' : '/additional-registration'}" method="post">
         <div class="input-container-profile-addition">
             <div th:if="${RegistrationAdditionData.provider}">
                 <a th:text="#{profile.githubLoginPrompt}"></a>
@@ -29,28 +29,28 @@
             </div>
             <div class="input-box-profile">
                 <label th:text="#{profile.username}"></label>
-                <input type="text" id="inputString" name="inputString" th:value="${RegistrationAdditionData.username != null ? RegistrationAdditionData.username : ''}" required>
+                <input type="text" id="username" name="username" th:value="${RegistrationAdditionData.username != null ? RegistrationAdditionData.username : ''}" required>
             </div>
             <!-- Display error message -->
             <p th:if="${RegistrationAdditionData.error}" th:text="${RegistrationAdditionData.error}" style="color:red;"></p>
             <div class="input-box-profile">
                 <label th:text="#{profile.birthDate}"></label>
-                <input type="date" id="birthDate" name="birthDate" th:value="${RegistrationAdditionData.birthday != null ? RegistrationAdditionData.birthday : ''}" required>
+                <input type="date" id="birthday" name="birthday" th:value="${RegistrationAdditionData.birthday != null ? RegistrationAdditionData.birthday : ''}" required>
             </div>
         </div>
-        <button type="submit" class="form-actions" th:text="#{profile.save}"></button>
+        <button th:if="${!RegistrationAdditionData.auth}" type="submit" class="form-actions" th:text="#{profile.save}"></button>
     </form>
 
-    <div class="fa-input" th:if="${auth}">
+    <div class="fa-input" th:if="${RegistrationAdditionData.auth}">
         <a th:text="#{profile.twoFactorAuth}">Bitte bestätigen sie ihre Email-Address anhand eines kurzen Codes, den wir ihnen gesendet haben.</a>
         <form action="/verify-2fa" method="post">
             <div class="input-container">
-                <input type="text" id="digit1" name="digit1" class="input-box" maxlength="1" required>
-                <input type="text" id="digit2" name="digit2" class="input-box" maxlength="1" required>
-                <input type="text" id="digit3" name="digit3" class="input-box" maxlength="1" required>
-                <input type="text" id="digit4" name="digit4" class="input-box" maxlength="1" required>
-                <input type="text" id="digit5" name="digit5" class="input-box" maxlength="1" required>
-                <input type="text" id="digit6" name="digit6" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[0]" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[1]" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[2]" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[3]" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[4]" class="input-box" maxlength="1" required>
+                <input type="text"  name="digits[5]" class="input-box" maxlength="1" required>
             </div>
             <button type="submit" class="form-actions" th:text="#{profile.verifyCode}">Code verifizieren</button>
         </form>

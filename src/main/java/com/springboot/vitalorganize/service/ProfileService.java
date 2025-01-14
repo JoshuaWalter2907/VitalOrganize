@@ -1,17 +1,17 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.*;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.TransactionSubscriptionEntity;
+import com.springboot.vitalorganize.entity.Profile_User.FriendRequestEntity;
+import com.springboot.vitalorganize.entity.Profile_User.PersonalInformation;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.Profile.*;
+import com.springboot.vitalorganize.repository.PaymentRepository;
 import com.springboot.vitalorganize.repository.UserRepository;
-import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import jakarta.websocket.Session;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,78 +28,53 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ProfileService {
 
-    private final UserRepositoryService userRepositoryService;
+    private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
     private final UserService userService;
     private final PaypalService paypalService;
-    private final PaymentRepositoryService paymentRepositoryService;
-    private final UserRepository userRepository;
 
-    /**
-     * Holt das Benutzerprofil des aktuellen Benutzers oder eines angegebenen Benutzers.
-     *
-     * @param user               Das OAuth2User-Objekt des aktuellen Benutzers
-     * @param authenticationToken Das OAuth2AuthenticationToken des aktuellen Benutzers
-     * @param profileId          Die ID des angeforderten Benutzerprofils
-     * @return Das Benutzerprofil des aktuellen Benutzers oder eines anderen Benutzers
-     */
-    public UserEntity getProfileUser(OAuth2User user, OAuth2AuthenticationToken authenticationToken, Long profileId) {
-        UserEntity currentUser = userService.getCurrentUser(user, authenticationToken);
-
-        if (profileId != null && profileId.equals(currentUser.getId())) {
-            return currentUser;
-        }
-
-        // Holt den Benutzer mit der angegebenen Profil-ID
-        return userRepositoryService.findUserById(profileId);
-    }
 
     /**
      * Holt eine Liste potentieller Freunde für den aktuellen Benutzer.
-     * Potentielle Freunde sind Benutzer, die noch nicht blockiert oder befreundet sind
-     * und denen keine offene Freundschaftsanfrage gesendet wurde.
-     *
      * @param currentUser Das Benutzerobjekt des aktuellen Benutzers
      * @return Eine Liste potentieller Freunde
      */
     public List<UserEntity> getPotentialFriends(UserEntity currentUser) {
         List<UserEntity> blockedUsers = currentUser.getBlockedUsers();
-        List<UserEntity> allUsers = userRepositoryService.findAllUsers(); // Holt alle Benutzer
+        List<UserEntity> allUsers = userRepository.findAll();
 
         return allUsers.stream()
-                .filter(u -> !u.equals(currentUser)) // Schließt den aktuellen Benutzer aus
-                .filter(u -> !currentUser.getFriends().contains(u)) // Schließt bereits befreundete Benutzer aus
-                .filter(u -> !blockedUsers.contains(u)) // Schließt blockierte Benutzer aus
-                .filter(u -> !u.getBlockedUsers().contains(currentUser)) // Schließt Benutzer aus, die den aktuellen Benutzer blockiert haben
+                .filter(u -> !u.equals(currentUser))
+                .filter(u -> !currentUser.getFriends().contains(u))
+                .filter(u -> !blockedUsers.contains(u))
+                .filter(u -> !u.getBlockedUsers().contains(currentUser))
                 .filter(u -> currentUser.getSentFriendRequests().stream()
-                        .noneMatch(fr -> fr.getReceiver().equals(u) && fr.getStatus() == FriendRequest.RequestStatus.PENDING)) // Schließt Benutzer aus, denen bereits eine offene Anfrage gesendet wurde
+                        .noneMatch(fr -> fr.getReceiver().equals(u) && fr.getStatus() == FriendRequestEntity.RequestStatus.PENDING))
                 .collect(Collectors.toList());
     }
 
     /**
      * Holt die Freundschaftsanfragen, die der Benutzer empfangen hat.
-     *
      * @param currentUser Das Benutzerobjekt des aktuellen Benutzers
      * @return Eine Liste von Freundschaftsanfragen
      */
-    public List<FriendRequest> getFriendRequests(UserEntity currentUser) {
+    public List<FriendRequestEntity> getFriendRequests(UserEntity currentUser) {
         return currentUser.getReceivedFriendRequests();
     }
 
     /**
      * Holt die Freundschaftsanfragen, die der Benutzer gesendet hat und noch offen sind.
-     *
      * @param currentUser Das Benutzerobjekt des aktuellen Benutzers
      * @return Eine Liste offener gesendeter Freundschaftsanfragen
      */
-    public List<FriendRequest> getSentRequests(UserEntity currentUser) {
+    public List<FriendRequestEntity> getSentRequests(UserEntity currentUser) {
         return currentUser.getSentFriendRequests().stream()
-                .filter(fr -> fr.getStatus() == FriendRequest.RequestStatus.PENDING)
+                .filter(fr -> fr.getStatus() == FriendRequestEntity.RequestStatus.PENDING)
                 .collect(Collectors.toList());
     }
 
     /**
      * Holt die blockierten Benutzer des aktuellen Benutzers.
-     *
      * @param currentUser Das Benutzerobjekt des aktuellen Benutzers
      * @return Eine Liste blockierter Benutzer
      */
@@ -107,140 +82,111 @@ public class ProfileService {
         return currentUser.getBlockedUsers();
     }
 
-    public UserEntity getProfileData(Long profileId) {
-        UserEntity profileData;
-        if (profileId == null) {
-            profileData = userService.getCurrentUser();
-        } else {
-            profileData = userService.getUserById(profileId);
-        }
-
-        return profileData;
-    }
 
     /**
      * Holt eine Liste der Abonnements eines Benutzers und kehrt die Reihenfolge um.
-     *
      * @param profileData Das Benutzerobjekt des angeforderten Profils
      * @return Eine Liste der Abonnements
      */
     public List<SubscriptionEntity> getSubscriptions(UserEntity profileData) {
         List<SubscriptionEntity> subscriptions = profileData.getSubscriptions();
-        Collections.reverse(subscriptions);  // Die Reihenfolge umkehren
+        Collections.reverse(subscriptions);
         return subscriptions;
     }
 
     /**
      * Holt die Transaktionshistorie für das Abonnement eines Benutzers, wenn das Abonnement existiert.
      * Filtert die Transaktionen nach den angegebenen Kriterien wie Username, Datum und Betrag.
-     *
-     * @param profileData Das Benutzerobjekt des angeforderten Profils
+     * @param profileData Das Benutzerobjekt
      * @param kind        Der Abonnementtyp
-     * @param username    Der Benutzername, nach dem gefiltert wird
-     * @param datefrom    Das Startdatum für die Transaktionen
-     * @param dateto      Das Enddatum für die Transaktionen
-     * @param amount      Der Betrag, nach dem gefiltert wird
-     * @return Eine Liste von Transaktionen oder null, wenn keine Transaktionen vorhanden sind
+     * @param username    Der Benutzername
+     * @param datefrom    Das Startdatum
+     * @param dateto      Das Enddatum
+     * @param amount      Der Betrag
+     * @return Eine Liste von Transaktionen oder null
      */
-    public List<TransactionSubscription> getTransactionHistory(UserEntity profileData, String kind, String username, LocalDate datefrom, LocalDate dateto, Long amount) {
+    public List<TransactionSubscriptionEntity> getTransactionHistory(UserEntity profileData, String kind, String username, LocalDate datefrom, LocalDate dateto, Long amount) {
         if ("premium".equals(kind) && profileData.getLatestSubscription() != null) {
-            List<TransactionSubscription> transactions = paypalService.getTransactionsForSubscription(
+            List<TransactionSubscriptionEntity> transactions = paypalService.getTransactionsForSubscription(
                     profileData.getLatestSubscription().getSubscriptionId()
             );
             return paypalService.filterTransactions(transactions, username, datefrom, dateto, amount);
         }
-        return null;  // Alternativ: kann auch eine Liste von Zahlungen zurückgeben
+        return null;
     }
 
     /**
-     * Holt gefilterte Zahlungen basierend auf den angegebenen Kriterien (Username, Grund, Datum, Betrag).
-     *
-     * @param profileData Das Benutzerobjekt des angeforderten Profils
-     * @param username    Der Benutzername, nach dem gefiltert wird
-     * @param reason      Der Grund der Zahlung
-     * @param datefrom    Das Startdatum für die Zahlungen
-     * @param dateto      Das Enddatum für die Zahlungen
-     * @param amount      Der Betrag, nach dem gefiltert wird
+     * Holt gefilterte Zahlungen basierend auf den angegebenen Kriterien
+     * @param profileData Das Benutzerobjekt
+     * @param username    Der Benutzername
+     * @param reason      Der Grund
+     * @param datefrom    Das Startdatum
+     * @param dateto      Das Enddatum
+     * @param amount      Der Betrag
      * @return Eine Liste gefilterter Zahlungen
      */
-    public List<Payment> getFilteredPayments(UserEntity profileData, String username, String reason, LocalDate datefrom, LocalDate dateto, Long amount) {
-        List<Payment> payments = paymentRepositoryService.findPaymentsByUser(profileData);
+    public List<PaymentEntity> getFilteredPayments(UserEntity profileData, String username, String reason, LocalDate datefrom, LocalDate dateto, Long amount) {
+        List<PaymentEntity> payments = paymentRepository.findAllByUser(profileData);
         return paypalService.filterPayments(payments, username, reason, datefrom, dateto, amount);
     }
 
     /**
      * Bestimmt den aktiven Tab basierend auf dem übergebenen Tab-Namen.
-     *
      * @param tab Der Name des Tabs
      * @return Der Name des aktiven Tabs
      */
     public String determineTab(String tab) {
-        // Logik zur Bestimmung des aktiven Tabs
         if ("subscription".equals(tab)) {
             return "subscription";
         } else if ("paymenthistory".equals(tab)) {
             return "paymenthistory";
         }
-        return "general"; // Standardwert
+        return "general";
     }
 
     /**
-     * Aktualisiert das Profil des Benutzers (Benutzername, Geburtsdatum, E-Mail).
-     * Prüft, ob der Benutzername bereits existiert.
-     *
-     * @param user           Das OAuth2User-Objekt des aktuellen Benutzers
-     * @param authentication Das OAuth2AuthenticationToken des aktuellen Benutzers
-     * @param username       Der neue Benutzername
-     * @param birthdate      Das neue Geburtsdatum im String-Format
-     * @param email          Die neue E-Mail-Adresse
-     * @return true, wenn der Benutzername bereits existiert, andernfalls false
+     * Updated ein Benutzerprofil direkt nach der Registrierung
+     * @param registrationAdditionResponseDTO benötigte Informationen
      */
-    public boolean updateUserProfile(OAuth2User user, OAuth2AuthenticationToken authentication, String username, String birthdate, String email) {
-        // Benutzerdaten abrufen
-        UserEntity currentUser = userService.getCurrentUser(user, authentication);
+    public void updateUserProfile(RegistrationAdditionResponseDTO registrationAdditionResponseDTO) {
+        UserEntity currentUser = userService.getCurrentUser();
 
-        // Überprüfen, ob der Benutzername bereits existiert
-        if (userRepositoryService.findAllUsers().stream()
-                .anyMatch(u -> u.getUsername() != null && u.getUsername().equals(username))) {
-            return true;  // Benutzername existiert bereits
-        }
-
-        // Profil aktualisieren
-        currentUser.setUsername(username);
-        currentUser.setBirthday(LocalDate.parse(birthdate));  // Beispiel: Geburtsdatum setzen
-        if(!email.isBlank())
-            currentUser.setSendtoEmail(email);
-        userRepositoryService.saveUser(currentUser);
-
-        return false;
+        currentUser.setUsername(registrationAdditionResponseDTO.getUsername());
+        currentUser.setBirthday(LocalDate.parse(registrationAdditionResponseDTO.getBirthday()));
+        if(!registrationAdditionResponseDTO.getEmail().isBlank())
+            currentUser.setSendtoEmail(registrationAdditionResponseDTO.getEmail());
+        userRepository.save(currentUser);
     }
 
     /**
-     * Aktualisiert das Profil eines Benutzers mit den Daten aus der ProfileRequest.
-     *
-     * @param userEntity     Das Benutzerobjekt, dessen Profil aktualisiert wird
-     * @param profileRequest Das Profil-Request-Objekt mit den neuen Daten
+     * Aktualisiert das Profil eines Benutzers in einem späteren Schritt
+     * @param profileEditRequestDTO Das Profil-Request-Objekt mit den neuen Daten
      */
-    public void updateUserProfile(UserEntity userEntity, ProfileEditRequestDTO profileRequest) {
+    public void updateUserProfile( ProfileEditRequestDTO profileEditRequestDTO) {
+        UserEntity userEntity = userService.getCurrentUser();
         PersonalInformation personalInformation = userEntity.getPersonalInformation();
 
-        System.out.println(profileRequest.getPublicPrivateToggle());
+        System.out.println(profileEditRequestDTO.getPublicPrivateToggle());
 
-        userEntity.setPublic("on".equals(profileRequest.getPublicPrivateToggle()));  // Setzt das öffentliche Profil
+        userEntity.setPublic("on".equals(profileEditRequestDTO.getPublicPrivateToggle()));
 
-        // Setzt die persönlichen Informationen des Benutzers
-        personalInformation.setAddress(profileRequest.getAddress());
-        personalInformation.setCity(profileRequest.getCity());
-        personalInformation.setRegion(profileRequest.getRegion());
-        personalInformation.setPostalCode(profileRequest.getPostalCode());
-        personalInformation.setFirstName(profileRequest.getSurname());
-        personalInformation.setLastName(profileRequest.getName());
+        personalInformation.setAddress(profileEditRequestDTO.getAddress());
+        personalInformation.setCity(profileEditRequestDTO.getCity());
+        personalInformation.setRegion(profileEditRequestDTO.getRegion());
+        personalInformation.setPostalCode(profileEditRequestDTO.getPostalCode());
+        personalInformation.setFirstName(profileEditRequestDTO.getSurname());
+        personalInformation.setLastName(profileEditRequestDTO.getName());
         personalInformation.setUser(userEntity);
 
         userEntity.setPersonalInformation(personalInformation);
-        userRepositoryService.saveUser(userEntity);
+        userRepository.save(userEntity);
     }
 
+    /**
+     * Erstellt alle Informationen um die ProfilePage anzuzeigen
+     * @param profileRequestDTO benötigte Informationen
+     * @return DTO für den Controller
+     */
     public ProfileResponseDTO prepareProfilePage(
             ProfileRequestDTO profileRequestDTO
     ) {
@@ -259,6 +205,11 @@ public class ProfileService {
         return profileResponseDTO;
     }
 
+    /**
+     * Erstellt alle Informationen um die ProfileEditPage anzuzeigen
+     * @param profileEditRequestDTO benötigte Informationen
+     * @return DTO für den Controller
+     */
     public ProfileEditResponseDTO prepareProfileEditPage(ProfileEditRequestDTO profileEditRequestDTO, HttpServletRequest request, HttpSession session) {
 
         ProfileEditResponseDTO profileEditResponseDTO = new ProfileEditResponseDTO();
@@ -276,7 +227,7 @@ public class ProfileService {
         profileEditResponseDTO.setKind(profileEditRequestDTO.getKind());
 
         if("premium".equals(profileEditRequestDTO.getKind())){
-            List<TransactionSubscription> transactionSubscriptions = getTransactionHistory(
+            List<TransactionSubscriptionEntity> transactionSubscriptions = getTransactionHistory(
                     userEntity,
                     profileEditRequestDTO.getKind(),
                     profileEditRequestDTO.getUsername(),
@@ -286,7 +237,7 @@ public class ProfileService {
             );
             profileEditResponseDTO.setHistorysubscription(transactionSubscriptions);
         }else{
-            List<Payment> payments = getFilteredPayments(
+            List<PaymentEntity> payments = getFilteredPayments(
                     userEntity,
                     profileEditRequestDTO.getUsername(),
                     profileEditRequestDTO.getReason(),
@@ -298,5 +249,31 @@ public class ProfileService {
         }
         profileEditResponseDTO.setShowSubscription(determineTab(profileEditRequestDTO.getTab()));
         return profileEditResponseDTO;
+    }
+
+    /**
+     * Erstellt alle Informationen um die zusätzliche Registierungsseite anzuzeigen
+     * @param registrationAdditionRequestDTO benötigte Informationen
+     * @param request für die Url
+     * @param session um Informationen in der Session zu speichern
+     * @return DTO für den Controller
+     */
+    public RegistrationAdditionResponseDTO prepareRegistrationAdditionPage(RegistrationAdditionRequestDTO registrationAdditionRequestDTO, HttpServletRequest request, HttpSession session) {
+        RegistrationAdditionResponseDTO registrationAdditionResponseDTO = new RegistrationAdditionResponseDTO();
+
+        if(registrationAdditionRequestDTO.isFa()){
+            registrationAdditionResponseDTO.setEmail(session.getAttribute("email").toString());
+            registrationAdditionResponseDTO.setUsername(session.getAttribute("username").toString());
+            registrationAdditionResponseDTO.setBirthday(session.getAttribute("birthday").toString());
+        }
+
+        session.setAttribute("uri", request.getRequestURI());
+        if(userService.getCurrentUser().getProvider().equals("github"))
+            registrationAdditionResponseDTO.setProvider(userService.getCurrentUser().getProvider());
+        registrationAdditionResponseDTO.setUser(userService.getCurrentUser());
+        registrationAdditionResponseDTO.setAuth(registrationAdditionRequestDTO.isFa());
+        if(userService.getCurrentUser() != null && userService.getCurrentUser().getUsername().isEmpty())
+            registrationAdditionResponseDTO.setProfileComplete(false);
+        return registrationAdditionResponseDTO;
     }
 }

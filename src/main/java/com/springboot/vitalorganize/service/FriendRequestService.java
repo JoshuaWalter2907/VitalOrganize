@@ -1,65 +1,61 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.entity.FriendRequest;
-import com.springboot.vitalorganize.entity.UserEntity;
-import com.springboot.vitalorganize.model.FriendStatusRequestDTO;
-import com.springboot.vitalorganize.service.repositoryhelper.FriendRequestRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.Profile_User.FriendRequestEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Profile.FriendStatusRequestDTO;
+import com.springboot.vitalorganize.repository.FriendRequestRepository;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
  * Service zur Verwaltung von Freundschaftsanfragen.
- * Bietet Methoden zum Akzeptieren, Ablehnen und Abbrechen von Freundschaftsanfragen.
  */
 @Service
 @AllArgsConstructor
 public class FriendRequestService {
 
-    private final FriendRequestRepositoryService friendRequestRepositoryService;
-    private final UserRepositoryService userRepositoryService;
+
+    private final FriendRequestRepository FriendRequestRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
 
 
     public void acceptFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
         UserEntity currentUser = userService.getCurrentUser();
-        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
+        FriendRequestEntity friendRequest = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        // Freundschaftsanfrage akzeptieren
-        friendRequest.setStatus(FriendRequest.RequestStatus.ACCEPTED);
+        assert friendRequest != null;
+        friendRequest.setStatus(FriendRequestEntity.RequestStatus.ACCEPTED);
         currentUser.getFriends().add(friendRequest.getSender());
         friendRequest.getSender().getFriends().add(currentUser);
 
-        // Speichern der aktualisierten Freundschaftsanfrage und Benutzer
-        friendRequestRepositoryService.saveFriendRequest(friendRequest);
-        userRepositoryService.saveUser(currentUser);
+        FriendRequestRepository.save(friendRequest);
+        userRepository.save(currentUser);
 
-        // Lösche die Anfrage aus der Tabelle, da sie akzeptiert wurde
-        friendRequestRepositoryService.deleteFriendRequest(friendRequest);
+        FriendRequestRepository.delete(friendRequest);
     }
 
 
     public void rejectFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
-        FriendRequest friendRequest = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
+        FriendRequestEntity friendRequest = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        // Freundschaftsanfrage ablehnen
-        friendRequest.setStatus(FriendRequest.RequestStatus.REJECTED);
-        friendRequestRepositoryService.saveFriendRequest(friendRequest);
+        assert friendRequest != null;
+        friendRequest.setStatus(FriendRequestEntity.RequestStatus.REJECTED);
+        FriendRequestRepository.save(friendRequest);
 
-        // Löschen der abgelehnten Anfrage
-        friendRequestRepositoryService.deleteFriendRequest(friendRequest);
+        FriendRequestRepository.delete(friendRequest);
     }
 
     public void cancelFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
         UserEntity currentUser = userService.getCurrentUser();
-        FriendRequest request = friendRequestRepositoryService.findFriendRequestById(friendStatusRequestDTO.getId());
+        FriendRequestEntity request = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        // Überprüfen, ob der aktuelle Benutzer der Absender der Anfrage ist
+        assert request != null;
         if (!request.getSender().getId().equals(currentUser.getId())) {
             throw new RuntimeException("You are not authorized to cancel this request");
         }
 
-        // Anfrage löschen
-        friendRequestRepositoryService.deleteFriendRequest(request);
+        FriendRequestRepository.delete(request);
     }
 }

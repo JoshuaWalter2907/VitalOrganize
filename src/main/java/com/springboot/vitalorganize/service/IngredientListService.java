@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

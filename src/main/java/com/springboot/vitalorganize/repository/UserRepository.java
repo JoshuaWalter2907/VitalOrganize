@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.entity.UserEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

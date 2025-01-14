@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.entity.UserEntity;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class MembershipScheduler {
 
-    private final UserRepositoryService userRepositoryService;
+    private final UserRepository userRepository;
 
     /**
      * Geplante Aufgabe, die täglich um Mitternacht ausgeführt wird.
@@ -25,7 +25,7 @@ public class MembershipScheduler {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void checkUserMemberships() {
-        List<UserEntity> users = userRepositoryService.findAllUsers();
+        List<UserEntity> users = userRepository.findAll();
         LocalDateTime now = LocalDateTime.now();
 
         for (UserEntity user : users) {

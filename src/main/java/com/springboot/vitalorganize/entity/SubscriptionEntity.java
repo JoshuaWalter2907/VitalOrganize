@@ -1,6 +1,7 @@
 package com.springboot.vitalorganize.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -10,11 +10,16 @@ import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import com.springboot.vitalorganize.config.PayPalConfig;
 import com.springboot.vitalorganize.entity.*;
-import com.springboot.vitalorganize.entity.Payment;
-import com.springboot.vitalorganize.service.repositoryhelper.FundRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.PaymentRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.SubscriptionRepositoryService;
-import com.springboot.vitalorganize.service.repositoryhelper.UserRepositoryService;
+import com.springboot.vitalorganize.entity.Fund_Payments.FundEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentEntity;
+import com.springboot.vitalorganize.entity.Fund_Payments.PaymentTypeEnumeration;
+import com.springboot.vitalorganize.entity.Fund_Payments.TransactionSubscriptionEntity;
+import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.Fund_Payment.PaymentInformationSessionDTO;
+import com.springboot.vitalorganize.model.Fund_Payment.PaymentSuccessRequestDTO;
+import com.springboot.vitalorganize.repository.FundRepository;
+import com.springboot.vitalorganize.repository.PaymentRepository;
+import com.springboot.vitalorganize.repository.SubscriptionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -36,73 +41,49 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Service-Klasse zur Handhabung von PayPal-Zahlungen und Auszahlungen.
- * Diese Klasse bietet Methoden zur Erstellung von PayPal-Zahlungen, der Verarbeitung von Transaktionen,
- * der Verwaltung von Guthaben sowie der Durchführung von Auszahlungen.
  */
 @Slf4j
 @Service
 @AllArgsConstructor
 public class PaypalService {
 
-    // Abhängigkeiten: Services und Repositorys, die für Zahlungen und Benutzerdaten benötigt werden
-    private final SenderService senderService;
-    private final PaymentRepositoryService paymentRepositoryService;
-    private final UserRepositoryService userRepositoryService;
-    private final FundRepositoryService fundRepositoryService;
-    private final SubscriptionRepositoryService subscriptionRepositoryService;
 
-    // Konfigurationsobjekte und PayPal API-Context
+    private final PaymentRepository paymentRepository;
+    private final FundRepository fundRepository;
+    private final SubscriptionRepository subscriptionRepository;
+
+    private final SenderService senderService;
     public final APIContext apiContext;
     private final PayPalConfig payPalConfig;
 
-    // PayPal-API URL für die Sandbox-Umgebung
     private static final String PAYPAL_API_URL = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions";
 
 
     /**
-     * Erstellt eine PayPal-Zahlung und leitet den Benutzer zur Zahlungsbestätigung weiter.
-     *
-     * Diese Methode stellt die grundlegende Logik für die Erstellung einer PayPal-Zahlung zur Verfügung und
-     * leitet den Benutzer an die PayPal-Zahlungsseite weiter, um die Zahlung zu bestätigen.
-     *
-     * @param amount      Der Betrag der Zahlung in der angegebenen Währung.
-     * @param type        Der Typ der Zahlung (z.B. Einzahlung, Auszahlung).
-     * @param description Eine kurze Beschreibung der Zahlung, die dem Zahler angezeigt wird.
-     * @param email       Die E-Mail-Adresse des Zahlers, die für die Zahlung verwendet wird.
-     * @param fundid      Die ID des zugehörigen Fonds, auf den die Zahlung angewendet wird.
-     * @param userId      Die ID des Benutzers, der die Zahlung initiiert.
-     * @return Die URL zur PayPal-Zahlungsbestätigung, auf die der Benutzer weitergeleitet wird.
-     * @throws PayPalRESTException Wenn bei der Kommunikation mit der PayPal-API ein Fehler auftritt.
+     * Erstelle eine Zahlung
+     * @param paymentInformationSessionDTO Benötigte Informationen dafür
+     * @return Url nach PayPal Ausführung
+     * @throws PayPalRESTException Wenn ein Fehler bei der Kommunikation mit der PayPal-API auftritt
      */
     public String createPaypalPayment(
-            double amount,
-            String type,
-            String description,
-            String email,
-            Long fundid,
-            Long userId
+            PaymentInformationSessionDTO paymentInformationSessionDTO
     ) throws PayPalRESTException {
-        String currency = "EUR";  // Setzt die Währung für die Zahlung auf Euro
-        String cancelUrl = "http://localhost:8080/fund/payinto/cancel";  // URL für den Fall einer abgebrochenen Zahlung
-        String successUrl = "http://localhost:8080/fund/payinto/success";  // URL für den Fall einer erfolgreichen Zahlung
+        String currency = "EUR";
+        String cancelUrl = "http://localhost:8080/fund/payinto/cancel";
+        String successUrl = "http://localhost:8080/fund/payinto/success";
 
-        // Aufruf der Hilfsmethode zur Erstellung der Zahlung und Rückgabe der Bestätigungs-URL
-        return handlePaymentCreation(amount, currency, description, cancelUrl, successUrl);
+        return handlePaymentCreation(Double.parseDouble(paymentInformationSessionDTO.getAmount()), currency, paymentInformationSessionDTO.getDescription(), cancelUrl, successUrl);
     }
 
     /**
-     * Handhabt die Erstellung einer PayPal-Zahlung und gibt die URL zur Bestätigung zurück.
-     *
-     * Diese Methode erstellt die Zahlung mit den übergebenen Parametern und gibt die URL zurück,
-     * die der Benutzer zur Bestätigung der Zahlung besuchen muss.
-     *
-     * @param amount      Der Betrag der Zahlung in der angegebenen Währung.
-     * @param currency    Die Währung der Zahlung (z.B. EUR).
-     * @param description Eine kurze Beschreibung der Zahlung.
-     * @param cancelUrl   Die URL, an die der Benutzer weitergeleitet wird, wenn die Zahlung abgebrochen wird.
-     * @param successUrl  Die URL, an die der Benutzer weitergeleitet wird, wenn die Zahlung erfolgreich abgeschlossen wird.
+     * Handhabt die Erstellung einer PayPal-Zahlung und gibt die URL zur Bestätigung zurück
+     * @param amount      Der Betrag der Zahlung
+     * @param currency    Die Währung der Zahlung
+     * @param description Eine kurze Beschreibung
+     * @param cancelUrl   Die URL, an die der Benutzer weitergeleitet wird, wenn die Zahlung abgebrochen wird
+     * @param successUrl  Die URL, an die der Benutzer weitergeleitet wird, wenn die Zahlung erfolgreich abgeschlossen wird
      * @return Die URL zur PayPal-Zahlungsbestätigung.
-     * @throws PayPalRESTException Wenn ein Fehler bei der Kommunikation mit der PayPal-API auftritt.
+     * @throws PayPalRESTException Wenn ein Fehler bei der Kommunikation mit der PayPal-API auftritt
      */
     public String handlePaymentCreation(
             double amount,
@@ -111,35 +92,28 @@ public class PaypalService {
             String cancelUrl,
             String successUrl
     ) throws PayPalRESTException {
-        // Erstelle die Zahlung mit den angegebenen Parametern
         com.paypal.api.payments.Payment payment = createPayment(amount, currency, "paypal", "sale", description, cancelUrl, successUrl);
 
-        // Durchsuche die Links der erstellten Zahlung nach der Bestätigungs-URL
         for (Links link : payment.getLinks()) {
             if (link.getRel().equals("approval_url")) {
-                return link.getHref();  // Gibt die URL zur Bestätigung der Zahlung zurück
+                return link.getHref();
             }
         }
 
-        // Falls keine Bestätigungs-URL gefunden wurde, wirft die Methode eine Ausnahme
         throw new PayPalRESTException("Approval URL not found in the payment response.");
     }
 
     /**
-     * Erzeugt eine neue PayPal-Zahlung.
-     *
-     * Diese Methode erstellt eine vollständige Zahlungsanforderung für PayPal, einschließlich des Betrags,
-     * der Währung, der Zahlungsmethode und der Transaktionsdetails.
-     *
-     * @param total       Der Betrag der Zahlung.
-     * @param currency    Die Währung der Zahlung.
-     * @param method      Die Zahlungsmethode (z.B. "paypal").
-     * @param intent      Der Zweck der Zahlung (z.B. "sale").
-     * @param description Eine Beschreibung der Zahlung.
-     * @param cancelUrl   Die URL für den Fall einer abgebrochenen Zahlung.
-     * @param successUrl  Die URL für den Fall einer erfolgreichen Zahlung.
-     * @return Ein Payment-Objekt, das die erstellte Zahlung darstellt.
-     * @throws PayPalRESTException Wenn ein Fehler bei der Kommunikation mit der PayPal-API auftritt.
+     * Erzeugt eine neue PayPal-Zahlung
+     * @param total       Der Betrag
+     * @param currency    Die Währung
+     * @param method      Die Zahlungsmethode
+     * @param intent      Der Zweck der Zahlung
+     * @param description Eine Beschreibung der Zahlung
+     * @param cancelUrl   Die URL für den Fall einer abgebrochenen Zahlung
+     * @param successUrl  Die URL für den Fall einer erfolgreichen Zahlung
+     * @return Ein Payment-Objekt, das die erstellte Zahlung darstellt
+     * @throws PayPalRESTException Wenn ein Fehler bei der Kommunikation mit der PayPal-API auftritt
      */
     public com.paypal.api.payments.Payment createPayment(
             double total,
@@ -150,38 +124,31 @@ public class PaypalService {
             String cancelUrl,
             String successUrl
     ) throws PayPalRESTException {
-        // Erstelle den Betrag der Zahlung unter Verwendung der übergebenen Währung und des Betrags
         Amount amount = new Amount();
         amount.setCurrency(currency);
         amount.setTotal(String.format(Locale.forLanguageTag(currency), "%.2f", total));
 
-        // Erstelle die Transaktion mit der angegebenen Beschreibung und dem Betrag
         Transaction transaction = new Transaction();
         transaction.setDescription(description);
         transaction.setAmount(amount);
 
-        // Füge die Transaktion zu einer Liste hinzu
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(transaction);
 
-        // Erstelle den Zahler und setze die Zahlungsmethode auf "paypal"
         Payer payer = new Payer();
         payer.setPaymentMethod(method);
 
-        // Erstelle das Payment-Objekt und setze die grundlegenden Zahlungsinformationen
         com.paypal.api.payments.Payment payment = new com.paypal.api.payments.Payment();
         payment.setIntent(intent);
         payment.setPayer(payer);
         payment.setTransactions(transactions);
 
-        // Setze die URLs für den Fall von Erfolg oder Abbruch der Zahlung
         RedirectUrls redirectUrls = new RedirectUrls();
         redirectUrls.setCancelUrl(cancelUrl);
         redirectUrls.setReturnUrl(successUrl);
 
         payment.setRedirectUrls(redirectUrls);
 
-        // Sende die Anfrage zur Erstellung der Zahlung
         return payment.create(apiContext);
     }
 
@@ -214,51 +181,37 @@ public class PaypalService {
     }
 
     /**
-     * Fügt eine Zahlung zur Datenbank hinzu und aktualisiert den Saldo.
-     *
-     * Diese Methode speichert eine neue Zahlung und berechnet den aktuellen Saldo, der auf der Art der Zahlung
-     * basiert (Einzahlung oder Auszahlung).
-     *
-     * @param payment Die Payment-Instanz, die zur Datenbank hinzugefügt werden soll.
-     * @param fundId  Die ID des Fonds, auf den die Zahlung angewendet wird.
+     * Fügt eine Zahlung zur Datenbank hinzu und aktualisiert den Saldo
+     * @param payment Die Payment-Instanz, die zur Datenbank hinzugefügt werden soll
+     * @param fundId  Die ID des Fonds, auf den die Zahlung angewendet wird
      */
-    public void addPayment(Payment payment, Long fundId) {
-        // Holt die letzte Transaktion des Fonds, um den aktuellen Saldo zu ermitteln
-        Payment latestTransaction = paymentRepositoryService.findLatestTransactionByFundId(fundId);
+    public void addPayment(PaymentEntity payment, Long fundId) {
+        PaymentEntity latestTransaction = paymentRepository.findLatestTransactionByFundId(fundId);
         double lastBalance = (latestTransaction == null) ? 0 : latestTransaction.getBalance();
 
-        // Aktualisiert den Saldo basierend auf der Zahlungsart (Einzahlung oder Auszahlung)
-        if (payment.getType() == PaymentType.EINZAHLEN) {
+        if (payment.getType() == PaymentTypeEnumeration.EINZAHLEN) {
             payment.setBalance(lastBalance + payment.getAmount());
-        } else if (payment.getType() == PaymentType.AUSZAHLEN) {
+        } else if (payment.getType() == PaymentTypeEnumeration.AUSZAHLEN) {
             payment.setBalance(lastBalance - payment.getAmount());
         }
 
-        // Speichert die Zahlung in der Datenbank
-        paymentRepositoryService.savePayment(payment);
+        paymentRepository.save(payment);
     }
 
     /**
-     * Gibt das aktuelle Guthaben zurück.
-     *
-     * Diese Methode holt das Guthaben des Fonds basierend auf der letzten Transaktion und gibt es zurück.
-     * Wenn keine Transaktionen vorliegen, wird 0.0 zurückgegeben.
-     *
-     * @return Das aktuelle Guthaben des Fonds.
+     * Gibt das aktuelle Guthaben zurück
+     * @return Das aktuelle Guthaben des Fonds
      */
     public double getCurrentBalance() {
         // Gibt das Guthaben der letzten Transaktion zurück, wenn vorhanden
-        if(paymentRepositoryService.findLatestTransaction() == null)
+        if(paymentRepository.findLatestTransaction() == null)
             return 0.0;
-        return paymentRepositoryService.findLatestTransaction().getBalance();
+        return paymentRepository.findLatestTransaction().getBalance();
     }
 
     /**
      * Holt ein Access-Token von PayPal für API-Anfragen.
-     *
-     * Diese Methode ruft das Access-Token von PayPal ab, das für API-Anfragen verwendet wird.
-     *
-     * @return Das Access-Token für die Kommunikation mit der PayPal-API.
+     * @return Das Access-Token für die Kommunikation mit der PayPal-API
      */
     public String getAccessToken() {
         String url = "https://api-m.sandbox.paypal.com/v1/oauth2/token";
@@ -273,7 +226,6 @@ public class PaypalService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
 
-        // Verarbeitet die Antwort und gibt das Access-Token zurück
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, String> body = response.getBody();
             assert body != null;
@@ -284,23 +236,17 @@ public class PaypalService {
     }
 
     /**
-     * Führt eine Auszahlung an eine E-Mail-Adresse durch.
-     *
-     * Diese Methode führt eine Auszahlung durch, indem sie die PayPal-API verwendet, um eine Zahlung an eine
-     * angegebene E-Mail-Adresse zu überweisen.
-     *
-     * @param recipientEmail Die E-Mail-Adresse des Empfängers der Auszahlung.
-     * @param amount         Der Betrag der Auszahlung.
-     * @param currency       Die Währung der Auszahlung.
-     * @throws PayPalRESTException Wenn ein Fehler bei der Auszahlung auftritt.
+     * Führt eine Auszahlung an eine E-Mail-Adresse durch
+     * @param recipientEmail Die E-Mail-Adresse des Empfängers
+     * @param amount         Der Betrag der Auszahlung
+     * @param currency       Die Währung der Auszahlung
+     * @throws PayPalRESTException Wenn ein Fehler bei der Auszahlung auftritt
      */
     public void executePayout(String recipientEmail, String amount, String currency) throws PayPalRESTException {
-        // Erstelle Header für die Auszahlung
         PayoutSenderBatchHeader senderBatchHeader = new PayoutSenderBatchHeader();
         senderBatchHeader.setEmailSubject("You have a payout!");
         senderBatchHeader.setSenderBatchId(UUID.randomUUID().toString());
 
-        // Erstelle die Auszahlungseinzelposten
         PayoutItem payoutItem = new PayoutItem();
         payoutItem.setRecipientType("EMAIL");
         payoutItem.setReceiver(recipientEmail);
@@ -311,12 +257,10 @@ public class PaypalService {
         List<PayoutItem> items = new ArrayList<>();
         items.add(payoutItem);
 
-        // Erstelle die Auszahlung
         Payout payout = new Payout();
         payout.setSenderBatchHeader(senderBatchHeader);
         payout.setItems(items);
 
-        // Holt das AccessToken für die API-Anfrage
         String accessToken = getAccessToken();
 
         RestTemplate restTemplate = new RestTemplate();
@@ -324,7 +268,6 @@ public class PaypalService {
         headers.set("Authorization", "Bearer " + accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // JSON-Payload für die Auszahlung
         String jsonPayload = "{" +
                 "\"sender_batch_header\": {" +
                 "\"email_subject\": \"You have a payout!\"," +
@@ -344,111 +287,97 @@ public class PaypalService {
                 "]" +
                 "}";
 
-        // Sende die Anfrage zur Auszahlung
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonPayload, headers);
         String url = "https://api.sandbox.paypal.com/v1/payments/payouts";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
-
-        // Überprüfe die Antwort und verarbeite die Auszahlung
-        if (response.getStatusCode() == HttpStatus.CREATED) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                Map<String, Object> responseMap = objectMapper.readValue(response.getBody(), Map.class);
-                Map<String, Object> batchHeader = (Map<String, Object>) responseMap.get("batch_header");
-                String payoutBatchId = (String) batchHeader.get("payout_batch_id");
-            } catch (Exception e) {
-                throw new PayPalRESTException("Fehler beim Parsen der PayPal-Antwort: " + e.getMessage());
-            }
-        } else {
-            throw new PayPalRESTException("Fehler bei der Auszahlung. HTTP Status: " + response.getStatusCode());
-        }
     }
 
 
+    /**
+     * Nimmt die Zahlungaufforderung vom Controller und führt entweder eine AUSZAHLUNG oder eine EINZAHLUNG aus
+     * @param user der die Zahlung machen möchte
+     * @param paymentInformationSessionDTO Informationen der eigentlichen Zahlung
+     * @param paymentSuccessRequestDTO Enthählt PaymentId und PayerId
+     * @throws Exception Falls mit der PayPal API etwas schief gelaufen ist
+     */
     @Transactional
-    public void processPayment(
-            String paymentId, String payerId, String type, String amount,
-            String currency, String description, String receiverEmail,
-            String email, String provider, Long id, Long fundId
+    public void processPayment(UserEntity user, PaymentInformationSessionDTO paymentInformationSessionDTO, PaymentSuccessRequestDTO paymentSuccessRequestDTO
     ) throws Exception {
-        // Abruf des Benutzers anhand der E-Mail und des Anbieters (z. B. GitHub oder anderer Anbieter)
-        UserEntity user = userRepositoryService.findByEmailAndProvider(email, provider);
-        if (user.getProvider().equals("github"))
-            email = user.getSendtoEmail();  // Falls der Anbieter GitHub ist, wird die alternative E-Mail verwendet
+        String email = user.getProvider().equals("github") ? user.getSendtoEmail() : user.getEmail();
+        FundEntity fund = fundRepository.findById(paymentInformationSessionDTO.getFundid()).orElse(null);
 
-        // Abruf des Fundes anhand der Fund-ID
-        FundEntity fund = fundRepositoryService.findFundById(fundId);
+        PaymentEntity paymentEntity = new PaymentEntity();
+        paymentEntity.setDate(LocalDateTime.now());
+        paymentEntity.setReason(paymentInformationSessionDTO.getDescription());
+        paymentEntity.setAmount(Double.valueOf(paymentInformationSessionDTO.getAmount()));
+        paymentEntity.setCurrency("EUR");
+        paymentEntity.setUser(user);
+        paymentEntity.setFund(fund);
 
-        // Erstellen einer neuen Zahlung (Payment)
-        Payment zahlung = new Payment();
-        zahlung.setDate(LocalDateTime.now());  // Setzt das aktuelle Datum und die Uhrzeit als Zahlungsdatum
-        zahlung.setReason(description);  // Setzt die Zahlungsbeschreibung
-        zahlung.setAmount(Double.valueOf(amount));  // Setzt den Betrag
-        zahlung.setCurrency(currency);  // Setzt die Währung
-        zahlung.setUser(user);  // Verknüpft die Zahlung mit dem Benutzer
-        zahlung.setFund(fund);  // Verknüpft die Zahlung mit dem Fund
-
-        // Bearbeitung des Zahlungstyps (Einzahlung oder Auszahlung)
-        if ("EINZAHLEN".equalsIgnoreCase(type)) {
-            zahlung.setType(PaymentType.EINZAHLEN);  // Setzt den Zahlungstyp auf Einzahlung
-            com.paypal.api.payments.Payment payment = executePayment(paymentId, payerId);  // Führt die PayPal-Zahlung aus
-            if ("approved".equals(payment.getState())) {  // Überprüft, ob die Zahlung genehmigt wurde
-                addPayment(zahlung, fundId);  // Fügt die Zahlung der Datenbank hinzu
-                senderService.sendConfirmationEmail(email, amount, currency, "paypal", description, type);  // Bestätigungsmail senden
-                return;  // Abschluss der Verarbeitung für Einzahlung
+        if ("EINZAHLEN".equalsIgnoreCase(paymentInformationSessionDTO.getType())) {
+            paymentEntity.setType(PaymentTypeEnumeration.EINZAHLEN);
+            Payment payment = executePayment(paymentSuccessRequestDTO.getPaymentId(), paymentSuccessRequestDTO.getPayerID());
+            if ("approved".equals(payment.getState())) {
+                addPayment(paymentEntity, paymentInformationSessionDTO.getFundid());
+                senderService.sendConfirmationEmail(email, paymentInformationSessionDTO.getAmount(), "EUR", "paypal", paymentInformationSessionDTO.getDescription(), paymentInformationSessionDTO.getType());
+                return;
             }
-        } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
-            // Bearbeitung des Falles für Auszahlungen
-            double balance = getCurrentBalance();  // Abrufen des aktuellen Kontostands
-            if (Double.parseDouble(amount) > balance) {
-                return;  // Wenn der Betrag größer als der Kontostand ist, wird die Auszahlung abgebrochen
+        } else if ("AUSZAHLEN".equalsIgnoreCase(paymentInformationSessionDTO.getType())) {
+            double balance = getCurrentBalance();
+            if (Double.parseDouble(paymentInformationSessionDTO.getAmount()) > balance) {
+                return;
             } else {
-                zahlung.setType(PaymentType.AUSZAHLEN);  // Setzt den Zahlungstyp auf Auszahlung
-                executePayout(receiverEmail, amount, currency);  // Führt die PayPal-Auszahlung aus
-                addPayment(zahlung, fundId);  // Fügt die Zahlung der Datenbank hinzu
-                senderService.sendConfirmationEmail(email, amount, currency, "paypal", description, type);  // Bestätigungsmail senden
-                return;  // Abschluss der Verarbeitung für Auszahlung
+                paymentEntity.setType(PaymentTypeEnumeration.AUSZAHLEN);
+                executePayout(paymentInformationSessionDTO.getReceiverEmail(), paymentInformationSessionDTO.getAmount(), "EUR");
+                addPayment(paymentEntity, paymentInformationSessionDTO.getFundid());
+                senderService.sendConfirmationEmail(email, paymentInformationSessionDTO.getAmount(), "EUR", "paypal", paymentInformationSessionDTO.getDescription(), paymentInformationSessionDTO.getType());
+                return;
             }
         }
-        throw new RuntimeException("Invalid payment type");  // Wirft eine Ausnahme, wenn der Zahlungstyp ungültig ist
+        throw new RuntimeException("Invalid payment type");
     }
 
+    /**
+     * Zuständig um eine Premium Subscription für den Benutzer abzuschließen
+     * @param planId Der Plan, der die subscription Daten enthält
+     * @param user Der Benutzer, der das Abo machen möchte
+     * @return Url, auf die redirected wird
+     */
     public String createSubscription(String planId, UserEntity user) {
         try {
-            // Abrufen des Access Tokens für die PayPal-API
             String accessToken = getAccessToken();
 
-            // Erstellen der Abonnementanfrage
             String subscriptionRequest = createSubscriptionRequest(planId, user);
 
-            // Erstellen einer HTTP-Anfrage an die PayPal-API zur Erstellung des Abonnements
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + accessToken);  // Setzt das Access Token im Header
-            headers.setContentType(MediaType.APPLICATION_JSON);  // Setzt den Content-Type auf JSON
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> entity = new HttpEntity<>(subscriptionRequest, headers);
 
-            // Senden der Anfrage an die PayPal-API und Abrufen der Antwort
             ResponseEntity<String> response = restTemplate.exchange(PAYPAL_API_URL, HttpMethod.POST, entity, String.class);
 
-            // Extrahieren der Genehmigungs-URL aus der Antwort
             return extractApprovalUrl(response.getBody());
         } catch (Exception e) {
-            log.atTrace().log(e.getMessage());  // Loggt den Fehler, wenn die Erstellung des Abonnements fehlschlägt
-            return null;  // Gibt null zurück, falls ein Fehler auftritt
+            log.atTrace().log(e.getMessage());
+            return null;
         }
     }
 
+    /**
+     * Erstellt den Request für die PayPal API
+     * @param planId Der Plan, der die subscription Daten enthält
+     * @param user Der Benutzer, der das Abo machen möchte
+     * @return Anfrage im JSON format
+     */
     private String createSubscriptionRequest(String planId, UserEntity user) {
-        // Bereitet die JSON-Daten für die Abonnementanfrage vor
         String email = user.getEmail();
         if (user.getProvider().equals("github"))
-            email = user.getSendtoEmail();  // Verwendet die alternative E-Mail, wenn der Anbieter GitHub ist
+            email = user.getSendtoEmail();
 
         String returnUrl = "http://localhost:8080/subscription-success?userId=" + user.getId();
         String cancelUrl = "http://localhost:8080/subscription-cancel?userId=" + user.getId();
 
-        // JSON-Daten für die Anfrage
         return "{"
                 + "\"plan_id\": \"" + planId + "\","
                 + "\"subscriber\": {"
@@ -461,209 +390,210 @@ public class PaypalService {
                 + "}";
     }
 
+    /**
+     * Holt sich die Bestätigung von der PayPal API aus der Anfrage
+     * @param responseBody JSON Antwort von PayPal
+     * @return Genehmigungs-Url oder null
+     */
     private String extractApprovalUrl(String responseBody) {
         try {
-            // Verarbeitet die PayPal-Antwort, um die Genehmigungs-URL zu extrahieren
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(responseBody);
             JsonNode linksNode = rootNode.get("links");
 
-            // Durchsucht die Links nach der Genehmigungs-URL
             if (linksNode != null) {
                 for (JsonNode link : linksNode) {
                     String rel = link.get("rel").asText();
                     if ("approve".equalsIgnoreCase(rel)) {
-                        return link.get("href").asText();  // Rückgabe der Genehmigungs-URL
+                        return link.get("href").asText();
                     }
                 }
             }
         } catch (Exception e) {
-            log.atTrace().log(e.getMessage());  // Loggt den Fehler, falls das Parsen fehlschlägt
+            log.atTrace().log(e.getMessage());
         }
-        return null;  // Gibt null zurück, wenn keine Genehmigungs-URL gefunden wurde
+        return null;
     }
 
+    /**
+     * Holt sich die PayerId aus einer aktiven Subscription
+     * @param subscriptionId Benötigt Id für die aktive Subscription
+     * @return die PayerId
+     */
     public String getPayerIdFromSubscription(String subscriptionId) {
         try {
-            // Abrufen des Access Tokens für die PayPal-API
             String accessToken = getAccessToken();
 
-            // Abrufen der Abonnementdetails von PayPal
             String subscriptionUrl = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + subscriptionId;
             HttpURLConnection httpConn = (HttpURLConnection) new URL(subscriptionUrl).openConnection();
             httpConn.setRequestMethod("GET");
             httpConn.setRequestProperty("Authorization", "Bearer " + accessToken);  // Setzt das Access Token im Header
             httpConn.setRequestProperty("Content-Type", "application/json");
 
-            // Liest die Antwort der PayPal-API
             InputStream responseStream = httpConn.getResponseCode() / 100 == 2
                     ? httpConn.getInputStream()
                     : httpConn.getErrorStream();
             Scanner s = new Scanner(responseStream).useDelimiter("\\A");
             String response = s.hasNext() ? s.next() : "";
 
-            // Parsen der Antwort und Abrufen der Payer ID
             JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
             String payerId = jsonObject.getAsJsonObject("subscriber").get("payer_id").getAsString();
 
             return Objects.requireNonNullElse(payerId, "PayerID konnte nicht abgerufen werden.");
         } catch (Exception e) {
-            log.atTrace().log(e.getMessage());  // Loggt den Fehler, falls die Payer ID nicht abgerufen werden kann
-            return "Fehler bei der Abfrage der PayerID";  // Gibt eine Fehlermeldung zurück
+            log.atTrace().log(e.getMessage());
+            return "Fehler bei der Abfrage der PayerID";
         }
     }
 
+    /**
+     * Bestätigt das Abonnement bei PayPal und aktivieren das Abonnement, falls es noch nicht aktiviert wurde
+     * @param subscriptionId Benötigt Id für die aktive Subscription
+     * @param payerId Benötigt PayerId für die aktive Subscription
+     * @return Ist die Subscription bestätigt
+     */
     public String confirmSubscription(String subscriptionId, String payerId) {
-        // Bestätigt das Abonnement bei PayPal und aktivieren das Abonnement, falls es noch nicht aktiviert wurde
-        String accessToken = getAccessToken();  // Abrufen des Access Tokens
+        String accessToken = getAccessToken();
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);  // Setzt das Access Token im Header
-        headers.setContentType(MediaType.APPLICATION_JSON);  // Setzt den Content-Type auf JSON
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Abrufen des aktuellen Status des Abonnements von PayPal
         String getSubscriptionUrl = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + subscriptionId;
         ResponseEntity<String> response = restTemplate.exchange(getSubscriptionUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-        // Überprüft den aktuellen Status des Abonnements
         String subscriptionStatus = parseSubscriptionStatus(response.getBody());
 
-        // Falls das Abonnement nicht "SUSPENDED" (unterbrochen) ist, wird es vor der Aktivierung pausiert
         if (!"SUSPENDED".equalsIgnoreCase(subscriptionStatus)) {
             String suspendUrl = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + subscriptionId + "/suspend";
             response = restTemplate.exchange(suspendUrl, HttpMethod.POST, new HttpEntity<>(headers), String.class);
 
             if (!response.getStatusCode().is2xxSuccessful()) {
-                return "Error suspending subscription.";  // Fehlermeldung, falls das Pausieren fehlschlägt
+                return "Error suspending subscription.";
             }
         }
 
-        // Aktivierung des Abonnements
         String activateUrl = "https://api-m.sandbox.paypal.com/v1/billing/subscriptions/" + subscriptionId + "/activate";
-        String body = "{ \"payer_id\": \"" + payerId + "\" }";  // Falls PayerId erforderlich ist
+        String body = "{ \"payer_id\": \"" + payerId + "\" }";
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
         response = restTemplate.exchange(activateUrl, HttpMethod.POST, entity, String.class);
 
-        // Rückgabe des Ergebnisses basierend auf der Antwort von PayPal
         if (response.getStatusCode().is2xxSuccessful()) {
-            return "approved";  // Erfolgreiche Aktivierung
+            return "approved";
         } else {
-            return "failed";  // Fehlgeschlagene Aktivierung
+            return "failed";
         }
     }
 
+    /**
+     * Parsen der Antwort von PayPal, um den Abonnementstatus zu extrahieren
+     * @param responseBody Antwort von PayPal
+     * @return Abonnementstatus
+     */
     private String parseSubscriptionStatus(String responseBody) {
         try {
-            // Parsen der Antwort von PayPal, um den Abonnementstatus zu extrahieren
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode = objectMapper.readTree(responseBody);
-            return rootNode.path("status").asText();  // Gibt den Abonnementstatus zurück
+            return rootNode.path("status").asText();
         } catch (Exception e) {
-            log.atTrace().log(e.getMessage());  // Loggt den Fehler, falls das Parsen fehlschlägt
-            return "Error parsing subscription status";  // Gibt eine Fehlermeldung zurück
+            log.atTrace().log(e.getMessage());
+            return "Error parsing subscription status";
         }
     }
 
+    /**
+     * Kündigt ein Abonnement sowohl lokal, als auch bei PayPal
+     * @param user Subscription User
+     * @param subscriptionId Benötigte Id der Subscription
+     * @return Wurde ein Abbonement gefunden
+     */
     public boolean cancelSubscription(UserEntity user, String subscriptionId) {
-        // Überprüft, ob das Abonnement bereits gekündigt wurde
         if(user.getLatestSubscription().getStatus().equals("CANCELLED")) {
             return true;
         }
 
-        // Wenn das Abonnement existiert, wird es sowohl bei PayPal als auch lokal gekündigt
         if (user.getLatestSubscription() != null) {
             SubscriptionEntity subscription = user.getLatestSubscription();
 
             boolean isPaypalCancelled = cancelPaypalSubscription(subscription.getSubscriptionId());
 
             if (!isPaypalCancelled) {
-                return false;  // Gibt false zurück, wenn die PayPal-Kündigung fehlschlägt
+                return false;
             }
 
-            // Setzt den Status auf "CANCELLED" und speichert die Änderung in der Datenbank
             subscription.setStatus("CANCELLED");
-            subscriptionRepositoryService.saveSubscription(subscription);
+            subscriptionRepository.save(subscription);
             return true;
         }
 
-        return false; // Gibt false zurück, wenn kein Abonnement gefunden wurde
+        return false;
     }
 
+    /**
+     * Cancelled eine Subscription bei PayPal
+     * @param paypalSubscriptionId Benötigte Id
+     * @return Wurde gekündigt oder nicht
+     */
     private boolean cancelPaypalSubscription(String paypalSubscriptionId) {
         try {
-            // Abrufen des Access Tokens
             String accessToken = getAccessToken();
 
-            // Senden einer Anfrage an PayPal, um das Abonnement zu kündigen
             String url = PAYPAL_API_URL + "/" + paypalSubscriptionId + "/cancel";
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + accessToken);  // Setzt das Access Token im Header
-            headers.setContentType(MediaType.APPLICATION_JSON);  // Setzt den Content-Type auf JSON
+            headers.set("Authorization", "Bearer " + accessToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Anfrage zum Kündigen des Abonnements
             String body = "{ \"reason\": \"User requested cancellation.\" }";
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
-            // Senden der Anfrage und Rückgabe des Ergebnisses
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-            return response.getStatusCode() == HttpStatus.NO_CONTENT;  // Erfolgreiche Kündigung wird mit "NO_CONTENT" bestätigt
+            return response.getStatusCode() == HttpStatus.NO_CONTENT;
         } catch (Exception e) {
-            log.atTrace().log(e.getMessage());  // Loggt den Fehler, falls die Kündigung fehlschlägt
-            return false;  // Rückgabe von false bei einem Fehler
+            log.atTrace().log(e.getMessage());
+            return false;
         }
     }
 
 
     /**
-     * Pauses the subscription of a given user by suspending the corresponding PayPal subscription
-     * and updating the subscription status to "SUSPENDED" in the system.
-     *
-     * @param user The user whose subscription is to be paused.
-     * @return true if the subscription was successfully paused, false otherwise.
+     * pausiert die Subscription eines Users
+     * @param user Der User der Subscription
+     * @return wurde die Subscription pausiert oder nicht
      */
     public boolean pauseSubscription(UserEntity user) {
-        // Check if the subscription is already canceled, in which case no action is required.
         if(user.getLatestSubscription().getStatus().equals("CANCELLED")) {
             return true;
         }
 
-        // Proceed only if there is an active subscription
         if (user.getLatestSubscription() != null) {
             SubscriptionEntity subscription = user.getLatestSubscription();
 
-            // Attempt to pause the PayPal subscription
             boolean isPaypalCancelled = pausePayPalSubscription(subscription.getSubscriptionId());
 
-            // If the PayPal suspension failed, return false
             if (!isPaypalCancelled) {
                 return false;
             }
 
-            // Update the subscription status to "SUSPENDED" and save it
             subscription.setStatus("SUSPENDED");
-            subscriptionRepositoryService.saveSubscription(subscription);
+            subscriptionRepository.save(subscription);
             return true;
         }
 
-        // Return false if no subscription exists for the user
         return false;
     }
 
 
     /**
-     * Pauses a PayPal subscription by sending a suspension request to PayPal's API.
-     *
-     * @param subscriptionId The ID of the PayPal subscription to pause.
-     * @return true if the subscription was successfully paused, false otherwise.
+     * pausiert eine Subscription.
+     * @param subscriptionId benötigte Id der Subscription
+     * @return wurde die Subscription pausiert oder nicht
      */
     public boolean pausePayPalSubscription(String subscriptionId) {
         try {
-            // Retrieve the access token needed for authentication with PayPal's API
             String accessToken = getAccessToken();
 
-            // Set up the necessary HTTP headers and the request body
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -675,10 +605,8 @@ public class PaypalService {
                 }
                 """;
 
-            // Prepare the request entity with headers and body
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
-            // Send the request to the PayPal API to suspend the subscription
             ResponseEntity<String> response = restTemplate.exchange(
                     PAYPAL_API_URL + "/" + subscriptionId + "/suspend",
                     HttpMethod.POST,
@@ -686,10 +614,8 @@ public class PaypalService {
                     String.class
             );
 
-            // Return true if the response status code indicates success (2xx)
             return response.getStatusCode().is2xxSuccessful();
         } catch (Exception e) {
-            // Log any exception and return false in case of an error
             log.atTrace().log(e.getMessage());
             return false;
         }
@@ -697,54 +623,43 @@ public class PaypalService {
 
 
     /**
-     * Resumes an already paused subscription by reactivating the corresponding PayPal subscription
-     * and updating the subscription status to "ACTIVE" in the system.
-     *
-     * @param user The user whose subscription is to be resumed.
-     * @param subscriptionId The ID of the subscription to resume.
-     * @return true if the subscription was successfully resumed, false otherwise.
+     * Setzt eine pausierte Subscription fort
+     * @param user der user der Subscription
+     * @param subscriptionId die benötigte Id der Subscription
+     * @return wurde die Subscription pausiert oder nicht
      */
     public boolean resumeSubscription(UserEntity user, String subscriptionId) {
-        // Check if the subscription is already active, in which case no action is required.
         if(user.getLatestSubscription().getStatus().equals("ACTIVE")) {
             return true;
         }
 
-        // Proceed only if there is a subscription to resume
         if (user.getLatestSubscription() != null) {
             SubscriptionEntity subscription = user.getLatestSubscription();
 
-            // Attempt to resume the PayPal subscription
             boolean isPaypalResumed = resumePayPalSubscription(subscriptionId);
 
-            // If the PayPal resumption failed, return false
             if (!isPaypalResumed) {
                 return false;
             }
 
-            // Update the subscription status to "ACTIVE" and save it
             subscription.setStatus("ACTIVE");
-            subscriptionRepositoryService.saveSubscription(subscription);
+            subscriptionRepository.save(subscription);
             return true;
         }
 
-        // Return false if no subscription exists for the user
         return false;
     }
 
 
     /**
-     * Resumes a PayPal subscription by sending an activation request to PayPal's API.
-     *
-     * @param subscriptionId The ID of the PayPal subscription to activate.
-     * @return true if the subscription was successfully resumed, false otherwise.
+     * Setzt eine Subscription fort
+     * @param subscriptionId benötigte Id für die Subscription
+     * @return wurde die subscription fortgesetzt oder nicht
      */
     public boolean resumePayPalSubscription(String subscriptionId) {
         try {
-            // Retrieve the access token needed for authentication with PayPal's API
             String accessToken = getAccessToken();
 
-            // Set up the necessary HTTP headers and the request body
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -756,10 +671,8 @@ public class PaypalService {
             }
             """;
 
-            // Prepare the request entity with headers and body
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
-            // Send the request to the PayPal API to activate the subscription
             ResponseEntity<String> response = restTemplate.exchange(
                     PAYPAL_API_URL + "/" + subscriptionId + "/activate",
                     HttpMethod.POST,
@@ -767,10 +680,8 @@ public class PaypalService {
                     String.class
             );
 
-            // Return true if the response status code indicates success (2xx)
             return response.getStatusCode().is2xxSuccessful();
         } catch (Exception e) {
-            // Log any exception and return false in case of an error
             log.atTrace().log(e.getMessage());
             return false;
         }
@@ -778,37 +689,30 @@ public class PaypalService {
 
 
     /**
-     * Retrieves a list of transactions for a specific PayPal subscription within a defined time range.
-     *
-     * @param subscriptionId The ID of the PayPal subscription to fetch transactions for.
-     * @return A list of transactions associated with the given subscription, or null if no transactions are found.
+     * Holt sich die Zahlungsinformationen einer Subscrition für einen gewissen Zeitraum
+     * @param subscriptionId benötigte Id der Subscription
+     * @return Liste der transactions von PayPal
      */
-    public List<TransactionSubscription> getTransactionsForSubscription(String subscriptionId) {
+    public List<TransactionSubscriptionEntity> getTransactionsForSubscription(String subscriptionId) {
         try {
-            // Retrieve the access token needed for authentication with PayPal's API
             String accessToken = getAccessToken();
 
-            // Define the time range for transactions
             String startTime = "2023-12-01T00:00:00Z";
             String endTime = "2025-12-27T23:59:59Z";
 
-            // Create the endpoint URL with query parameters for the time range
             String url = UriComponentsBuilder.fromHttpUrl(PAYPAL_API_URL + "/" + subscriptionId + "/transactions")
                     .queryParam("start_time", startTime)
                     .queryParam("end_time", endTime)
                     .toUriString();
 
-            // Set up the request headers and send the GET request to PayPal's API
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + accessToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            // Receive the response from PayPal's API
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-            // If the response is successful, parse and return the transactions
             if (response.getStatusCode().is2xxSuccessful()) {
                 String responseBody = response.getBody();
                 return parseTransactions(responseBody);
@@ -816,7 +720,6 @@ public class PaypalService {
                 return null;
             }
         } catch (Exception e) {
-            // Log any exception and return null in case of an error
             log.atTrace().log(e.getMessage());
             return null;
         }
@@ -824,25 +727,21 @@ public class PaypalService {
 
 
     /**
-     * Parses a JSON response from the PayPal API to extract transaction details.
-     *
-     * @param jsonResponse The JSON response string from the PayPal API.
-     * @return A list of `TransactionSubscription` objects parsed from the response, or an empty list in case of an error.
+     * Holt die genaueren Informationen aus der JSON Antwort von der payPal API
+     * @param jsonResponse JSON Antwort von der PayPal API
+     * @return Die Liste der geparsten Informationen oder null
      */
-    private List<TransactionSubscription> parseTransactions(String jsonResponse) {
+    private List<TransactionSubscriptionEntity> parseTransactions(String jsonResponse) {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule()); // Register module for Java 8 time types
+        objectMapper.registerModule(new JavaTimeModule());
 
         try {
-            // Parse the JSON response to extract the transaction data
             JsonNode jsonNode = objectMapper.readTree(jsonResponse);
             JsonNode transactionsNode = jsonNode.path("transactions");
 
-            // Deserialize the transaction node into a list of TransactionSubscription objects
-            return objectMapper.readerForListOf(TransactionSubscription.class)
+            return objectMapper.readerForListOf(TransactionSubscriptionEntity.class)
                     .readValue(transactionsNode);
         } catch (Exception e) {
-            // Log any exception and return an empty list in case of an error
             log.atTrace().log(e.getMessage());
             return new ArrayList<>();
         }
@@ -850,17 +749,16 @@ public class PaypalService {
 
 
     /**
-     * Filters a list of transactions based on the given parameters, such as username, date range, and amount.
-     *
-     * @param transactions The list of transactions to filter.
-     * @param username The username to match against the payer's email.
-     * @param datefrom The start date of the transaction range.
-     * @param dateto The end date of the transaction range.
-     * @param amount The minimum transaction amount.
-     * @return A filtered list of transactions based on the given criteria.
+     * Filtert die Liste der Transaktionen nach gewissen Paramtern
+     * @param transactions Die Transaktionen
+     * @param username Der Username
+     * @param datefrom Das Startdatum
+     * @param dateto Das Enddatum
+     * @param amount Die minimale balance
+     * @return gefilterte Liste der Transaktionen
      */
-    public List<TransactionSubscription> filterTransactions(
-            List<TransactionSubscription> transactions,
+    public List<TransactionSubscriptionEntity> filterTransactions(
+            List<TransactionSubscriptionEntity> transactions,
             String username,
             LocalDate datefrom,
             LocalDate dateto,
@@ -884,22 +782,21 @@ public class PaypalService {
 
 
     /**
-     * Filters a list of payments based on the provided criteria, including username, reason, date range, and amount.
-     *
-     * @param payments The list of payments to filter.
-     * @param username The username to match against the user's username.
-     * @param reason The reason for the payment to match.
-     * @param datefrom The start date of the payment range.
-     * @param dateto The end date of the payment range.
-     * @param amount The minimum payment amount.
-     * @return A filtered list of payments based on the given criteria.
+     * Filtert eine Liste von Zahlungen nach gewissen Paramtern
+     * @param payments Die Liste der Zahlungen
+     * @param username Der Username
+     * @param reason Der Grund
+     * @param datefrom Das Startdatum
+     * @param dateto Das Enddatum
+     * @param amount Die Minimale Balance
+     * @return Gefilterte Liste von Zahlungen
      */
-    public List<Payment> filterPayments(List<Payment> payments,
-                                        String username,
-                                        String reason,
-                                        LocalDate datefrom,
-                                        LocalDate dateto,
-                                        Long amount) {
+    public List<PaymentEntity> filterPayments(List<PaymentEntity> payments,
+                                              String username,
+                                              String reason,
+                                              LocalDate datefrom,
+                                              LocalDate dateto,
+                                              Long amount) {
 
         return payments.stream()
                 .filter(payment -> {

@@ -1,23 +1,14 @@
 package com.springboot.vitalorganize.controller;
-import com.springboot.vitalorganize.model.*;
-import com.springboot.vitalorganize.entity.*;
+import com.springboot.vitalorganize.model.Chat.*;
 import com.springboot.vitalorganize.service.ChatService;
-import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
-import java.util.Map;
 
 @Controller
 @AllArgsConstructor
@@ -73,7 +64,7 @@ public class ChatController {
      */
     @PostMapping("/create-group")
     public String createGroup(
-            CreateGroupRequest createGroupRequest,
+            CreateChatGroupRequestDTO createGroupRequest,
             Model model
     ) {
 

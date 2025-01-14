@@ -12,14 +12,14 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    //Konfiuratin für den Message Broker, der für die Anzeige der Nachrichten in /chat zuständig ist
+    //Konfiuration für den Message Broker, der für die Anzeige der Nachrichten in /chat zuständig ist
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic");
         config.setApplicationDestinationPrefixes("/app");
     }
 
-    //Konfiuratin des end stomppoints, der für die Anzeige der Nachrichten in /chat zuständig ist
+    //Konfiuration des end stomppoints, der für die Anzeige der Nachrichten in /chat zuständig ist
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")
