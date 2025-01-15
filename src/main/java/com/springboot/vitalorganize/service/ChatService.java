@@ -576,10 +576,11 @@ public class ChatService {
     public NewChatResponseDTO newChat(String currentUrl){
         NewChatResponseDTO newChatResponseDTO = new NewChatResponseDTO();
         newChatResponseDTO.setCurrentUrl(currentUrl);
+
         newChatResponseDTO.setGroupedUsers(groupUsersByInitial(preparePublicUsersPage()));
+
         return newChatResponseDTO;
     }
-
 
 
 

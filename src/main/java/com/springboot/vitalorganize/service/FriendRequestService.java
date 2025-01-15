@@ -20,12 +20,14 @@ public class FriendRequestService {
     private final UserRepository userRepository;
     private final UserService userService;
 
-
     public void acceptFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
         UserEntity currentUser = userService.getCurrentUser();
         FriendRequestEntity friendRequest = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        assert friendRequest != null;
+        if(friendRequest == null) {
+            throw new IllegalArgumentException(String.valueOf(friendStatusRequestDTO.getId()));
+        }
+
         friendRequest.setStatus(FriendRequestEntity.RequestStatus.ACCEPTED);
         currentUser.getFriends().add(friendRequest.getSender());
         friendRequest.getSender().getFriends().add(currentUser);
@@ -40,7 +42,9 @@ public class FriendRequestService {
     public void rejectFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
         FriendRequestEntity friendRequest = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        assert friendRequest != null;
+        if(friendRequest == null) {
+            throw new IllegalArgumentException(String.valueOf(friendStatusRequestDTO.getId()));
+        }
         friendRequest.setStatus(FriendRequestEntity.RequestStatus.REJECTED);
         FriendRequestRepository.save(friendRequest);
 
@@ -51,7 +55,9 @@ public class FriendRequestService {
         UserEntity currentUser = userService.getCurrentUser();
         FriendRequestEntity request = FriendRequestRepository.findById(friendStatusRequestDTO.getId()).orElse(null);
 
-        assert request != null;
+        if(request == null) {
+            throw new IllegalArgumentException(String.valueOf(friendStatusRequestDTO.getId()));
+        }
         if (!request.getSender().getId().equals(currentUser.getId())) {
             throw new RuntimeException("You are not authorized to cancel this request");
         }

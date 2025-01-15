@@ -67,7 +67,7 @@ public class UserEntity {
     private LocalDateTime twoFactorExpiry; // Ablaufzeit des Codes
 
     @Column(name = "sendtoameil", length = 1024, nullable = true)
-    private String sendtoEmail;
+    private String sendToEmail;
 
     @Column(name = "price_reports_enabled", nullable = false)
     private boolean priceReportsEnabled = false;

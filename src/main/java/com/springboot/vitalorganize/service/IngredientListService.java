@@ -136,8 +136,8 @@ public class IngredientListService {
         UserEntity userEntity = userService.getUserById(userId);
         String email = userEntity.getEmail();
         // Alternative E-Mail für bestimmte Provider verwenden
-        if ("github".equals(userEntity.getProvider()) && userEntity.getSendtoEmail() != null) {
-            email = userEntity.getSendtoEmail();
+        if ("github".equals(userEntity.getProvider()) && userEntity.getSendToEmail() != null) {
+            email = userEntity.getSendToEmail();
         }
 
         senderService.sendEmail(email, "Report of your favourite ingredients and their prices", emailText.toString());

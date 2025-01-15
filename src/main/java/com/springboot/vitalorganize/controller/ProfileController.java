@@ -93,6 +93,7 @@ public class ProfileController {
     @PostMapping("/acceptRequest/{id}")
     public String acceptFriendRequest(FriendStatusRequestDTO friendStatusRequestDTO) {
         friendRequestService.acceptFriendRequest(friendStatusRequestDTO);
+
         return "redirect:/profile";
     }
 

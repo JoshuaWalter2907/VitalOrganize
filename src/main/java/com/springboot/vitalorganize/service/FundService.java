@@ -45,7 +45,9 @@ public class FundService {
 
         if (fundRequestDTO.getId() != null) {
             FundEntity fund = fundRepository.findById(fundRequestDTO.getId()).orElse(null);
-            assert fund != null;
+            if(fund == null) {
+                throw new IllegalArgumentException(String.valueOf(fundRequestDTO.getId()));
+            }
             if (!fund.getUsers().contains(user)) {
                 error = true;
             } else {
@@ -143,7 +145,10 @@ public class FundService {
     public void editFund(EditFundRequestDTO editFundRequestDTO) {
         UserEntity loggedInUser = userService.getCurrentUser();
         FundEntity fund = fundRepository.findById(editFundRequestDTO.getFundId()).orElse(null);
-        assert fund != null;
+
+        if(fund == null) {
+            throw new IllegalArgumentException(String.valueOf(editFundRequestDTO.getFundId()));
+        }
 
         List<UserEntity> users = userRepository.findAllById(editFundRequestDTO.getSelectedUsers());
         if (!users.contains(loggedInUser)) {
@@ -184,7 +189,10 @@ public class FundService {
     public void deleteFund(Long fundId, UserEntity loggedInUser, String balance) {
         FundEntity fund = fundRepository.findById(fundId).orElse(null);
 
-        assert fund != null;
+        if(fund == null) {
+            throw new IllegalArgumentException(String.valueOf(fundId));
+        }
+
         if (!isUserAdminOfFund(loggedInUser, fund)) {
             throw new SecurityException("Nicht autorisiert, um den Fund zu löschen.");
         }

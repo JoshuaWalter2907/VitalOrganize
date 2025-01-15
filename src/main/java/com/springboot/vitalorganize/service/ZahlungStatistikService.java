@@ -58,7 +58,9 @@ public class ZahlungStatistikService {
         LocalDate start = LocalDate.parse(statisticDTO.getStartDate());
         LocalDate end = LocalDate.parse(statisticDTO.getEndDate());
 
-        assert fund != null;
+        if(fund == null) {
+            throw new IllegalArgumentException(String.valueOf(statisticDTO.getFundId()));
+        }
         List<PaymentEntity> paymentsInPeriod = fund.getPayments().stream()
                 .filter(payment -> {
                     LocalDate paymentDate = payment.getDate().toLocalDate();
@@ -120,7 +122,9 @@ public class ZahlungStatistikService {
 
         if (existing != null) {
             FundEntity fund = fundRepository.findById(statisticDTO.getFundId()).orElse(null);
-            assert fund != null;
+            if(fund == null) {
+                throw new IllegalArgumentException(String.valueOf(statisticDTO.getFundId()));
+            }
             List<PaymentEntity> paymentsInPeriod = fund.getPayments().stream()
                     .filter(payment -> {
                         LocalDate paymentDate = payment.getDate().toLocalDate();

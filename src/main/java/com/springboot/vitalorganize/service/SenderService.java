@@ -38,7 +38,7 @@ public class SenderService {
     public void createPdf(UserEntity benutzer) {
         String email = benutzer.getEmail();
         if (benutzer.getProvider().equals("github"))
-            email = benutzer.getSendtoEmail();
+            email = benutzer.getSendToEmail();
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 

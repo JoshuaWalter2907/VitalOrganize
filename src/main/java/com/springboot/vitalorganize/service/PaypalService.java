@@ -231,7 +231,9 @@ public class PaypalService {
 
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, String> body = response.getBody();
-            assert body != null;
+            if(body == null) {
+                throw new IllegalArgumentException(String.valueOf(body));
+            }
             return body.get("access_token");
         } else {
             throw new RuntimeException("Failed to fetch access token: " + response.getStatusCode());
@@ -306,7 +308,7 @@ public class PaypalService {
     @Transactional
     public void processPayment(UserEntity user, PaymentInformationSessionDTO paymentInformationSessionDTO, PaymentSuccessRequestDTO paymentSuccessRequestDTO
     ) throws Exception {
-        String email = user.getProvider().equals("github") ? user.getSendtoEmail() : user.getEmail();
+        String email = user.getProvider().equals("github") ? user.getSendToEmail() : user.getEmail();
         FundEntity fund = fundRepository.findById(paymentInformationSessionDTO.getFundid()).orElse(null);
 
         PaymentEntity paymentEntity = new PaymentEntity();
@@ -376,7 +378,7 @@ public class PaypalService {
     private String createSubscriptionRequest(String planId, UserEntity user) {
         String email = user.getEmail();
         if (user.getProvider().equals("github"))
-            email = user.getSendtoEmail();
+            email = user.getSendToEmail();
 
         String returnUrl = "http://localhost:8080/subscription-success?userId=" + user.getId();
         String cancelUrl = "http://localhost:8080/subscription-cancel?userId=" + user.getId();

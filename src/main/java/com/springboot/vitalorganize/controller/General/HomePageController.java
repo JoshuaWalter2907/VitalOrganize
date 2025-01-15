@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 
 /**
- * Der MainController steuert grundlegende Routen der Anwendung.
+ * Der HomePageController steuert grundlegende Routen der Anwendung.
  * Er stellt die Funktionalität von 2FA Endpunkten dar
  */
 @Controller
 @AllArgsConstructor
 public class HomePageController {
 
+    public static final String REDIRECT = "redirect:";
     private final UserService userService;
     private final AuthenticationService authenticationService;
     private final TwoFactorService twoFactorService;
@@ -58,7 +59,7 @@ public class HomePageController {
     public String changeTheme(HttpServletRequest request) {
         String referer = request.getHeader("Referer");
         if (referer != null) {
-            return "redirect:" + referer;
+            return REDIRECT + referer;
         }
         return "redirect:/";
     }
@@ -73,7 +74,7 @@ public class HomePageController {
     public String changeLang(HttpServletRequest request) {
         String referer = request.getHeader("Referer");
         if (referer != null) {
-            return "redirect:" + referer;
+            return REDIRECT + referer;
         }
         return "redirect:/";
     }
@@ -81,11 +82,10 @@ public class HomePageController {
     /**
      * Zeigt die Login-Seite an.
      *
-     * @param model das UI-Modell
      * @return der Name der View für die Login-Seite
      */
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login() {
         return "LoginPage";
     }
 
@@ -129,7 +129,7 @@ public class HomePageController {
         String username = "";
         String birthdate = "";
 
-        String uri = (String) session.getAttribute("uri");
+        String uri = session.getAttribute("uri").toString();
         if(uri.equals("/additional-registration")){
             email = session.getAttribute("email").toString();
             username = session.getAttribute("username").toString();
@@ -137,7 +137,7 @@ public class HomePageController {
         }
 
         boolean isVerified = twoFactorService.verifyCode(verify2FARequestDTO.getDigits(), session);
-        System.out.println(uri);
+
 
         if (isVerified) {
             session.setAttribute("2fa_verified", true);
