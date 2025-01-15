@@ -2,20 +2,14 @@ package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.IngredientListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
-import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.IngredientListService;
 import com.springboot.vitalorganize.service.ShoppingListService;
+import com.springboot.vitalorganize.service.TranslationService;
 import com.springboot.vitalorganize.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,162 +21,95 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class IngredientListController {
 
     private final IngredientRepository ingredientRepository;
-    private final IngredientListService ingredientService;
+    private final IngredientListService ingredientListService;
     private final UserService userService;
     private final ShoppingListService shoppingListService;
-    private final UserRepository userRepository;
+    private final TranslationService translationService;
 
-    // loads the main ingredients page
+    // load the ingredients page
     @GetMapping
     public String listIngredients(Model model,
-                                  @AuthenticationPrincipal OAuth2User user,
-                                  OAuth2AuthenticationToken token,
                                   HttpServletRequest request,
                                   @RequestParam(defaultValue = "0") int page,
                                   @RequestParam(required=false) String sort,
                                   @RequestParam(required=false) String filter
     ) {
-        int pageSize = 7;
-        Long userId = userService.getCurrentUser(user, token).getId();
-        HttpSession session = request.getSession();
+        UserEntity userEntity = userService.getCurrentUser();
 
-        // check for current filter
-        if (filter != null && filter.equals(session.getAttribute("filter"))) {      // same filter selected again removes the filter
-            filter = "";
-            session.setAttribute("filter", filter);
-            session.setAttribute("page", 0);
-        } else if (filter != null) {                                                   // new filter is selected
-            session.setAttribute("filter", filter);
-            session.setAttribute("page", 0);
-        } else {                                                                       // page loaded for the first time or was reloaded
-            filter = (String) session.getAttribute("filter");
-            if(filter == null) {
-                filter = "";
-            }
-        }
+        IngredientListData ingredientListData = ingredientListService.getAllIngredients(request, page, sort, filter);
 
-        // check for current sorting
-        if (sort == null) {
-            sort = (String) session.getAttribute("sort");
-            if(sort == null) {
-                sort = "insertionDate";
-            }
-        } else {
-            session.setAttribute("sort", sort);
-        }
-
-        // check if page was set to default or passed as a parameter
-        String pageParam = request.getParameter("page");
-        if (pageParam != null && !pageParam.isEmpty()) {
-            page = Integer.parseInt(pageParam);
-            session.setAttribute("page", page);
-        } else {
-            Integer sessionPage = (Integer) session.getAttribute("page");
-            if (sessionPage != null) {
-                page = sessionPage;
-            }
-            session.setAttribute("page", page);
-        }
-
-        Pageable pageable = PageRequest.of(page, pageSize);
-
-        // get paginated, sorted and filtered ingredients
-        Page<IngredientEntity> ingredientsPage = ingredientService.getAllIngredients(userId, pageable, sort, filter);
-
-        if(ingredientsPage.isEmpty()) {
-            // redirect to first page if user manipulated the link
-            pageable = PageRequest.of(0, pageSize);
-            ingredientsPage = ingredientService.getAllIngredients(userId, pageable, sort, filter);
-        }
-
-        model.addAttribute("ingredients", ingredientsPage.getContent());
-        model.addAttribute("filter", filter);
-        model.addAttribute("sort", sort);
-        model.addAttribute("page", ingredientsPage);
-
-        UserEntity userEntity = userRepository.findUserEntityById(userId);
+        model.addAttribute("page", ingredientListData.getPage());
+        model.addAttribute("ingredients", ingredientListData.getPage().getContent());   // returns a list of ingredientEntities
+        model.addAttribute("filter", ingredientListData.getFilter());
+        model.addAttribute("sort", ingredientListData.getSort());
         model.addAttribute("priceReportsEnabled", userEntity.isPriceReportsEnabled());
 
         return "ingredientsList/ingredients";
     }
 
-    // add ingredient
+    // add the ingredient
     @PostMapping("/add")
-    public String addIngredient(
-            @RequestParam(value = "newIngredient") String name,
-            RedirectAttributes redirectAttributes,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
-
-        ingredientService.addIngredient(userId, name, redirectAttributes);
-
+    public String addIngredient(@RequestParam(value = "newIngredient") String name,
+                                RedirectAttributes attr) {
+        try{
+            translationService.translateQuery(name, "de", "en");
+            ingredientListService.addIngredient(name);
+        } catch (IllegalArgumentException e){
+            attr.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/ingredients";
     }
 
-    // delete ingredient
+    // delete the ingredient
     @PostMapping("/delete/{id}")
-    public String deleteIngredient(@PathVariable("id") Long id,
-                                   @AuthenticationPrincipal OAuth2User user,
-                                   OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
-
-        ingredientService.deleteIngredient(userId, id);
+    public String deleteIngredient(@PathVariable("id") Long id) {
+        ingredientListService.deleteIngredient(id);
         return "redirect:/ingredients";
     }
 
-
-    // toggles the favourite status
+    // toggle the favourite status
     @PostMapping("/favourite/{id}")
-    public String toggleFavouriteIngredient(@PathVariable("id") Long id,
-                                            @AuthenticationPrincipal OAuth2User user,
-                                            OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
-
-        ingredientService.toggleFavourite(userId, id);
+    public String toggleFavouriteIngredient(@PathVariable("id") Long id) {
+        ingredientListService.toggleFavourite(id);
         return "redirect:/ingredients";
     }
 
-    // toggles the onShoppingList status
+    // toggle the onShoppingList status
     @PostMapping("/onShoppingList/{id}")
     public String toggleOnShoppingList(@PathVariable("id") Long id,
-                                       RedirectAttributes redirectAttributes,
-                                       @AuthenticationPrincipal OAuth2User user,
-                                       OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
+                                       RedirectAttributes attr) {
+        Long userId = userService.getCurrentUser().getId();
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndId(userId, id).orElseThrow();
 
-        IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, id).orElseThrow();
-
-        if(!ingredient.isOnShoppingList()){
-            Long user_id  = userService.getCurrentUser(user, token).getId();
-            shoppingListService.addItem(user_id, ingredient.getName(), redirectAttributes);
-        } else {
-            shoppingListService.deleteItem(userId, id);
+        try{
+            if(!ingredient.isOnShoppingList()){
+                shoppingListService.addItem(userId, ingredient.getName());
+            } else {
+                shoppingListService.deleteItem(userId, id);
+            }
+        } catch (IllegalArgumentException e) {
+            attr.addFlashAttribute("error", e.getMessage());
         }
-
         return "redirect:/ingredients";
     }
 
-
+    // toggle the priceReportEnabled status
     @PostMapping("/priceReportEmail")
-    public String togglePriceReportEmail(@AuthenticationPrincipal OAuth2User user,
-                                         OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
-
-        userService.togglePriceReportEmail(userId);
+    public String togglePriceReportEmail() {
+        userService.togglePriceReportEmail();
         return "redirect:/ingredients";
     }
 
-
+    // send the price report via email
     @PostMapping("/sendPriceReportEmail")
-    public String sendPriceReportEmail(@AuthenticationPrincipal OAuth2User user,
-                                       OAuth2AuthenticationToken token,
-                                       Model model) {
-        Long userId = userService.getCurrentUser(user, token).getId();
+    public String sendPriceReportEmail() {
+        UserEntity userEntity = userService.getCurrentUser();
+        Long userId = userEntity.getId();
 
-        ingredientService.sendEmailWithPrices(userId);
-        model.addAttribute("message", "Email has been sent successfully.");
+        // premium function, requires membership
+        if(userEntity.isMember()){
+            ingredientListService.sendEmailWithPrices(userId);
+        }
         return "redirect:/ingredients";
     }
-
 }

@@ -4,9 +4,6 @@ import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,16 +19,14 @@ public class ShoppingListController {
     private final ShoppingListService shoppingListService;
     private final UserService userService;
 
-    // loads the shoppingList page
+    // load the shoppingList page
     @GetMapping()
-    public String listItems(Model model,
-                            @AuthenticationPrincipal OAuth2User user,
-                            OAuth2AuthenticationToken token) {
-        Long user_id  = userService.getCurrentUser(user, token).getId();
+    public String listItems(Model model) {
+        Long userId = userService.getCurrentUser().getId();
 
-        List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(user_id);
+        List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
 
-        // limit display prices to 2 behind-the-comma-digits
+        // calculate the total shopping cost and limit all prices to 2 displayed digits behind the comma
         double totalPrice = 0;
         for(ShoppingListData shoppingListItem : shoppingListItems){
             shoppingListItem.setCalculatedPriceInEuros(Double.parseDouble(String.format("%.2f", shoppingListItem.getCalculatedPriceInEuros()).replace(",", ".")));
@@ -39,49 +34,51 @@ public class ShoppingListController {
         }
         totalPrice = Double.parseDouble(String.format("%.2f", totalPrice).replace(",", "."));
 
-        model.addAttribute("totalPrice", totalPrice);
         model.addAttribute("shoppingListItems", shoppingListItems);
+        model.addAttribute("totalPrice", totalPrice);
         return "shoppingList/shoppingList";
     }
 
-    // add ingredient
+    // add an item to the shopping list
     @PostMapping("/add")
-    public String addItem(
-            @RequestParam(value = "ingredientName") String name,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken token,
-            RedirectAttributes redirectAttributes) {
+    public String addItem(@RequestParam(value = "ingredientName") String name,
+                          RedirectAttributes attr) {
+        Long userId = userService.getCurrentUser().getId();
 
-        Long user_id  = userService.getCurrentUser(user, token).getId();
-
-        shoppingListService.addItem(user_id, name, redirectAttributes);
+        try{
+            shoppingListService.addItem(userId, name);
+        } catch (IllegalArgumentException e){
+            attr.addFlashAttribute("error", e.getMessage());
+        }
 
         return "redirect:/shoppingList";
     }
 
-    // delete ingredient
+    // delete the item from the shopping list
     @PostMapping("/delete/{id}")
-    public String deleteItem(@PathVariable("id") Long id,
-                             @AuthenticationPrincipal OAuth2User user,
-                             OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
+    public String deleteItem(@PathVariable("id") Long itemId,
+                             RedirectAttributes attr) {
+        Long userId = userService.getCurrentUser().getId();
 
-        shoppingListService.deleteItem(userId, id);
+        try{
+            shoppingListService.deleteItem(userId, itemId);
+        } catch (IllegalArgumentException e) {
+            attr.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/shoppingList";
     }
 
+    // update an item's amount in the shopping list
     @PostMapping("/updateAmount/{id}")
-    public String updateAmount(
-            @PathVariable("id") Long id,
-            @RequestParam("newAmount") String newAmountStr,
-            RedirectAttributes redirectAttributes,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken token) {
-        Long userId = userService.getCurrentUser(user, token).getId();
+    public String updateAmount(@PathVariable("id") Long id,
+                               @RequestParam("newAmount") String newAmountStr,
+                               RedirectAttributes attr) {
+        Long userId = userService.getCurrentUser().getId();
 
-        String error = shoppingListService.updateAmount(userId, id, newAmountStr);
-        if(!error.isEmpty()){
-            redirectAttributes.addFlashAttribute("error", error);
+        try{
+            shoppingListService.updateAmount(userId, id, newAmountStr);
+        } catch (IllegalArgumentException e) {
+            attr.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/shoppingList";
     }

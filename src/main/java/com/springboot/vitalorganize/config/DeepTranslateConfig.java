@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Configuration
-public class SpoonacularConfig {
-    @Value("${spoonacular.apikey}")
-    private String spoonacularApiKey;
+public class DeepTranslateConfig {
+    @Value("${rapidApi-DeepTranslate.apikey}")
+    private String translateApiKey;
 }

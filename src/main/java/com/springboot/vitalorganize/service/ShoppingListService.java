@@ -1,14 +1,13 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.entity.IngredientEntity;
-import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
+import com.springboot.vitalorganize.model.ShoppingListData;
+import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,62 +20,42 @@ public class ShoppingListService {
     private final TranslationService translationService;
     private final IngredientListService ingredientListService;
 
-    public boolean checkIfIdExists(Long userId, Long itemId) {
-        return shoppingListItemRepository.existsByUserIdAndItemId(userId, itemId);
+    public void checkIfIdExists(Long userId, Long itemId) {
+        if(!shoppingListItemRepository.existsByUserIdAndIngredientId(userId, itemId)){
+            throw new IllegalArgumentException("shoppingList.error.itemNotFound");
+        }
     }
 
     public String extractAccessToken(String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7); // Entfernt "Bearer " und gibt das Token zurück
+            return authorizationHeader.substring(7);
         } else {
-            throw new IllegalArgumentException("Der Authorization-Header muss im Format 'Bearer <token>' sein.");
+            throw new IllegalArgumentException("authorizationHeader.wrongFormat");
         }
     }
 
-    public void addItem(
-            Long userId,
-            String name,
-            RedirectAttributes redirectAttributes) {
+    public void addItem(Long userId, String name) {
         ShoppingListItemEntity item = new ShoppingListItemEntity();
         item.setUserId(userId);
-
         Long ingredientId;
-        IngredientEntity existingIngredient = ingredientRepository.findByUserIdAndName(userId, name);
-        String originalName = name;
 
-        if(existingIngredient == null){
-            // also check with the translated ingredient name
-            String englishName = translationService.translateQuery(name, "de", "en");
-            existingIngredient = ingredientRepository.findByUserIdAndName(userId, englishName);
-            name = englishName;
-            if(englishName.startsWith("Translation failed:")){
-                redirectAttributes.addFlashAttribute("error", "shoppingList.error.translationFailed");
-                name = originalName;
-            }
-        }
+        // all ingredients are saved with their english name
+        String englishName = translationService.translateQuery(name, "de", "en");
 
-        if(existingIngredient != null) {
-            ingredientId = existingIngredient.getId();
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndName(userId, englishName).orElse(null);
 
-            if(existingIngredient.isOnShoppingList()) {
-                if (redirectAttributes != null) {
-                    redirectAttributes.addFlashAttribute("error", "shoppingList.error.alreadyOnList");
-                    return;
-                } else {
-                    throw new IllegalArgumentException("The ingredient is already on the shopping list.");
-                }
+        if(ingredient != null) {
+            // ingredient exists in the ingredients table
+            ingredientId = ingredient.getId();
+
+            if(ingredient.isOnShoppingList()) {
+                throw new IllegalArgumentException("shoppingList.error.alreadyOnList");
             }
         } else {
-            boolean success = ingredientListService.addIngredient(userId, name, redirectAttributes);
+            // ingredient is not in the ingredients table
+            ingredientListService.addIngredient(name);
 
-            if (!success) {
-                if (redirectAttributes == null) {
-                    throw new IllegalArgumentException("Failed to add the ingredient.");
-                }
-                return;
-            }
-
-            ingredientId = ingredientRepository.findByUserIdAndName(userId, name).getId();
+            ingredientId = ingredientRepository.findByUserIdAndName(userId, name).orElseThrow().getId();
         }
         ingredientListService.toggleOnShoppingList(userId, ingredientId);
         item.setIngredientId(ingredientId);
@@ -86,25 +65,21 @@ public class ShoppingListService {
 
     @Transactional
     public void deleteItem(Long userId, Long itemId) {
-        if (!checkIfIdExists(userId, itemId)) {
-            throw new IllegalArgumentException("Item with ID " + itemId + " not found.");
-        }
+        checkIfIdExists(userId, itemId);
+
         ingredientListService.toggleOnShoppingList(userId, itemId);
-        shoppingListItemRepository.deleteByUserIdAndItemId(userId, itemId);
+        shoppingListItemRepository.deleteByUserIdAndIngredientId(userId, itemId);
     }
 
     public List<ShoppingListData> getAllItems(Long userId) {
         return shoppingListItemRepository.findShoppingListByUserId(userId);
     }
 
-    public String updateAmount(Long userId, Long itemId, String newAmountStr){
-        if (!checkIfIdExists(userId, itemId)) {
-            return "shoppingList.error.itemNotFound";
-        }
+    public void updateAmount(Long userId, Long itemId, String newAmountStr){
+        checkIfIdExists(userId, itemId);
 
-        // Retrieve the shopping list item by ID
-        ShoppingListItemEntity item = shoppingListItemRepository.findByUserIdAndIngredientId(userId, itemId)
-                .orElse(null);
+        // get the shopping list item by id
+        ShoppingListItemEntity item = shoppingListItemRepository.findByUserIdAndIngredientId(userId, itemId).orElseThrow();
 
         // input validation
         double newAmount;
@@ -112,31 +87,25 @@ public class ShoppingListService {
             newAmount = Double.parseDouble(newAmountStr);
 
             if (newAmount <= 0) {
-                return "shoppingList.error.notGreaterThanZero";
+                throw new IllegalArgumentException("shoppingList.error.notGreaterThanZero");
             }
         } catch (NumberFormatException e) {
-            // invalid input
-            return "shoppingList.error.notANumber";
+            throw new IllegalArgumentException("shoppingList.error.notANumber");
         }
 
-        // Update the item amount
+        // at this point the item and ingredient can't be null
         item.setPurchaseAmount(newAmount);
 
-        IngredientEntity ingredient = ingredientRepository.findByUserIdAndIngredientId(userId, itemId).orElse(null);
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndId(userId, itemId).orElseThrow();
 
-        // get the price per 100g
+        // get the price (per 100g)
         double price = ingredient.getPrice();
 
         // total price for the new amount
         double newPrice = price/100 * newAmount;
-
         item.setCalculatedPrice(newPrice);
 
-        // Save the updated shopping list item to the repository
         shoppingListItemRepository.save(item);
-
-        // no error return
-        return "";
     }
 
     public Optional<ShoppingListData> getItem(Long userId, Long ingredientId) {

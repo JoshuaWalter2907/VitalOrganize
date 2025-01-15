@@ -14,22 +14,15 @@ import java.util.Optional;
 @Repository
 public interface ShoppingListItemRepository extends JpaRepository<ShoppingListItemEntity, Long> {
 
-    @Query("SELECT CASE WHEN COUNT(e) > 0 THEN TRUE ELSE FALSE END " +
-            "FROM IngredientEntity e " +
-            "WHERE e.userId = :userId AND e.id = :itemId")
-    boolean existsByUserIdAndItemId(@Param("userId") Long userId,
-                                    @Param("itemId") Long itemId);
+    boolean existsByUserIdAndIngredientId(Long userId, Long itemId);
 
-    @Query("SELECT s FROM ShoppingListItemEntity s " +
-            "WHERE s.userId = :userId AND s.ingredientId = :ingredientId")
-    Optional<ShoppingListItemEntity> findByUserIdAndIngredientId(@Param("userId") Long userId,
-                                                       @Param("ingredientId") Long ingredientId);
+    Optional<ShoppingListItemEntity> findByUserIdAndIngredientId(Long userId, Long ingredientId);
 
     @Modifying
-    @Query("DELETE FROM ShoppingListItemEntity s " +
-            "WHERE s.userId = :userId AND s.ingredientId = :itemId")
-    void deleteByUserIdAndItemId(@Param("userId") Long userId,
-                                 @Param("itemId") Long itemId);
+    void deleteByUserIdAndIngredientId(Long userId, Long ingredientId);
+
+
+    // joins ingredients and shoppingList table to fetch all the information for the full shopping list
     @Query("SELECT new com.springboot.vitalorganize.model.ShoppingListData(" +
             "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice)" +
             "FROM ShoppingListItemEntity s " +
@@ -37,7 +30,7 @@ public interface ShoppingListItemRepository extends JpaRepository<ShoppingListIt
             "WHERE i.userId = :userId AND i.onShoppingList = true")
     List<ShoppingListData> findShoppingListByUserId(@Param("userId") Long userId);
 
-
+    // joins ingredients and shoppingList table to fetch all the information for a single shopping list item
     @Query("SELECT new com.springboot.vitalorganize.model.ShoppingListData(" +
             "i.id, i.name, s.purchaseAmount, i.price, s.calculatedPrice) " +
             "FROM ShoppingListItemEntity s " +

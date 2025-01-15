@@ -2,8 +2,8 @@ package com.springboot.vitalorganize.config;
 
 import com.springboot.vitalorganize.component.ApiAuthenticationFilter;
 import com.springboot.vitalorganize.entity.Profile_User.PersonalInformation;
-import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -21,12 +21,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
@@ -267,5 +267,8 @@ public class WebConfig implements WebMvcConfigurer {
         return registrationBean;
     }
 
-
+    @Bean
+    public WebClient webClient() {
+        return WebClient.builder().build();
+    }
 }

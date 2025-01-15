@@ -33,17 +33,16 @@ body.red {
 }
 
 body.gray {
-    --color-dark: #262626; /* Slightly less dark gray */
-    --color-slightly-dark: #3A3A3A; /* Slightly lighter dark gray */
-    --color-medium-dark: #4A4A4A; /* Medium-dark gray */
-    --color-medium-light: #6A6A6A; /* Medium gray */
-    --color-slightly-light: #949494; /* Light gray */
-    --color-light: #C4C4C4; /* Very light gray */
+    --color-dark: #262626;
+    --color-slightly-dark: #3A3A3A;
+    --color-medium-dark: #4A4A4A;
+    --color-medium-light: #6A6A6A;
+    --color-slightly-light: #949494;
+    --color-light: #C4C4C4;
     --text-color-dark: #aaaaaa;
     --text-color-light: #0D0000;
 }
 
-/* Header styles */
 header {
     display: flex;
     flex-direction: column;
@@ -78,7 +77,6 @@ header {
     align-items: center;
 }
 
-/* Navigation */
 header nav ul {
     list-style: none;
     display: flex;

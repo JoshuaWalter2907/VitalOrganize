@@ -14,21 +14,12 @@ import java.util.Optional;
 @Repository
 public interface IngredientRepository extends JpaRepository<IngredientEntity, Long> {
 
-    @Query("SELECT i FROM IngredientEntity i WHERE i.name = :name AND i.userId = :userId")
-    IngredientEntity findByUserIdAndName(
-            @Param("userId") Long userId,
-            @Param("name") String name);
+    Optional<IngredientEntity> findByUserIdAndName(Long userId, String name);
 
-    @Query("SELECT e FROM IngredientEntity e " +
-            "WHERE e.userId = :userId AND e.id = :ingredientId")
-    Optional<IngredientEntity> findByUserIdAndIngredientId(@Param("userId") Long userId,
-                                                           @Param("ingredientId") Long ingredientId);
+    Optional<IngredientEntity> findByUserIdAndId(Long userId, Long ingredientId);
 
     @Modifying
-    @Query("DELETE FROM IngredientEntity e " +
-            "WHERE e.userId = :userId AND e.id = :ingredientId")
-    void deleteByUserIdAndIngredientId(@Param("userId") Long userId,
-                                       @Param("ingredientId") Long ingredientId);
+    void deleteByUserIdAndId(Long userId, Long ingredientId);
 
     // Pagination methods
     @Query("SELECT i FROM IngredientEntity i WHERE i.userId = :userId AND i.favourite = true")

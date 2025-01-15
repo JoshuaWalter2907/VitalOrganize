@@ -9,9 +9,9 @@ import com.springboot.vitalorganize.model.Profile.FriendStatusRequestDTO;
 import com.springboot.vitalorganize.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -290,11 +290,10 @@ public class UserService {
     }
 
 
-    public void togglePriceReportEmail(Long userId) {
-        UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void togglePriceReportEmail() {
+        UserEntity userEntity = getCurrentUser();
 
-        userEntity.setPriceReportsEnabled(!userEntity.isPriceReportsEnabled());
+        userEntity.setPriceReportsEnabled(!userEntity.isPriceReportsEnabled()); // invert the priceReportsEnabled status
         userRepository.save(userEntity);
     }
 

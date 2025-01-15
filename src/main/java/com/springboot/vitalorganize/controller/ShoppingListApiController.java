@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
+import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class ShoppingListApiController {
     private final ShoppingListService shoppingListService;
     private final UserRepository userRepository;
 
-    // Return the whole shopping list
+    // fetch the whole shopping list
     @GetMapping("/all")
     public ResponseEntity<?> getAllItems(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
@@ -30,17 +30,18 @@ public class ShoppingListApiController {
 
             List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
 
-            // Limit prices to 2 decimal places
+            // limit prices to 2 digits behind the comma
             shoppingListItems.forEach(item -> item.setCalculatedPriceInEuros(
                     Double.parseDouble(String.format("%.2f", item.getCalculatedPriceInEuros()).replace(",", "."))
             ));
+
             return ResponseEntity.ok(shoppingListItems);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the shopping list.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the shopping list (" + e.getMessage() + ").");
         }
     }
 
-    // Add an item to the shopping list
+    // add an item to the shopping list
     @PostMapping
     public ResponseEntity<?> addItem(@RequestParam("ingredientName") String name,
                                      @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
@@ -49,18 +50,15 @@ public class ShoppingListApiController {
             UserEntity userEntity = userRepository.findByToken(token);
             Long userId = userEntity.getId();
 
-            // redirectAttributes null, so the service can give an api adjusted error response
-            shoppingListService.addItem(userId, name, null);
+            shoppingListService.addItem(userId, name);
 
             return ResponseEntity.ok("Item added successfully.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while adding the item.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while adding the item (" + e.getMessage() + ").");
         }
     }
 
-    // Delete an item from the shopping list
+    // delete the item from the shopping list
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id,
                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
@@ -70,15 +68,14 @@ public class ShoppingListApiController {
             Long userId = userEntity.getId();
 
             shoppingListService.deleteItem(userId, id);
+
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while deleting the item.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while deleting the item (" + e.getMessage() + ").");
         }
     }
 
-    // Update an item amount in the shopping list
+    // update an item's amount in the shopping list
     @PutMapping("/{id}/amount")
     public ResponseEntity<?> updateItemAmount(@PathVariable Long id,
                                               @RequestParam("newAmount") String newAmountStr,
@@ -88,19 +85,15 @@ public class ShoppingListApiController {
             UserEntity userEntity = userRepository.findByToken(token);
             Long userId = userEntity.getId();
 
-            String error = shoppingListService.updateAmount(userId, id, newAmountStr);
-
-            if (!error.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-            }
+            shoppingListService.updateAmount(userId, id, newAmountStr);
 
             return ResponseEntity.ok("Item updated successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while updating the item amount.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while updating the item amount (" + e.getMessage() + ").");
         }
     }
 
-    // Return an item from the shopping list
+    // fetch a single item from the shopping list
     @GetMapping("/{id}")
     public ResponseEntity<?> getItem(@PathVariable Long id,
                                      @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
@@ -109,14 +102,13 @@ public class ShoppingListApiController {
             UserEntity userEntity = userRepository.findByToken(token);
             Long userId = userEntity.getId();
 
-            if (!shoppingListService.checkIfIdExists(userId, id)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Item with ID " + id + " not found.");
-            }
+            shoppingListService.checkIfIdExists(userId, id);
 
-            ShoppingListData data = shoppingListService.getItem(userId, id).orElseThrow();
+            ShoppingListData data = shoppingListService.getItem(userId, id).orElse(null);
+
             return ResponseEntity.ok(data);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the item.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the item (" + e.getMessage() + ").");
         }
     }
 }

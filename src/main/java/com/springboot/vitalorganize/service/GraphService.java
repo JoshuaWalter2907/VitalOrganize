@@ -31,18 +31,18 @@ public class GraphService {
 
     private final PaymentRepository paymentRepository;
 
-    public List<String> generateChartsForFund(Long fundId, LocalDateTime startDate) {
-        // Fetch raw daily data from the repository
+    // return a base64 encoded string of an image for each fund (image of the graph)
+    public List<String> generateFundCharts(Long fundId, LocalDateTime startDate) {
+
         List<Object[]> dailyData = paymentRepository.findDailyTransactionsByFund(fundId, startDate);
 
-        // Preprocess the raw data into the appropriate format for the bar and line charts
-        Map<String, Double> barData = preprocessBarChartData(dailyData, startDate); // Preprocess bar chart data
-        Map<String, Double> lineData = preprocessLineChartData(dailyData, startDate, fundId); // Preprocess line chart data
+        // process the raw data into the appropriate format for the bar and line charts
+        Map<String, Double> barData = processBarChartData(dailyData, startDate);
+        Map<String, Double> lineData = processLineChartData(dailyData, startDate, fundId);
 
-        // Extract the labels (dates) from the processed data
-        List<String> labels = new ArrayList<>(barData.keySet()); // Labels are the dates (keys of the map)
+        // extract the date-labels from the processed data
+        List<String> labels = new ArrayList<>(barData.keySet());
 
-        // Return the generated charts as a List
         List<String> charts = new ArrayList<>();
         charts.add(createBarChart(labels, barData));
         charts.add(createLineChart(labels, lineData));
@@ -50,15 +50,65 @@ public class GraphService {
         return charts;
     }
 
+    private Map<String, Double> processBarChartData(List<Object[]> transactions, LocalDateTime startDate) {
+        Map<String, Double> dailyNetAmounts = new LinkedHashMap<>();
+
+        // initialize all 30 days with 0, so even days without transactions get a space in the chart
+        for (int i = 0; i < 30; i++) {
+            LocalDateTime date = startDate.plusDays(i);
+            dailyNetAmounts.put(date.toLocalDate().toString(), 0.0);
+        }
+
+        // add the netAmounts for all existing transaction dates, transaction[1] is date, [2] is netAmount
+        for (Object[] transaction : transactions) {
+            LocalDateTime date = (LocalDateTime) transaction[1];
+            double netAmount = (double) transaction[2];
+            dailyNetAmounts.put(date.toLocalDate().toString(), netAmount);
+        }
+        return dailyNetAmounts;
+    }
+
+    private Map<String, Double> processLineChartData(List<Object[]> transactions, LocalDateTime startDate, Long fundId) {
+        Map<String, Double> dailyBalances = new LinkedHashMap<>();
+
+        // initialize all 30 days, days without transactions will remain at a constant value
+        for (int i = 0; i < 30; i++) {
+            LocalDateTime date = startDate.plusDays(i);
+            dailyBalances.put(date.toLocalDate().toString(), null);
+        }
+
+        Optional<Double> initialBalanceOpt = paymentRepository.findBalanceByDate(fundId, startDate);
+        double initialBalance = initialBalanceOpt.orElse(0.0);
+        double currentBalance = initialBalance;
+
+        for (Object[] transaction : transactions) {
+            LocalDateTime date = ((LocalDateTime) transaction[1]).toLocalDate().atStartOfDay();
+            double netAmount = (double) transaction[2];
+            currentBalance += netAmount;
+            dailyBalances.put(date.toLocalDate().toString(), currentBalance);
+        }
+
+        currentBalance = initialBalance;
+        // fill the days without transactions with yesterday's balance
+        for (String date : dailyBalances.keySet()) {
+            System.out.println(dailyBalances.get(date));
+            if (dailyBalances.get(date) == null) {
+                dailyBalances.put(date, currentBalance);
+            } else {
+                currentBalance = dailyBalances.get(date);
+            }
+        }
+        return dailyBalances;
+    }
+
     private String createBarChart(List<String> labels, Map<String, Double> barData) {
         try {
-            // Create the dataset
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
             for (String date : labels) {
-                dataset.addValue(barData.get(date), "Transactions", formatDate(date)); // Format date
+                dataset.addValue(barData.get(date), "Transactions", formatDate(date));
             }
 
-            // Create the bar chart
+            // create the bar chart
             JFreeChart chart = ChartFactory.createBarChart(
                     "Daily Transactions Overview",
                     "Date",
@@ -70,72 +120,57 @@ public class GraphService {
                     false
             );
 
-            // Customize the plot
+            // customize the plot
             CategoryPlot plot = chart.getCategoryPlot();
-            plot.setBackgroundPaint(Color.WHITE); // Set plot background to white
+            plot.setBackgroundPaint(Color.WHITE);
 
-            // Use a custom renderer to dynamically color bars
-            BarRenderer renderer = new BarRenderer() {
-                @Override
-                public Paint getItemPaint(int row, int column) {
-                    Number value = dataset.getValue(row, column);
-                    if (value != null && value.doubleValue() < 0) {
-                        return Color.RED; // Negative bars are red
-                    }
-                    return Color.GREEN; // Positive bars are green
-                }
-            };
+            // use a custom renderer for differently coloured bars
+            BarRenderer renderer = getBarRenderer(dataset);
 
-            // Remove the 3D effect
-            renderer.setBarPainter(new StandardBarPainter());
-            renderer.setShadowVisible(false); // Disable shadows
-            renderer.setDrawBarOutline(false); // Remove outlines
-
-            // Apply the custom renderer
+            // apply the custom renderer
             plot.setRenderer(renderer);
 
-            // Add vertical grid lines to separate each day
-            plot.setDomainGridlinesVisible(true);
-            plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+            customizeChartLayout(plot);
 
-            // Customize the X-axis
-            CategoryAxis xAxis = plot.getDomainAxis();
-            xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45); // Rotate labels for readability
-            xAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14)); // Increase font size
-            xAxis.setTickLabelPaint(Color.BLACK);
-            xAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16)); // Increase label font size
+            // render the chart to a PNG image
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(outputStream, chart, 1600, 360);
 
-            // Customize the Y-axis
-            ValueAxis yAxis = plot.getRangeAxis();
-            yAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14));
-            yAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16));
-
-            // Add the black baseline at Y=0 with reduced thickness
-            plot.setRangeZeroBaselineVisible(true);
-            plot.setRangeZeroBaselinePaint(Color.BLACK);
-            plot.setRangeZeroBaselineStroke(new BasicStroke(1.0f)); // Thinner black line at Y=0
-
-            // Render the chart to a PNG image
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ChartUtils.writeChartAsPNG(baos, chart, 1600, 360); // Increased width, decreased height
-
-            // Convert to Base64
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
+            // convert to Base64
+            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("Error generating bar chart", e);
         }
     }
 
+    private static BarRenderer getBarRenderer(DefaultCategoryDataset dataset) {
+        BarRenderer renderer = new BarRenderer() {
+            @Override
+            public Paint getItemPaint(int row, int column) {
+                Number value = dataset.getValue(row, column);
+                if (value != null && value.doubleValue() < 0) {
+                    return Color.RED; // withdrawals
+                }
+                return Color.GREEN; // deposits
+            }
+        };
+
+        // remove the 3D effect
+        renderer.setBarPainter(new StandardBarPainter());
+        renderer.setShadowVisible(false);
+        renderer.setDrawBarOutline(false);
+        return renderer;
+    }
+
     private String createLineChart(List<String> labels, Map<String, Double> lineData) {
         try {
-            // Create the dataset
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
             for (String date : labels) {
-                dataset.addValue(lineData.get(date), "Balance", formatDate(date)); // Add current balance to the dataset
+                dataset.addValue(lineData.get(date), "Balance", formatDate(date));
             }
 
-            // Create the line chart
+            // create the line chart
             JFreeChart chart = ChartFactory.createLineChart(
                     "Fund Balance Over Time",
                     "Date",
@@ -147,105 +182,54 @@ public class GraphService {
                     false
             );
 
-            // Customize the plot
+            // customize the plot
             CategoryPlot plot = chart.getCategoryPlot();
-            plot.setBackgroundPaint(Color.WHITE); // Set plot background to white
+            plot.setBackgroundPaint(Color.WHITE);
 
-            // Set a custom renderer for the line chart
+            // set and apply a custom renderer for the line chart
             LineAndShapeRenderer renderer = new LineAndShapeRenderer();
-            renderer.setSeriesPaint(0, Color.RED); // Use red for the line
-            renderer.setSeriesStroke(0, new BasicStroke(2.0f)); // Thicker line for better visibility
+            renderer.setSeriesPaint(0, Color.RED);
+            renderer.setSeriesStroke(0, new BasicStroke(2.0f));
 
-            // Apply the custom renderer
             plot.setRenderer(renderer);
 
-            // Add vertical grid lines to separate each day
-            plot.setDomainGridlinesVisible(true);
-            plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+            customizeChartLayout(plot);
 
-            // Customize the X-axis
-            CategoryAxis xAxis = plot.getDomainAxis();
-            xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45); // Rotate labels for readability
-            xAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14)); // Increase font size
-            xAxis.setTickLabelPaint(Color.BLACK);
-            xAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16)); // Increase label font size
+            // render the chart to a PNG image
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ChartUtils.writeChartAsPNG(outputStream, chart, 1600, 360);
 
-            // Customize the Y-axis
-            ValueAxis yAxis = plot.getRangeAxis();
-            yAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14));
-            yAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16));
-
-            // Add the black baseline at Y=0 with reduced thickness
-            plot.setRangeZeroBaselineVisible(true);
-            plot.setRangeZeroBaselinePaint(Color.BLACK);
-            plot.setRangeZeroBaselineStroke(new BasicStroke(1.0f)); // Thinner black line at Y=0
-
-            // Render the chart to a PNG image
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ChartUtils.writeChartAsPNG(baos, chart, 1600, 360); // Increased width, decreased height
-
-            // Convert to Base64
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
+            // convert to Base64
+            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException("Error generating line chart", e);
         }
     }
 
+    private void customizeChartLayout(CategoryPlot plot){
+        // add vertical grid lines to separate each day
+        plot.setDomainGridlinesVisible(true);
+        plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
+
+        // customize the x-axis
+        CategoryAxis xAxis = plot.getDomainAxis();
+        xAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+        xAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14));
+        xAxis.setTickLabelPaint(Color.BLACK);
+        xAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16));
+
+        // customize the y-axis
+        ValueAxis yAxis = plot.getRangeAxis();
+        yAxis.setTickLabelFont(new Font("SansSerif", Font.BOLD, 14));
+        yAxis.setLabelFont(new Font("SansSerif", Font.BOLD, 16));
+
+        // add a black baseline at y=0
+        plot.setRangeZeroBaselineVisible(true);
+        plot.setRangeZeroBaselinePaint(Color.BLACK);
+        plot.setRangeZeroBaselineStroke(new BasicStroke(1.0f));
+    }
+
     private String formatDate(String date) {
-        LocalDate parsedDate = LocalDate.parse(date); // Assuming input is in ISO-8601 format
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d.M.");
-        return parsedDate.format(formatter);
-    }
-
-    private Map<String, Double> preprocessBarChartData(List<Object[]> transactions, LocalDateTime startDate) {
-        Map<String, Double> dailyNetAmounts = new LinkedHashMap<>();
-
-        // Initialize with all days in the past 30 days
-        for (int i = 0; i < 30; i++) {
-            LocalDateTime date = startDate.plusDays(i);
-            dailyNetAmounts.put(date.toLocalDate().toString(), 0.0);
-        }
-
-        // Populate net amounts for transaction dates
-        for (Object[] transaction : transactions) {
-            LocalDateTime date = ((LocalDateTime) transaction[1]).toLocalDate().atStartOfDay();
-            double netAmount = (double) transaction[2];
-            dailyNetAmounts.put(date.toLocalDate().toString(), netAmount);
-        }
-
-        return dailyNetAmounts;
-    }
-
-    private Map<String, Double> preprocessLineChartData(List<Object[]> transactions, LocalDateTime startDate, Long fundId) {
-        Map<String, Double> dailyBalances = new LinkedHashMap<>();
-
-        // Initialize with all days in the past 30 days
-        for (int i = 0; i < 30; i++) {
-            LocalDateTime date = startDate.plusDays(i);
-            dailyBalances.put(date.toLocalDate().toString(), null);
-        }
-
-        Optional<Double> initialBalanceOpt = paymentRepository.findBalanceByDate(fundId, startDate);
-        double initialBalance = initialBalanceOpt.orElse(0.0);
-        double lastKnownBalance = initialBalance;
-
-        for (Object[] transaction : transactions) {
-            LocalDateTime date = ((LocalDateTime) transaction[1]).toLocalDate().atStartOfDay();
-            double netAmount = (double) transaction[2];
-            lastKnownBalance += netAmount;
-            dailyBalances.put(date.toLocalDate().toString(), lastKnownBalance);
-        }
-
-        lastKnownBalance = initialBalance;
-        // Fill missing days with the balance of the previous day
-        for (String date : dailyBalances.keySet()) {
-            if (dailyBalances.get(date) == null) {
-                dailyBalances.put(date, lastKnownBalance);
-            } else {
-                lastKnownBalance = dailyBalances.get(date);
-            }
-        }
-
-        return dailyBalances;
+        return LocalDate.parse(date).format(DateTimeFormatter.ofPattern("d.M."));
     }
 }

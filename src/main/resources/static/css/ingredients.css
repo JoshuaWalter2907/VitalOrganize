@@ -1,25 +1,21 @@
-/* Container für die Liste */
 .list-container {
     position: relative;
-    overflow-y: auto;
-    max-height: calc(100vh - 180px);
     top: 100px;
     left: 0;
     right: 0;
     bottom: 0;
     width: 80%;
     max-width: 1200px;
-    margin: 30px auto;
+    margin: 30px auto 100px;
     padding: 10px;
     background-color: var(--color-medium-light);
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Stil für die einzelnen Listenelemente */
 .list-item {
     display: flex;
-    justify-content: space-between; /* Verteilt die Items horizontal */
+    justify-content: space-between;
     align-items: center;
     padding: 15px;
     border-bottom: 1px solid #ddd;
@@ -29,12 +25,10 @@
     border-bottom: none;
 }
 
-/* Entfernung der letzten unteren Linie bei der letzten Listeneinheit */
 .list-item:last-child {
     border-bottom: none;
 }
 
-/* Stil für die Eingabefelder und Buttons */
 .add-ingredient {
     display: flex;
     justify-content: space-between;
@@ -70,7 +64,6 @@
     cursor: pointer;
 }
 
-/* Layout für den Inhalt innerhalb eines Listeneintrags (nebeneinander) */
 .item-name,
 .item-category,
 .item-price,
@@ -79,7 +72,6 @@
     padding: 5px 10px;
 }
 
-/* Icons für Favoriten und Löschen, rechts ausgerichtet */
 .item-favourite,
 .item-delete,
 .shopping-list-add-remove-item{
