@@ -210,6 +210,7 @@ public class FundService {
         editFundResponseDTO.setFund(fund);
         editFundResponseDTO.setFriends(filteredUsers);
         editFundResponseDTO.setId(fund.getId());
+        editFundResponseDTO.setQuery(newFundRequestDTO.getQuery());
 
         return editFundResponseDTO;
     }

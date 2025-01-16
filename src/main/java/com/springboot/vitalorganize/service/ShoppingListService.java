@@ -2,7 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
-import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
+import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import jakarta.transaction.Transactional;

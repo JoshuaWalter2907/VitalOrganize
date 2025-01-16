@@ -22,17 +22,17 @@
   <div class="left-side">
     <div class="search-container">
       <form action="/fund/edit-members" method="get" class="search-form">
-        <input type="hidden" name="fundId" th:value="${id}">
+        <input type="hidden" name="fundId" th:value="${editFundData.id}">
         <div class="input-container">
           <button type="submit" class="search-button">
             <i class="fa fa-search"></i> <!-- Such-Icon -->
           </button>
-          <input type="text" name="query" th:placeholder="#{fund.search.person}" th:value="${query}">
+          <input type="text" name="query" th:placeholder="#{fund.search.person}" th:value="${editFundData.query}">
         </div>
       </form>
     </div>
     <form id="user-selection-form" method="post" action="/fund/edit-fund" class="create-group-form">
-      <input type="hidden" name="fundId" th:value="${id}">
+      <input type="hidden" name="fundId" th:value="${editFundData.id}">
       <div class="user-list">
         <div th:each="entry : ${editFundData.friends}">
           <label class="user-label">

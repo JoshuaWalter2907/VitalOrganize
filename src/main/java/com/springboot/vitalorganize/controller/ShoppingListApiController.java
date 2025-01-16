@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
-import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
+import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import lombok.AllArgsConstructor;
