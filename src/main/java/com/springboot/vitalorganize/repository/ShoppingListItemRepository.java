@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.repository;
 
-import com.springboot.vitalorganize.model.ShoppingListData;
+import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
 import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

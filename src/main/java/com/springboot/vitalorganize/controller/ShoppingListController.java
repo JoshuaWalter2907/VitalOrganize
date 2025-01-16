@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.controller;
 
-import com.springboot.vitalorganize.model.ShoppingListData;
+import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;

@@ -274,7 +274,7 @@
         </div>
         <div class="input-box-fixed">
           <label th:text="#{profile.username}"></label>
-          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendtoEmail != null && !ProfileEditData.profile.sendtoEmail.isEmpty() ?
+          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendToEmail != null && !ProfileEditData.profile.sendtoEmail.isEmpty() ?
                  (#strings.substring(ProfileEditData.profile.sendtoEmail, 0, 1) + '***' +
                   #strings.substring(ProfileEditData.profile.sendtoEmail, ProfileEditData.profile.sendtoEmail.length() - 10)) :
                  (#strings.substring(ProfileEditData.profile.email, 0, 1) + '***' +

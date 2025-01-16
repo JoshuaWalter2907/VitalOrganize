@@ -1,4 +1,4 @@
-package com.springboot.vitalorganize.model;
+package com.springboot.vitalorganize.model.Shopping_List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

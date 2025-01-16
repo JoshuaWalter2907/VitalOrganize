@@ -1,4 +1,4 @@
-package com.springboot.vitalorganize.model;
+package com.springboot.vitalorganize.model.Ingredient;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import lombok.AllArgsConstructor;

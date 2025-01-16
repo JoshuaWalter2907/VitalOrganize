@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
-import com.springboot.vitalorganize.model.FundStatisticsData;
+import com.springboot.vitalorganize.model.Fund_Statistics.FundStatisticsData;
 import com.springboot.vitalorganize.service.StatisticsService;
 import com.springboot.vitalorganize.service.UserService;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
-import com.springboot.vitalorganize.model.IngredientListData;
+import com.springboot.vitalorganize.model.Ingredient.IngredientListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
