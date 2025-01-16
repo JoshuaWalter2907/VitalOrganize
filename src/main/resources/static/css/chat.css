@@ -1,95 +1,636 @@
-body {
-    font-family: Arial, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+@import url("../css/themes.css");
+
+* {
     margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+body {
+    overflow-y: hidden;
+}
+
+.main-container {
+    width: 80%;
+    height: calc(100vh - 140px);
     display: flex;
-    height: 100vh;
+    flex-direction: row;
+    box-shadow: 0 1px 1px  0 rgba(0,0,0,0.5), 0px 2px 5px 0 rgba(0,0,0,0.6);
+    overflow: hidden;
+    margin-top: 100px;
+}
+
+.main-container .left-container {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 30%;
+    height: 100%;
+    background-color: var(--color-light);
+    overflow-y: auto;
+    position: relative;
+}
+
+.main-container .right-container {
+    width: 70%;
+    height: 100%;
+    background: var(--color-medium-dark);
+    padding-bottom: 15px;
+}
+
+
+.right-container .simple-text{
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-light);
+}
+
+.right-container input#message-input {
+    background-color: var(--color-medium-dark); /* Gleiche Hintergrundfarbe wie der Container */
+    color: var(--text-color-light); /* Gleiche Textfarbe wie der Container */
+    border: none; /* Entferne den Rand */
+    box-sizing: border-box; /* Damit Padding den Platz nicht überschreitet */
+}
+
+
+
+.user-img {
+    position:relative;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 50%;
+}
+
+
+/* Container für die gesamte Suchleiste */
+.search-container {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Zentriert die Suchleiste */
+    padding: 10px; /* Leichter Abstand um die gesamte Suchleiste */
+}
+
+/* Form-Style */
+.search-form {
+    background-color: transparent;
+    display: flex; /* Flexbox für horizontale Anordnung */
+    width: 100%;
+    max-width: 600px; /* Maximale Breite der Suchleiste */
+}
+
+/* Container für Button und Input */
+.input-container {
+    display: flex;
+    align-items: center; /* Vertikale Ausrichtung */
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Leicht schwarzer Hintergrund (mit Transparenz) */
+    border-radius: 30px; /* Schöne Abrundung der Ecken */
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+
+/* Button (Lupe) */
+.search-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+    border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
+}
+
+
+/* Das Input-Feld */
+.search-form input {
+    width: 100%; /* Input nimmt die gesamte verbleibende Breite ein */
+    padding: 8px 15px; /* Polsterung für das Textfeld */
+    font-size: 14px; /* Schriftgröße */
+    border: none; /* Kein Rand */
+    border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
+    color: var(--text-color-light); /* Weiße Schriftfarbe */
+    background-color: transparent; /* Hintergrundfarbe transparent */
+    outline: none; /* Entfernt den Standardfokus-Rahmen */
+    z-index: 10;
+}
+
+/* Optional: Stil für das Icon im Button */
+.search-button i {
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+    z-index: 10;
+}
+
+
+.chat-list {
+    margin-bottom: 15px ;
+    position: relative;
+    height:calc(100% - 170px);
+    overflow-y: auto;
+}
+
+.chat-link {
+    display: block; /* Das a-Tag wird zu einem Block-Element und dehnt sich auf den gesamten Raum aus */
+    width: 100%; /* Damit der Link die gesamte Breite des Elternelements einnimmt */
+    height: 100%; /* Falls du auch die Höhe des Containers abdecken willst */
+    text-decoration: none; /* Entfernt den Standard-Link-Stil (Unterstreichung) */
+    color: inherit; /* Erbt die Textfarbe des Elternelements */
+    z-index: 10;
+}
+
+
+.chat-list .chat-box {
+    position: relative;
+    width: 100%;
+    display:flex;
+    /*   justify-content: center; */
+    align-items:center;
+    cursor: pointer;
+    padding: 15px;
+    border-bottom: 1px solid var(--color-medium-dark);
+}
+
+.chat-list .chat-box:hover {
+    background-color: var(--color-medium-dark);
+}
+
+.chat-list .chat-box .img-box {
+    position:relative;
+    width: 55px;
+    height:45px;
+    overflow:hidden;
+    border-radius: 50%;
+}
+
+.chat-list .chat-box .chat-details {
+    width: 100%;
+    margin-left: 10px;
+}
+
+.chat-list .chat-box .chat-details .text-head {
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom:2px;
+}
+
+.chat-list .chat-box .chat-details .text-head h4 {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-color-dark)
+}
+
+.chat-list .chat-box .chat-details .text-head .time {
+    font-size: 0.8em;
+    color: var(--text-color-light);
+}
+
+.chat-list .chat-box .chat-details .text-message {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-list .chat-box .chat-details .text-message p {
+    color: var(--text-color-light);
+    font-size: 0.9em;
     overflow: hidden;
 }
 
-.chat-container {
-    display: flex;
+img {
     width: 100%;
-    height: 100%;
+    object-fit: cover;
 }
 
-.sidebar {
-    width: 25%;
-    background-color: #2c3e50;
-    color: white;
+
+.right-container .chat-header {
     padding: 10px;
+    background: var(--color-slightly-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.right-container .chat-header .img-text .user-img .dp {
+    position:relative;
+    width: 40px;
+    height:auto;
+    object-fit: contain; /* Skalieren, ohne zu beschneiden */
+}
+
+.right-container .chat-header .img-text {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.right-container .chat-header .img-text h4 {
+    font-weight: 500;
+    line-height: 1.2em;
+    margin-left: 15px;
+}
+
+.right-container .chat-header .img-text h4 span {
+    font-size: 15px;
+    color: var(--text-color-light);
+}
+
+
+.chat-container{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    height: calc(100% - 120px);  /*60+60*/
+    padding: 5px 20px;
+    gap: 10px; /* Abstand zwischen Nachrichten */
+    overflow-y: scroll; /* Ermöglicht vertikales Scrollen */
+    scrollbar-width: none; /* Verhindert die Anzeige der Scrollbar in Firefox */
+    -ms-overflow-style: none;  /* Verhindert die Anzeige der Scrollbar in älteren IE-Versionen */
+}
+
+
+.message-box {
+    display: flex;
+    flex-direction: column; /* Nachrichten übereinander anordnen */
+    justify-content: flex-start; /* Maximiert den Abstand nach oben */
+    align-items: flex-start; /* Vertikal oben ausrichten */
+    position: relative;
+    margin: 5px 0; /* Abstand zwischen den Nachrichten */
+    padding: 10px 15px;
+    border-radius: 10px; /* Abgerundete Ecken */
+    width: fit-content;
+    max-width: 60%; /* Maximale Breite der Nachricht */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+}
+
+/* Text der Nachricht */
+.message {
+    margin: 0;
+    padding-right: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 100%;
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    flex-grow: 1; /* Der Textbereich wächst, um den verfügbaren Raum zu füllen */
+}
+
+.message-sender a{
+    font-size: 12px; /* Gleiche Schriftgröße wie der Zeitstempel */
+    color: var(--text-color-light); /* Dezente graue Farbe */
+    margin-bottom: 5px;
+    white-space: nowrap; /* Verhindert Zeilenumbruch */
+    align-self: flex-start;
+    text-decoration: none;
+}
+
+/* Zeitstempel der Nachricht */
+.message-time {
+    font-size: 12px; /* Kleinere Schrift für den Zeitstempel */
+    color: var(--text-color-light); /* Graue Farbe für den Zeitstempel */
+    position: absolute;
+    bottom: -18px; /* Position des Zeitstempels unterhalb der Nachricht */
+    right: 10px; /* Rechtsbündig */
+    white-space: nowrap; /* Verhindert Zeilenumbruch */
+}
+
+/* Stil für eigene Nachrichten */
+.my-message {
+    background-color: var(--color-slightly-dark); /* Grüner Hintergrund für eigene Nachrichten */
+    color: var(--text-color-light); /* Schwarze Textfarbe */
+    align-self: flex-end; /* Positioniert die eigene Nachricht rechts */
+    border-radius: 10px 10px 0 10px; /* Abgerundete Ecken oben und rechts */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    padding-right: 40px;
+}
+
+/* Stil für fremde Nachrichten */
+.friend-message {
+    background-color: var(--color-dark); /* Weißer Hintergrund für fremde Nachrichten */
+    color: var(--text-color-light); /* Schwarze Textfarbe */
+    align-self: flex-start; /* Positioniert die fremde Nachricht links */
+    border-radius: 10px 10px 10px 0; /* Abgerundete Ecken oben und links */
+    word-wrap: break-word; /* Lange Wörter umbrechen */
+    padding-right: 40px;
+}
+
+
+/* Container für die gesamte Eingabeleiste */
+.text-input {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Zentriert die Eingabeleiste */
+    padding: 10px; /* Leichter Abstand um die gesamte Eingabeleiste */
+}
+
+.chatbox-input {
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+}
+
+.text-input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Leicht schwarzer Hintergrund (mit Transparenz) */
+    border-radius: 30px; /* Schöne Abrundung der Ecken */
+    padding: 5px;
     box-sizing: border-box;
 }
 
-.sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-}
-
-.sidebar li {
+.text-input-container input[type="text"] {
+    flex-grow: 1; /* Das Eingabefeld soll den restlichen Platz einnehmen */
     padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #34495e;
+    border: 1px solid var(--text-color-light);
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none; /* Entfernt den Fokus-Rand */
+    background-color: transparent !important;
 }
 
-.sidebar li:hover {
-    background-color: #34495e;
-}
 
-.chat-box {
-    flex: 1;
+.right-container .send-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
     display: flex;
-    flex-direction: column;
-    background-color: #ecf0f1;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+    border-radius: 5px 0 0 5px; /* Abrundung nur an der linken Seite */
 }
 
-.chat-header {
-    background-color: #3498db;
-    color: white;
-    padding: 10px;
+.chat-container input {
+    width: 100%; /* Input nimmt die gesamte verbleibende Breite ein */
+    padding: 8px 15px; /* Polsterung für das Textfeld */
+    font-size: 14px; /* Schriftgröße */
+    border: none; /* Kein Rand */
+    border-radius: 0 5px 5px 0; /* Abrundung nur an der rechten Seite */
+    background-color: transparent; /* Hintergrundfarbe transparent */
+    outline: none; /* Entfernt den Standardfokus-Rahmen */
+    z-index: 10;
+}
+
+
+
+
+.message-time{
+    position: absolute; /* Zeit relativ positionieren */
+    bottom: 5px;
+    right: 10px; /* Zeit am unteren rechten Rand */
+    font-size: 12px; /* Kleinere Schriftgröße */
+    color: var(--text-color-light); /* Dezente Farbe */
+}
+
+.create-button{
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10;
+}
+
+.create-group-btn:hover {
+    background-color: var(--color-medium-dark);
+}
+
+.user-selection-container {
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 600px;
+    background: var(--text-color-light);
+    border-radius: 10px;
+}
+
+
+html {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+* {
+    box-sizing: inherit;
+    &:before,
+    &:after {
+        box-sizing: inherit;
+    }
+}
+
+h2{
     text-align: center;
 }
 
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-    background-color: white;
+.user-list {
+    margin: 20px;
 }
 
-.chat-messages div {
+.user-item{
     margin-bottom: 10px;
 }
 
-.chat-input {
+.user-label {
     display: flex;
-    padding: 10px;
-    background-color: #bdc3c7;
-    box-sizing: border-box;
+    align-items: center; /* Zentriert das Bild und den Text vertikal */
+    gap: 10px; /* Abstand zwischen Bild und Text */
 }
 
-.chat-input input {
-    flex: 1;
+.profile-image {
+    width: 40px; /* Größe des Bildes */
+    height: 40px;
+    border-radius: 50%; /* Macht das Bild rund */
+    object-fit: cover; /* Sorgt dafür, dass das Bild richtig zugeschnitten wird */
+}
+
+.create-group-form input{
+    width: 100%;
+    padding: 8px 15px;
+    font-size: 14px;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    color: var(--text-color-light);
+    background: transparent;
+    outline: none;
+    z-index: 10;
+}
+
+.error-message{
+    margin-top: 5px;
+    font-size: 14px;
+    color: var(--color-dark);
+    font-style: italic;
+}
+
+.divider{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom:1px var(--color-medium-dark) solid;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.empty-chat {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--text-color-light);
+    font-size: 18px;
+}
+
+
+.user-item {
+    display: flex;
+    align-items: center;
     padding: 10px;
-    border: 1px solid #7f8c8d;
-    border-radius: 5px;
+    cursor: pointer; /* Zeigt an, dass der Bereich klickbar ist */
+}
+
+.user-item.selected {
+    background-color: var(--color-medium-dark); /* Hebt ausgewählte Benutzer hervor */
+}
+
+.user-item:hover {
+    background-color: var(--color-medium-dark); /* Ändert die Hintergrundfarbe beim Hover */
+}
+
+.chats-header{
+    display: flex;
+    justify-content: space-between; /* Verteilung der Elemente mit Abstand */
+    align-items: center; /* Vertikale Ausrichtung der Elemente */
+    padding: 2px 20px; /* Ein bisschen Abstand innerhalb des Headers */
+    margin-bottom: 15px;
+}
+.chats-header h2 {
+    margin: 0; /* Entfernt den Standard-Abstand oben und unten */
+    font-size: 24px;
+    line-height: 1;
+}
+
+.chats-header button{
+    display: flex;
+    align-items: center;
+    z-index: 10;
+}
+
+.create-chat-btn {
+    background-color: transparent;
+    color: var(--color-dark); /* Weißes Pluszeichen */
+    border: none; /* Kein Rand */
+    border-radius: 50%; /* Runde Form */
+    width: 50px; /* Breite des Buttons */
+    height: 50px; /* Höhe des Buttons */
+    display: flex; /* Flexbox, um das Icon zu zentrieren */
+    justify-content: center; /* Zentriert das Pluszeichen horizontal */
+    align-items: center; /* Zentriert das Pluszeichen vertikal */
+    font-size: 24px; /* Größe des Plus-Icons */
+    cursor: pointer; /* Zeigt an, dass es klickbar ist */
+    transition: background-color 0.3s, transform 0.3s; /* Sanfte Übergänge für Hintergrundfarbe und Transformation */
+
+}
+
+.create-chat-btn:hover {
+    background-color: var(--color-medium-dark); /* Dunklere Hintergrundfarbe bei Hover */
+    color: var(--text-color-light);
+    transform: scale(1.1); /* Etwas vergrößern beim Hover für einen interaktiven Effekt */
+}
+
+.create-chat-btn:focus {
+    outline: none; /* Entfernt den Fokusrahmen */
+}
+
+.chat-link {
+    display: block;
+    text-decoration: none;
+}
+
+.chat-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-img {
+    flex-shrink: 0; /* Verhindert, dass das Bild sich verkleinert */
     margin-right: 10px;
 }
 
-.chat-input button {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3498db;
-    color: white;
-    cursor: pointer;
+.user-img img {
+    width: 40px; /* Größe des Benutzerbildes */
+    height: auto; /* Größe des Benutzerbildes */
+    border-radius: 50%;
 }
 
-.chat-input button:hover {
-    background-color: #2980b9;
+.chat-info {
+    flex-grow: 1; /* Damit der Chat-Info-Bereich den verfügbaren Platz nutzt */
+    overflow: hidden; /* Verhindert, dass der Text überläuft */
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    text-overflow: ellipsis; /* Schneidet den Text ab und zeigt '...' an, wenn er zu lang ist */
+}
+
+.chat-info h4 {
+    font-size: 16px;
+    margin: 0;
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    overflow: hidden; /* Verhindert den Überlauf */
+    text-overflow: ellipsis; /* Zeigt '...' an, wenn der Text zu lang ist */
+}
+
+.chat-info p {
+    font-size: 14px;
+    color: var(--text-color-dark);
+    margin: 0;
+    white-space: nowrap; /* Verhindert den Zeilenumbruch */
+    overflow: hidden; /* Verhindert den Überlauf */
+    text-overflow: ellipsis; /* Zeigt '...' an, wenn der Text zu lang ist */
+
+}
+.chat-time {
+    text-align: right;
+    font-size: 12px; /* Verkleinerung der Uhrzeit */
+    color: inherit;
+}
+
+.chat-info h4, .chat-info p {
+    margin-bottom: 5px;
+}
+
+.right-container .simple-text{
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-color-light);
+}
+
+.load-more-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.load-more-button{
+    padding: 5px 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: var(--text-color-light);
+}
+
+.load-more-button:hover{
+    background-color: rgba(0, 0, 0, 0.3);
 }

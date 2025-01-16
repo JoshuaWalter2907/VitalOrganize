@@ -1,14 +1,35 @@
 <header>
-  <div class="header-container">
-    <div class="header-left">
+  <div class="header-top">
+    <div class="header left">
+      <a th:href="@{/}" class="dropdown-button" th:text="#{home}">Home</a>
+    </div>
+    <div th:if="${loggedInUser != null && !loggedInUser.isMember()}">
+      <form method="post" action="/create-subscription">
+        <button type="submit" class="dropdown-button">Premium</button>
+      </form>
+    </div>
+    <div class="header-right">
 
       <!-- Theme Dropdown -->
       <div class="dropdown">
         <button class="dropdown-button" th:text="#{theme}">Theme</button>
         <div class="dropdown-content">
-          <a href="#" data-theme="light" th:text="#{theme.light}">Light</a>
-          <a href="#" data-theme="dark" th:text="#{theme.dark}">Dark</a>
-          <a href="#" data-theme="gold" th:text="#{theme.golden}">Golden</a>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="blue">
+            <button type="submit" th:text="#{header.theme.blau}">Blue</button>
+          </form>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="gold">
+            <button type="submit" th:text="#{header.theme.gold}">Gold</button>
+          </form>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="red">
+            <button type="submit" th:text="#{header.theme.rot}">Red</button>
+          </form>
+          <form th:action="@{/change-theme}" method="get">
+            <input type="hidden" name="theme" value="gray">
+            <button type="submit" th:text="#{header.theme.gray}">Gray</button>
+          </form>
         </div>
       </div>
 
@@ -16,27 +37,50 @@
       <div class="dropdown">
         <button class="dropdown-button" th:text="#{language}">Language</button>
         <div class="dropdown-content">
-          <!-- Sprachauswahl mit Links -->
-          <a th:href="@{/ (lang ='de')}" th:text="#{language.german}">Deutsch</a>
-          <a th:href="@{/ (lang ='en')}" th:text="#{language.english}">English</a>
+          <form th:action="@{/change-lang}" method="get">
+            <input type="hidden" name="lang" value="de">
+            <button type="submit" th:text="#{language.german}">German</button>
+          </form>
+          <form th:action="@{/change-lang}" method="get">
+            <input type="hidden" name="lang" value="en">
+            <button type="submit" th:text="#{language.english}">English</button>
+          </form>
         </div>
       </div>
 
-      <!-- Login Button -->
-      <a th:if="${username != null}"
+
+      <a th:if="${loggedInUser != null && username != null and httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null}"
+         th:href="@{/logout}"
+         class="dropdown-button"
+         th:text="#{logout}">
+        Logout
+      </a>
+
+      <a th:if="${loggedInUser != null && username != null and !(httpServletRequest.requestURI.contains('/profile') and httpServletRequest.getParameter('profileId') == null)}"
          th:href="@{/profile}"
-         class="login-button"
+         class="dropdown-button"
          th:text="#{profile}">
         Profile
       </a>
 
-      <!-- Login Button für nicht eingeloggte Nutzer -->
-      <a th:unless="${username != null}"
+      <a th:if="${loggedInUser == null}"
          th:href="@{/login}"
-         class="login-button"
+         class="dropdown-button"
          th:text="#{login}">
         Login
       </a>
+
     </div>
   </div>
+  <div class="header-bottom">
+    <a th:text="#{header.chat}" th:href="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip">Chat</a>
+    <a th:text="#{header.rezepte}" th:href="@{/}">Rezepte</a>
+    <a th:text="#{header.kalender}" th:href="@{/}">Kalender</a>
+    <a th:text="#{header.ingredients}" th:href="@{/ingredients}">Zutatenliste</a>
+    <a th:text="#{header.shoppingList}" th:href="@{/shoppingList}">Einkaufsliste</a>
+    <a th:text="#{header.api}" th:href="@{/api-docs}">API</a>
+    <a th:text="#{header.einzahlungen}" th:href="@{/fund}">Einzahlungen</a>
+    <a th:text="#{header.statistics}" th:href="@{/statistics}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip">Statistiken</a>
+  </div>
+
 </header>

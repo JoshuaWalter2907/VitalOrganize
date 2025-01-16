@@ -1,53 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+@import url("../css/themes.css");
 
-{
+
+*{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
-body.gold-theme{
-    --background-color: #FFA500;
-    --text-color: #1A237E;
-    --background-image: url("../images/background.jpg");
-}
-
-body.light-theme{
-    --background-color: white;
-    --text-color: black;
-    --background-image: url("../images/background_B&W.jpg.png");
+.main-container-homepage{
+    display: flex;
+    flex: 1;
+    flex-direction: column; /* Elemente werden vertikal gestapelt */
+    align-items: center; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    box-sizing: border-box;
+    top: 100px;
+    min-height: 100vh;
+    padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
+    background: var(--color-medium-light);
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 80%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    color: var(--text-color-light);
 }
 
 
 body{
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100%;
+    margin: 0;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    background-image: var(--background-image);
-}
+    background-color: var(--color-slightly-light);
+    color: var(--text-color-light);
+    background-attachment: fixed;
 
-
-.wrapper{
-    width: 420px;
-    background: transparent;
-    border: 2px solid rgb(255, 255, 255, .2);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
-    color: #fff;
-    border-radius: 10px;
-    padding: 30px 40px;
-}
-
-.wrapper h1{
-    font-size: 36px;
-    text-align: center;
 }
 
 /* Positioniere Tooltip über dem Icon */
@@ -60,8 +55,8 @@ body{
     top: -25px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
+    background-color: var(--text-color-dark);
+    color: var(--text-color-light);
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 12px;
@@ -84,19 +79,19 @@ body{
 }
 .input-box input,
 .input-box select{
-    width: 85%;
+    width: 100%;
     height: 40%;
     background: transparent;
-    border: 2px solid rgba(255, 255, 255, .2);
+    border: 1px solid var(--text-color-light);
     outline: none;
     border-radius: 40px;
     font-size: 16px;
-    color: #fff;
-    padding: 20px 45px 20px 20px;
+    color: var(--text-color-light);
+    padding: 20px 20px 20px 20px;
 }
 
 .input-box input::placeholder{
-    color: #fff;
+    color: var(--text-color-light);
 }
 
 .input-box i{
@@ -115,12 +110,12 @@ body{
 }
 
 .remember-forgot label input{
-    accent-color: #fff;
+    accent-color: var(--text-color-light);
     margin-right: 3px;
 }
 
 .remember-forgot a{
-    color: #fff;
+    color: var(--text-color-light);
     text-decoration: none;
 }
 
@@ -174,14 +169,14 @@ body{
 .wrapper .btn{
     width: 100%;
     height: 45px;
-    background: #fff;
+    background: var(--text-color-light);
     border: none;
     outline: none;
     border-radius: 40px;
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
     cursor: pointer;
     font-size: 16px;
-    color: #333;
+    color: var(--text-color-dark);
     font-weight: 600;
 }
 
@@ -192,46 +187,31 @@ body{
 }
 
 .register-link p a{
-    color: #fff;
+    color: var(--text-color-light);
     text-decoration: none;
     font-weight: 600;
 }
+
 .register-link p a:hover{
-    text-decoration: underline;
-}
-
-header {
-    padding: 20px 0;
-    text-align: center;
-}
-
-header nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-header nav ul li {
-    display: inline;
-    margin-right: 20px;
-}
-
-header nav ul li a {
-    text-decoration: none;
-    color: #fff;
-    font-weight: 600;
-}
-
-header nav ul li a:hover {
     text-decoration: underline;
 }
 
 /* Footer Styles */
 footer {
-    background-color: rgba(0, 0, 0, 0.5); /* Halbtransparentes Schwarz */
-    color: #fff;
-    padding: 10px 0;
-    text-align: center;
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to top, var(--color-medium-dark), var(--color-slightly-light)); /* Halbtransparentes Schwarz */
+    width: 100%;
+    height: 40px;
+    position: fixed;
+    color: var(--text-color-light);
+    margin: 0 auto;
+    padding: 20px 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
 }
 
 footer ul {
@@ -247,7 +227,7 @@ footer ul li {
 
 footer ul li a {
     text-decoration: none;
-    color: #fff;
+    color: var(--text-color-light);
     font-weight: 600;
 }
 
@@ -255,40 +235,42 @@ footer ul li a:hover {
     text-decoration: underline;
 }
 
-/* Grundlegendes Styling für den Header */
-header {
-    padding: 10px 0;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
 
+/* Tooltip Stile */
+.tooltip {
+    position: relative;
+    display: inline-block;
 }
 
-.header-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    width: 100%;
+.tooltip[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -25px; /* Platzierung unterhalb des Links */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none; /* Verhindert, dass der Tooltip das Hover-Ereignis blockiert */
+    transition: opacity 0.3s;
 }
 
-.header-left {
-    display: flex;
-    align-items: center;
+/* Tooltip sichtbar machen bei Hover */
+.tooltip[data-tooltip]:hover::after {
+    opacity: 1;
 }
 
 /* Login Button */
 .login-button {
-    background-color: var(--background-color); /* Goldene Farbe */
-    color: #1B1B1B;
+    color: var(--text-color-light);
+    text-decoration: none;
     border: none;
     padding: 8px 16px;
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
     cursor: pointer;
     margin-right: 15px;
@@ -297,7 +279,7 @@ header {
 }
 
 .login-button:hover {
-    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
+    text-decoration: underline;
 }
 
 /* Dropdown Menü */
@@ -310,41 +292,52 @@ header {
 
 /* Dropdown Button */
 .dropdown-button {
-    background-color: var(--text-color); /* Gleiche Hintergrundfarbe wie der Header */
-    color: var(--background-color); /* Goldene Schriftfarbe */
-    border: 1px solid var(--background-color);
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    text-decoration: none;
     padding: 8px 16px;
-    font-size: 14px;
+    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
     border-radius: 5px;
-    transition: background-color 0.3s ease-in-out;
-}
-
-.dropdown-button:hover {
-    background-color: #333333; /* Dunklerer Hintergrund bei Hover */
 }
 
 /* Dropdown Inhalte */
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: #1B1B1B; /* Gleicher dunkler Hintergrund wie der Header */
-    min-width: 150px;
+    background: var(--color-slightly-light); /* Gleicher dunkler Hintergrund wie der Header */
+    min-width: 50px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
     border-radius: 5px;
+    top: 85%;
+    left: 22px;
 }
 
-.dropdown-content a {
-    color: #F5F5F5; /* Weiße Schriftfarbe */
-    padding: 10px 12px;
+.dropdown-content form {
+    color: var(--text-color-light); /* Weiße Schriftfarbe */
+    padding: 5px 12px;
     text-decoration: none;
     display: block;
     transition: background-color 0.3s ease-in-out;
 }
 
-.dropdown-content a:hover {
-    background-color: #333333; /* Hintergrundfarbe bei Hover */
+.dropdown-content form:hover {
+    background-color: var(--color-slightly-dark); /* Hintergrundfarbe bei Hover */
+    cursor: pointer;
+}
+
+.dropdown-content form button{
+    background: transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.dropdown-content form button:hover {
+    cursor: pointer;
 }
 
 /* Zeige das Dropdown bei Hover */
@@ -352,81 +345,27 @@ header {
     display: block;
 }
 
-/* Navigation */
-header nav ul {
-    list-style-type: none;
-    display: flex;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-}
 
-header nav ul li {
-    margin: 0 15px;
-}
 
-/* Links im Header */
-header nav ul li a {
-    color: var(--background-color); /* Goldene Farbe für Links */
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: bold;
-    transition: color 0.3s ease-in-out;
-}
-
-/* Hover-Effekt für Links */
-header nav ul li a:hover {
-    color: #A86E2B; /* Braunton für Hover-Effekt */
-}
-
-/*!* Trennlinie unter dem Header *!*/
-/*header::after {*/
-/*    content: '';*/
-/*    display: block;*/
-/*    height: 2px;*/
-/*    background-color: var(--background-color); !* Goldene Linie *!*/
-/*    margin: 10px auto 0;*/
-/*    width: 100vw;*/
-/*    max-width: 100%;*/
-/*    margin-left: 20px;*/
-/*    margin-right: 20px;*/
-/*}*/
-
-/* Allgemeine Stile für den Footer */
-footer {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Schatten für Tiefe */
-    padding: 20px 0;
-    position: fixed; /* Fixiert den Footer am unteren Rand */
-    bottom: 0; /* Stellt sicher, dass der Footer immer am unteren Rand ist */
-    width: 100%; /* Breite des Footers auf 100% setzen */
-    z-index: 999; /* Sicherstellen, dass der Footer über anderen Elementen ist */
-    text-align: center; /* Text im Footer zentrieren */
-}
-
-footer ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-footer ul li {
-    display: inline;
-    margin-right: 20px; /* Abstand zwischen den Links */
-}
-
-footer ul li a {
-    text-decoration: none;
-    color: var(--background-color); /* Weiße Links */
-    font-weight: 600;
-}
-
-footer ul li a:hover {
-    text-decoration: underline; /* Unterstreichen bei Hover */
+.error-message-container{
+    color: darkred;
+    background-color: indianred;
+    border-radius: 5px;
 }
 
 /* Sicherstellen, dass der Footer nicht den Inhalt überlappt, wenn wenig Inhalt auf der Seite ist */
 body {
     margin-bottom: 60px; /* Dies sorgt dafür, dass der Footer nicht den Inhalt überlappt */
+}
+
+.wrapper{
+    background: rgba(0,0,0,.1);
+    width: 20%;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung für den Container */
+
 }
 
 /* Sektion für die Funktionen */
@@ -440,7 +379,7 @@ body {
 /* Große Überschrift in der Mitte */
 .section-title {
     font-size: 2.5rem;
-    color: #fff;
+    color: var(--text-color-light);
     position: absolute;
     top: 50%;
     left: 50%;
@@ -468,7 +407,7 @@ body {
     background-position: center; /* Das Bild wird immer zentriert */
     height: 300px; /* Höhe der Karte */
     border-radius: 10px;
-    color: #fff;
+    color: var(--text-color-light);
     text-align: center;
     display: flex;
     justify-content: center;
@@ -507,17 +446,11 @@ body {
 /* Call-to-Action Button */
 .cta-button {
     display: inline-block;
-    background-color: var(--background-color); /* Goldene Farbe */
-    color: var(--text-color);
     font-weight: bold;
     padding: 12px 24px;
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease-in-out;
-}
-
-.cta-button:hover {
-    background-color: #A86E2B; /* Dunklerer Goldton bei Hover */
 }
 
 .container{
@@ -544,21 +477,6 @@ body {
     background-color: rgba(0, 0, 0, 0.2); /* Hintergrundfarbe mit Transparenz */
     border-radius: 10px; /* Abgerundete Ecken */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schattierung für den Container */
-}
-
-.paybutton {
-    font-size: 1.2rem;
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.paybutton:hover {
-    background-color: #0056b3;
 }
 
 /* Verstecktes Formular */
@@ -605,27 +523,101 @@ body {
     display: block;
 }
 
-
+.invisible-element{
+    visibility: hidden;
+    pointer-events: none;
+}
 .image-text {
     position: absolute;
     top: 35%; /* Zentriere vertikal */
     left: 50%; /* Zentriere horizontal */
     transform: translate(-50%, -50%); /* Exakte Zentrierung */
-    color: white; /* Textfarbe */
+    color: var(--text-color-light); /* Textfarbe */
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Optional: Schatten für bessere Lesbarkeit */
     text-align: center;
 }
-
-.image-text h1 {
-    font-family: "Cooper Black", cursive;
-    font-size: 2rem;
-    margin: 0;
-    color: gold;
+h1{
+    color: var(--text-color-light);
+}
+h3{
+    font-size: 40px;
+    color: var(--text-color-light);
 }
 
-.image-text p {
-    font-size: 5rem;
-    margin: 5px 0 0;
-    color: gold;
-
+h2{
+    color: var(--text-color-light);
 }
+/* Container für alle Endpoints */
+.endpoint-container {
+    display: flex;
+    flex-wrap: wrap;  /* Zeilenumbruch erlauben */
+    gap: 20px;        /* Abstand zwischen den Endpunkten */
+    justify-content: space-around; /* Abstand gleichmäßig verteilen */
+}
+
+/* Einzelner Endpoint */
+.endpoint {
+    flex-basis: 48%;     /* Jedes Element nimmt maximal 48% der Breite des Containers ein */
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    word-break: break-all;
+}
+
+.endpoint-header {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.description, .example, .response {
+    word-break: break-all;
+    margin: 15px 0;
+}
+
+.example, .response {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.endpoint pre{
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.example {
+    margin-top: 10px;
+}
+
+.container-left{
+    width: 80%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+.content-symbol{
+    flex: 0 0 10%;
+}
+
+.content {
+    flex: 0 0 60%; /* Der Textbereich nimmt 70% der Breite ein */
+}
+
+.homepage-image {
+    flex: 0 0 30%; /* Das Bild nimmt 30% der Breite ein */
+}
+
+.homepage-image img {
+    width: 100%; /* Macht das Bild responsive und sorgt dafür, dass es den gesamten verfügbaren Platz einnimmt */
+    height: auto; /* Beibehaltung der Proportionen des Bildes */
+}
+
+

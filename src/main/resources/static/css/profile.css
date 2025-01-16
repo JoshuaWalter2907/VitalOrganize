@@ -1,0 +1,782 @@
+/* Basis-Container */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.main-container {
+    display: flex;
+    flex: 1;
+    flex-direction: row; /* Elemente werden vertikal gestapelt */
+    align-items: flex-start; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    box-sizing: border-box;
+    top: 100px;
+    min-height: 100vh;
+    padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
+    background: var(--color-medium-light);
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 60%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    color: var(--text-color-light);
+}
+
+
+.left-side{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 25%;
+    overflow: hidden;
+}
+
+
+.right-side{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 75%;
+    border-left: 3px solid var(--color-medium-dark);
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.payment-history-container-table {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.row {
+    display: flex;
+    width: 100%;
+}
+
+
+.cell {
+    padding: 10px;
+    box-sizing: border-box; /* Verhindert, dass Padding die Breite beeinflusst */
+    text-align: center; /* Zentriert Text */
+    word-break: break-all;
+}
+
+.cell.header {
+    font-weight: bold;
+    margin-bottom: -20px;
+}
+
+.cell.input{
+    background: transparent;
+    border: none;
+    color: var(--text-color-light);
+    font-weight: bold;
+    border-bottom: 1px solid var(--text-color-light);
+}
+
+.cell.input:focus{
+    outline: none;
+    background: transparent;
+}
+
+
+
+
+
+.abonements{
+    padding: 20px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+    border-radius: 10px;
+    background: var(--color-medium-dark);
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.abonements-left{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.abo-image i{
+   font-size: 50px;
+    padding: 10px;
+    margin-right: 10px;
+    color: var(--color-dark);
+    background: var(--color-slightly-light);
+    border-radius: 50%;
+}
+
+.abo-details{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.subscription-status{
+    padding: 3px 15px;
+    background: var(--color-dark);;
+    border-radius: 20px;
+    font-size: 14px
+}
+
+
+
+.subscription-description{
+    font-weight: bold;
+    letter-spacing: 1px;
+    font-size: 18px;
+}
+
+.subscription-organization{
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.subscription-expire{
+    font-size: 14px;
+}
+
+.subscription-time{
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.abonements-right{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 100%;
+}
+
+.dropdown-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 20px;
+}
+
+/* Die drei horizontalen Striche für das Hamburger-Menü */
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color-light);
+}
+
+/* Das Dropdown-Menü, das standardmäßig verborgen ist */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--text-color-light);
+    min-width: fit-content;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    padding: 10px;
+}
+
+/* Das Dropdown-Menü anzeigen, wenn der Button oder Container gehobt wird */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Styling für die Buttons im Menü */
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background: var(--text-color-light);
+    border: 1px solid var(--text-color-light);
+    cursor: pointer;
+    margin-bottom: 5px;
+}
+
+.dropdown-menu button:hover {
+    background-color: #f1f1f1;
+}
+
+
+.main-container-profile{
+    display: flex;
+    flex: 1;
+    flex-direction: column; /* Elemente werden vertikal gestapelt */
+    align-items: flex-start; /* Alle Elemente links ausrichten */
+    justify-content: flex-start; /* Elemente oben ausrichten */
+    position: relative;
+    box-sizing: border-box;
+    top: 100px;
+    padding: 20px; /* Innenabstand für den Container */
+    margin-bottom: 200px;
+    background: var(--color-medium-light);
+    gap: 10px; /* Abstand zwischen den Elementen */
+    width: 80%; /* Container nimmt die volle Breite ein */
+    height: auto; /* Höhe passt sich dem Inhalt an */
+    min-height: 100vh;
+    color: var(--text-color-light);
+}
+
+h1{
+    font-size: 24px;
+    padding: 20px
+}
+
+.special{
+    padding: 20px;
+}
+
+.Konto-details{
+    margin: 20px
+}
+
+.Konto-details a{
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.Konto-details p{
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    line-break: auto;
+}
+
+.Konto-details p span{
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.input-container-profile-addition{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.input-container-profile{
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.input-box-fixed{
+    display: flex;
+    flex-direction: column;
+    border-radius: 5px;
+    padding: 10px;
+    background: rgba(0,0,0,0.1);
+}
+
+
+.input-box-fixed label{
+    display: flex;
+    font-weight: bold;
+    font-size: 12px
+}
+
+.input-box-fixed input{
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: var(--text-color-light);
+}
+.input-box-fixed input:focus{
+    outline: none;
+    border: none;
+}
+
+.input-box-profile{
+    display: flex;
+    flex-direction: column;
+    border: var(--text-color-light) 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+
+}
+
+.input-box-profile label{
+    display: flex;
+    font-weight: bold;
+    font-size: 12px
+}
+
+.input-box-profile input{
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: var(--text-color-light);
+}
+
+.input-box-profile input:focus{
+    outline: none;
+    border: none;
+}
+
+.form-actions{
+    width: 100%;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: var(--color-dark);
+    border: none;
+    border-radius: 5px;
+    color: var(--text-color-light)aaa;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Glatter Übergang */
+}
+
+.form-actions:hover{
+    background-color: var(--color-medium-dark);
+    cursor: pointer;
+}
+
+.fa-input{
+    display: flex;
+    flex-direction: column;
+}
+
+.input-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.input-container input{
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: var(--text-color-light) 1px solid;
+    border-radius: 5px;
+    margin-right: 5px;
+
+    text-align: center;
+    line-height: 40px;
+
+    color: var(--text-color-light);
+}
+.input-container input:focus{
+    outline: none;
+}
+
+.profile-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-header form{
+    align-self: flex-end;
+}
+
+.search-button {
+    background: none; /* Kein Hintergrund */
+    border: none; /* Kein Rand */
+    cursor: pointer; /* Zeigt an, dass es ein klickbares Element ist */
+    padding: 8px 12px; /* Padding um das Icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px; /* Größe des Icons */
+    color: var(--text-color-light); /* Weiße Farbe für das Icon */
+}
+
+.search-button button {
+    font-size: 48px;      /* Größe des Bearbeitens-Icons */
+    color: var(--text-color-light);          /* Farbe des Icons */
+    background: none;
+    border: none;
+}
+
+.search-button button:hover {
+    cursor: pointer;
+    color: var(--text-color-dark);       /* Farbe bei Hover */
+}
+
+.edit-profile-text {
+    font-size: 12px;      /* Kleinere Schriftgröße */
+    color: var(--text-color-light);          /* Farbe des Textes */
+    margin-top: 5px;      /* Abstand zum Button */
+    text-align: center;   /* Text zentrieren */
+}
+
+.main-profile {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.userProfile {
+    text-align: center;
+}
+
+.profile-picture {
+    width: 150px;          /* Profilbild-Größe */
+    height: 150px;         /* Profilbild-Größe */
+    border-radius: 50%;    /* Rundes Profilbild */
+    object-fit: cover;     /* Bild passt sich dem Kreis an */
+    border: 3px solid var(--text-color-light); /* Optional: Weißer Rand */
+}
+
+.username-container {
+    display: flex;
+    align-items: center;  /* Vertikale Ausrichtung der Krone und des Benutzernamens */
+    justify-content: center;  /* Zentriert beide Elemente */
+    margin-top: 10px;
+}
+
+.crown-icon {
+    font-size: 48px;      /* Größe der Krone */
+    color: gold;          /* Farbe der Krone */
+    margin-right: 8px;    /* Abstand zwischen Krone und Benutzername */
+    margin-bottom: 8px;
+}
+
+.username {
+    font-size: 48px;      /* Benutzername-Größe */
+    font-weight: bold;    /* Benutzername fett */
+    color: var(--text-color-light);          /* Textfarbe */
+}
+
+.profile-container{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.column {
+    flex: 1;
+    max-width: 25%;
+    margin: 10px;
+    padding: 15px;
+    background-color: var(--color-medium-dark);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.column h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-color-light);
+}
+.column span{
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.column button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--color-dark);
+    color: var(--text-color-light);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.column button:hover {
+    background-color: var(--color-slightly-light);
+}
+
+.column img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.column form{
+    display: inline;
+    margin-left: auto;
+}
+
+
+
+.column ul li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+/* Letztes Listenelement ohne Unterstrich */
+.column ul li:last-child {
+    border-bottom: none;
+}
+
+/* Profilbild */
+.column ul li img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+/* Benutzername */
+.column ul li span {
+    flex-grow: 1;
+    font-size: 1.2em;
+    color: var(--text-color-light);
+}
+
+.column ul li span.private {
+    font-size: 8px;
+    color: var(--text-color-light);
+    margin-left: 5px;
+}
+
+/* Dropdown-Menü */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--color-medium-dark);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    min-width: 100px;
+    display: none;
+    z-index: 10;
+    border-radius: 4px;
+    padding: 5px 0;
+}
+
+/* Dropdown-Menü anzeigen, wenn die Dropdown-Klasse aktiv ist */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Buttons im Dropdown-Menü */
+.dropdown-menu form button {
+    display: block;
+    width: 100%;
+    padding: 8px 15px;
+    text-align: left;
+    text-decoration: none;
+    color: var(--text-color-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover-Effekt für die Buttons */
+.dropdown-menu form button:hover {
+    background-color: var(--color-slightly-light);
+    color: var(--text-color-dark);
+}
+
+.private{
+    color: var(--text-color-light);
+    font-size: 8px;
+    margin-left: 5px;
+}
+
+/* Container für den Schalter */
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Schalter-Design */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Verstecke den Standard-Checkbox-Button */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Das Design des Schiebereglers */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-medium-dark);
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+/* Das Kreis-Element im Schalter */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    border-radius: 50%;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--color-slightly-light);
+    transition: 0.4s;
+}
+
+/* Wenn der Schalter aktiviert ist (checked) */
+input:checked + .slider {
+    background-color: var(--color-medium-dark); /* Grün */
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Der Text, der "Public" oder "Private" anzeigt */
+.status-text {
+    font-size: 16px;
+    color: var(--text-color-light);
+}
+
+/* Wenn der Schalter aktiviert ist, den Text zu "Public" ändern */
+input:checked ~ #status-text {
+    content: "Public";
+    font-weight: bold;
+    color: var(--color-medium-dark);
+}
+
+.payment-history-header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-left: 10px;
+    border-bottom: 1px solid var(--text-color-light);
+}
+
+.payment-history-header .dropdown-button::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--color-medium-dark);
+    transition: background-color 0.3s ease;
+    margin-top: 0.5em;
+}
+
+/* Farbänderung der Unterstreichung beim Hover */
+.payment-history-header .dropdown-button:hover::after {
+    background-color: var(--color-medium-dark);
+}
+
+.payment-history-container{
+    width: 100%;
+    margin: 10px;
+    background-color: var(--color-slightly-dark);
+}
+
+.payment-history-element{
+    display: table;
+    width: 100%;
+}
+
+
+/* Tooltip-Styles */
+.locked[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -35px;
+    left: 30%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--text-color-light);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.locked[data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+}
+
+/* Container für gesperrte Elemente */
+.locked {
+    pointer-events: auto; /* Tooltip ist sichtbar */
+    position: relative; /* Tooltip benötigt dies */
+}
+
+
+.pagination-pages{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    font-size: 18px;
+}
+
+.pagination-link{
+    padding: 5px;
+    border: var(--text-color-light) solid 1px;
+    border-radius: 5px;
+    min-width: 40px;
+    background-color: transparent;
+    color: var(--text-color-light);
+}
+
+.pagination-link:hover{
+    background-color: var(--color-slightly-dark);
+    cursor: pointer;
+}
+
+.items-per-page select{
+    color: var(--text-color-light);
+    background-color: transparent;
+    border:  var(--text-color-light) solid 1px;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+.items-per-page select option{
+    background-color: transparent;
+}
+

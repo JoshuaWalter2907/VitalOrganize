@@ -1,174 +1,153 @@
 package com.springboot.vitalorganize.controller;
-
-import com.paypal.api.payments.Links;
-import com.paypal.api.payments.Payment;
-import com.paypal.base.rest.PayPalRESTException;
-import com.springboot.vitalorganize.model.PaymentType;
-import com.springboot.vitalorganize.model.UserRepository;
-import com.springboot.vitalorganize.model.UserEntity;
-import com.springboot.vitalorganize.model.Zahlung;
-import com.springboot.vitalorganize.service.PaypalService;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import com.springboot.vitalorganize.model.Fund_Payment.SubscriptionRequestDTO;
+import com.springboot.vitalorganize.service.SubscriptionService;
+import com.springboot.vitalorganize.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.view.RedirectView;
 
-import java.time.LocalDateTime;
 
+/**
+ * Der PaypalController verwaltet alle Endpunkte, die sich auf PayPal-API-Operationen beziehen.
+ */
 @Controller
-@RequiredArgsConstructor
-@Slf4j
+@AllArgsConstructor
 public class PaypalController {
 
-    private final PaypalService paypalService;
-
-    @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
+    private final SubscriptionService subscriptionService;
 
 
-    @GetMapping("/paypal")
-    public String paypal(
-            @RequestParam(value = "theme", defaultValue = "light") String theme,
-            @RequestParam(value = "lang", defaultValue = "en") String lang,
-            Model model
-    ) {
-
-        String themeCss = "/css/" + theme + "-theme.css";
-        model.addAttribute("themeCss", themeCss);
-
-        // Sprache dem Modell hinzufügen
-        model.addAttribute("lang", lang);
-
-        Double balance = paypalService.getCurrentBalance();
-        System.out.println(balance);
-        model.addAttribute("balance", String.format("%.2f", balance));
-
-
-        return "paypal";
-    }
-
-    @PostMapping("/paypal/create")
-    public RedirectView createPaypal(
-            @RequestParam("method") String method,
-            @RequestParam("amount") String amount,
-            @RequestParam("currency") String currency,
-            @RequestParam("description") String description,
-            @RequestParam("type") String type,
-            @RequestParam("email") String email,
-            HttpSession session
-    ){
-
-        session.setAttribute("amount", amount);
-        session.setAttribute("currency", currency);
-        session.setAttribute("description", description);
-        session.setAttribute("type", type);
-        session.setAttribute("email", email);
-
+    /**
+     * Endpoint um bei einer erfolgreiche Subscription weiterzuleiten
+     * @param subscriptionRequestDTO Informationen bei einer Subscription
+     * @return Weiterleitung auf die entsprechende Seite
+     */
+    @GetMapping("/subscription-success")
+    public String handleSubscriptionSuccess(
+            SubscriptionRequestDTO subscriptionRequestDTO) {
         try {
-            String cancleUrl = "http://localhost:8080/paypal/cancel";
-            String successUrl = "http://localhost:8080/paypal/success";
-            Payment payment= paypalService.createPayment(
-                    Double.parseDouble(amount),
-                    currency,
-                    method,
-                    "sale",
-                    description,
-                    cancleUrl,
-                    successUrl
-            );
+            boolean success = subscriptionService.confirmSubscription(subscriptionRequestDTO);
 
-            for(Links links: payment.getLinks()){
-                if(links.getRel().equals("approval_url")){
-                    return new RedirectView(links.getHref());
-                }
+            if (success) {
+                return "redirect:/profile";
+            } else {
+                return "redirect:/";
             }
-        }catch (PayPalRESTException e){
-            log.error("error occured" ,e);
-        }
-        return new RedirectView("/paypal/error");
-    }
-
-    @GetMapping("/paypal/success")
-    public RedirectView paypalSuccess(
-            @RequestParam("paymentId") String paymentId,
-            @RequestParam("PayerID") String payerId,
-            @AuthenticationPrincipal OAuth2User user,
-            OAuth2AuthenticationToken authentication,
-            HttpSession session
-            )
-    {
-        String type = session.getAttribute("type").toString();
-        String amount = (String) session.getAttribute("amount");
-        String currency = session.getAttribute("currency").toString();
-        String description = session.getAttribute("description").toString();
-        String provider = authentication.getAuthorizedClientRegistrationId();
-        String receiverEmail = session.getAttribute("email").toString();
-        String email = user.getAttribute("email");
-
-        if (provider.equals("github")) {
-            String username = user.getAttribute("login");
-            System.out.println(username);
-            email = username + "@github.com"; // Dummy-E-Mail erstellen
-            System.out.println(email);
-        }
-
-        UserEntity existingUser = userRepository.findByEmailAndProvider(email, provider);
-        existingUser.setRole("MEMBER");
-        userRepository.save(existingUser);
-
-        try {
-            Zahlung zahlung = new Zahlung();
-            zahlung.setDate(LocalDateTime.now());
-            zahlung.setReason(description);
-            zahlung.setAmount(Double.valueOf(amount));
-            zahlung.setCurrency(currency);
-            zahlung.setUser(existingUser);
-
-            if("EINZAHLEN".equalsIgnoreCase(type)){
-                zahlung.setType(PaymentType.EINZAHLEN);
-                Payment payment = paypalService.executePayment(paymentId, payerId);
-                if(payment.getState().equals("approved")){
-                    paypalService.addPayment(zahlung);
-                    return new RedirectView("/paypal");
-                }
-            } else if ("AUSZAHLEN".equalsIgnoreCase(type)) {
-                double balance = paypalService.getCurrentBalance();
-                if(Double.valueOf(amount) > balance){
-                    return new RedirectView("/paypal/error");
-                }else{
-                    zahlung.setType(PaymentType.AUSZAHLEN);
-                    paypalService.executePayout(receiverEmail, amount,currency);
-                    paypalService.addPayment(zahlung);
-                    return new RedirectView("/paypal");
-                }
-            }
-
-
-        }catch (PayPalRESTException e){
-            log.error("error occured" ,e);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return "redirect:/";
         }
-        return new RedirectView("/paypal");
     }
 
-    @GetMapping("/paypal/cancel")
-    public String paypalCancel(){
-        return "paypal";
+    /**
+     * Verarbeitet die Abbruchaktion einer Subscription.
+     *
+     * @return Weiterleitung zur Startseite
+     */
+    @GetMapping("/subscription-cancel")
+    public String handleSubscriptionCancel() {
+        return "redirect:/";
     }
 
-    @GetMapping("/paypal/error")
-    public String paypalError(){
-        return "paymentError";
+    /**
+     * Erstellt ein neues Abonnement und leitet den Benutzer zur PayPal-Seite weiter
+     * @return Weiterleitung zur PayPal-Seite oder zur Startseite im Fehlerfall
+     */
+    @PostMapping("/create-subscription")
+    public String createSubscription() {
+        try {
+
+            String redirectUri = subscriptionService.createSubscriptionRedirect();
+
+            if (redirectUri != null) {
+                return "redirect:" + redirectUri;
+            } else {
+                return "redirect:/";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/";
+        }
     }
+
+    /**
+     * Storniert ein bestehendes Abonnement
+     * @param request die aktuelle HTTP-Anfrage
+     * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
+     */
+    @PostMapping("/cancel-subscription")
+    public String cancelSubscription(
+            HttpServletRequest request
+            ) {
+
+        String refererUrl = request.getHeader("Referer");
+
+
+        try {
+            boolean success = subscriptionService.cancelSubscription();
+
+            if (success) {
+                return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
+            } else {
+                return "redirect:/";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Pausiert ein bestehendes Abonnement.
+     * @param request die aktuelle HTTP-Anfrage
+     * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
+     */
+    @PostMapping("/pause-subscription")
+    public String pauseSubscription(
+            HttpServletRequest request) {
+        String refererUrl = request.getHeader("Referer");
+
+        try {
+
+            boolean success = subscriptionService.pauseSubscription();
+
+            if (success) {
+                return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
+            } else {
+                return "redirect:/";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/";
+        }
+    }
+
+    /**
+     * Setzt ein pausiertes Abonnement fort
+     * @param request die aktuelle HTTP-Anfrage
+     * @return Weiterleitung zur vorherigen Seite oder zur Profilseite bei Erfolg, sonst zur Startseite
+     */
+    @PostMapping("/resume-subscription")
+    public String resumeSubscription(
+            HttpServletRequest request) {
+        String refererUrl = request.getHeader("Referer");
+
+        try {
+            boolean success = subscriptionService.resumeSubscription();
+
+            if (success) {
+                return "redirect:" + (refererUrl != null ? refererUrl : "/profile");
+            } else {
+                return "redirect:/";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/";
+        }
+    }
+
 
 }
