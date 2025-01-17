@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bearbeiten Rezept</title>
+    <link rel="stylesheet" href="/css/recipe/editRecipe.css">
+</head>
+<body>
+<div class="container">
+    <h1>Rezept bearbeiten</h1>
+    <form id="recipeForm" th:action="@{/recipes/edit/{id}(id=${recipe.id})}" th:method="post" th:attr="data-id=${recipe.id}">
+        <!-- Titel -->
+        <div class="form-group">
+            <label for="title">Titel:</label>
+            <input type="text" id="title" name="title" th:value="${recipe.title}" placeholder="Titel eingeben" required>
+        </div>
+
+        <!-- Beschreibung -->
+        <div class="form-group">
+            <label for="keywords">Schlüsselwörter:</label>
+            <input type="text" id="keywords" name="keywords" th:value="${recipe.keywords}" placeholder="Schlüsselwörter eingeben">
+        </div>
+
+        <!-- Diät -->
+        <div class="form-group">
+            <label for="diet">Diät:</label>
+            <textarea id="diet" name="diet" placeholder="Komma-getrennte Werte eingeben" th:text="${recipe.diet != null ? #strings.arrayJoin(recipe.diet, ', ') : ''}"></textarea>
+        </div>
+
+        <!-- Schwierigkeit -->
+        <div class="form-group">
+            <label for="difficulty">Schwierigkeit:</label>
+            <select id="difficulty" name="difficulty">
+                <option value="leicht" th:selected="${recipe.difficulty == 'leicht'}">Leicht</option>
+                <option value="mittel" th:selected="${recipe.difficulty == 'mittel'}">Mittel</option>
+                <option value="schwer" th:selected="${recipe.difficulty == 'schwer'}">Schwer</option>
+            </select>
+        </div>
+
+        <!-- Portionen -->
+        <div class="form-group">
+            <label for="portions">Portionen:</label>
+            <input type="number" id="portions" name="portions" th:value="${recipe.portions}" min="1">
+        </div>
+
+        <!-- Zutaten -->
+        <div class="form-group">
+            <h2>Zutaten</h2>
+            <table id="ingredientsTable">
+                <thead>
+                <tr>
+                    <th>Zutat</th>
+                    <th>Menge</th>
+                    <th>Einheit</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="ingredientsContainer">
+                <tr class="ingredient-row" th:each="ingredient, iterStat : ${recipe.ingredients}">
+                    <td><input type="text" class="ingredient-name" name="ingredients[__${iterStat.index}__].name"
+                               th:value="${ingredient.name}" placeholder="Zutat" required></td>
+                    <td><input type="text" class="ingredient-amount" name="ingredients[__${iterStat.index}__].amount"
+                               th:value="${ingredient.amount}" placeholder="Menge" required></td>
+                    <td><input type="text" class="ingredient-unit" name="ingredients[__${iterStat.index}__].unit"
+                               th:value="${ingredient.unit}" placeholder="Einheit" required></td>
+                    <td><button type="button" class="btn-remove" onclick="removeIngredient(this)">x</button></td>
+                </tr>
+                </tbody>
+            </table>
+            <button type="button" id="addIngredientButton">+ Zutat hinzufügen</button>
+        </div>
+
+        <!-- Nährwerte -->
+        <div class="form-group">
+            <label for="nutrition">Kalorien (kcal):</label>
+            <input type="number" id="nutrition" name="nutrition.kcal" th:value="${recipe.nutrition?.kcal}">
+        </div>
+
+        <!-- Zubereitungszeit -->
+        <div class="form-group">
+            <label for="totalTime">Zubereitungszeit (Minuten):</label>
+            <input type="number" id="totalTime" name="totalTime" th:value="${recipe.totalTime}" min="0">
+        </div>
+
+        <!-- Speichern und Zurück -->
+        <div class="form-group">
+            <button type="submit" class="btn-submit">Speichern</button>
+            <button type="button" id="backButton" class="btn-back">Zurück</button>
+        </div>
+    </form>
+</div>
+<script src="/js/recipe/editRecipe.js"></script>
+</body>
+</html>

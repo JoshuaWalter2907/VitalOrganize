@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Haushaltsplaner</title>
+</head>
+<body>
+<h1>Haushaltsplaner</h1>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Woche</th>
+        <th>Name</th>
+        <th>Rolle</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="assignment : ${assignments}">
+        <td th:text="${assignment.week}"></td>
+        <td th:text="${assignment.personName}"></td>
+        <td th:text="${assignment.role}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:if="${isAdmin}">
+    <h2>Neue Zuweisung</h2>
+    <form method="post" action="/planner/add">
+        <label>Woche (Montag):
+            <input type="date" name="week" min="2025-01-01" max="2025-12-31" required />
+        </label><br/>
+        <label>Name: <input type="text" name="personName" required/></label><br/>
+        <label>Rolle: <input type="text" name="role" required/></label><br/>
+        <button type="submit">Hinzufügen</button>
+    </form>
+</div>
+</body>
+</html>
