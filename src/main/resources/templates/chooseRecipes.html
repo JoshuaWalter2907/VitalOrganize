@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezepte Auswahl</title>
+</head>
+<body>
+<h1>Rezepte Auswahl</h1>
+<div class="button-container">
+    <form action="/recipes/internal" method="get">
+        <button type="submit">Favouriten</button>
+    </form>
+    <form action="/recipes/external" method="get">
+        <button type="submit">Externe Rezepte</button>
+    </form>
+</div>
+<form action="/send-report" method="get">
+    <input type="hidden" name="userId" value="1">
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" name="startDate" required>
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" name="endDate" required>
+    <label for="recipientEmail">Recipient Email:</label>
+    <input type="email" id="recipientEmail" name="recipientEmail" required>
+    <button type="submit">Send Report</button>
+</form>
+
+</body>
+</html>
