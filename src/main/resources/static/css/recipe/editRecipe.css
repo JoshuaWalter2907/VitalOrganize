@@ -1,0 +1,181 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+textarea,
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+thead {
+    background-color: #4caf50;
+    color: white;
+}
+
+thead th {
+    padding: 10px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    word-wrap: break-word; /* Zeilenumbruch für lange Texte */
+}
+
+tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+tbody td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    word-wrap: break-word;
+}
+
+tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+tbody td input[type="text"] {
+    width: 100%; /* Eingabefelder füllen die Tabellenspalte aus */
+    box-sizing: border-box; /* Padding und Border werden in die Breite mit eingerechnet */
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+tbody td button.btn-remove {
+    width: 100%; /* Der Button passt sich an die Spaltenbreite an */
+    padding: 6px 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+}
+
+tbody td button.btn-remove:hover {
+    background-color: #e53935;
+}
+
+#addIngredientButton {
+    margin-top: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#addIngredientButton:hover {
+    background-color: #45a049;
+}
+
+.btn-remove {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.btn-remove:hover {
+    background-color: #e53935;
+}
+
+.btn-submit {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+.btn-back {
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-back:hover {
+    background-color: #ccc;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    thead th, tbody td {
+        font-size: 12px;
+    }
+
+    #addIngredientButton, .btn-remove, .btn-submit, .btn-back {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
