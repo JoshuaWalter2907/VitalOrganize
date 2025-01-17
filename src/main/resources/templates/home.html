@@ -15,7 +15,7 @@
 </head>
 <body th:class="${theme}">
 <!-- Einfügen des Headers -->
-<div th:replace="fragments/header :: header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
 
 <div class="main-container-homepage">
   <h3 th:text="#{homepage.featuresTitle}"></h3>

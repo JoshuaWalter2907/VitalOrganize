@@ -51,9 +51,10 @@ public class IngredientListController {
     @PostMapping("/add")
     public String addIngredient(@RequestParam(value = "newIngredient") String name,
                                 RedirectAttributes attr) {
+        Long userId = userService.getCurrentUser().getId();
         try{
-            translationService.translateQuery(name, "de", "en");
-            ingredientListService.addIngredient(name);
+            name = translationService.translateQuery(name, "de", "en");
+            ingredientListService.addIngredient(userId, name);
         } catch (IllegalArgumentException e){
             attr.addFlashAttribute("error", e.getMessage());
         }

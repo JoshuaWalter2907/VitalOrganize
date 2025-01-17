@@ -12,7 +12,7 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="fragments/header :: header"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 <div class="wrapper">
   <!-- Formular ohne Datenbindung -->
   <form id="login-form" th:action="@{/perform_login}" method="post">

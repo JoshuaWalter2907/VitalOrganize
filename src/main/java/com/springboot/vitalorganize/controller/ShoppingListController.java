@@ -26,13 +26,11 @@ public class ShoppingListController {
 
         List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
 
-        // calculate the total shopping cost and limit all prices to 2 displayed digits behind the comma
+        // calculate the total shopping list price
         double totalPrice = 0;
         for(ShoppingListData shoppingListItem : shoppingListItems){
-            shoppingListItem.setCalculatedPriceInEuros(Double.parseDouble(String.format("%.2f", shoppingListItem.getCalculatedPriceInEuros()).replace(",", ".")));
             totalPrice += shoppingListItem.getCalculatedPriceInEuros();
         }
-        totalPrice = Double.parseDouble(String.format("%.2f", totalPrice).replace(",", "."));
 
         model.addAttribute("shoppingListItems", shoppingListItems);
         model.addAttribute("totalPrice", totalPrice);

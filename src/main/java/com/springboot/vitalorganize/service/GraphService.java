@@ -91,7 +91,6 @@ public class GraphService {
         currentBalance = initialBalance;
         // fill the days without transactions with yesterday's balance
         for (String date : dailyBalances.keySet()) {
-            System.out.println(dailyBalances.get(date));
             if (dailyBalances.get(date) == null) {
                 dailyBalances.put(date, currentBalance);
             } else {

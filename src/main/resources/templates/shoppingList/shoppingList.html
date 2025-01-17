@@ -14,7 +14,7 @@
 </head>
 <body th:class="${theme}">
 <!-- Insert header -->
-<div th:replace="fragments/header :: header"></div>
+<div th:replace="~{fragments/header :: header}"></div>
 
 <div class="list-container">
   <div class="list-item">
@@ -32,8 +32,8 @@
             </form>
         </div>
         <form th:action="@{/shoppingList/add}" method="post" class="add-ingredient" style="display: flex; align-items: center;">
-            <label for="ingredientName"></label>
-            <input id="ingredientName" name="ingredientName" type="text" th:placeholder="#{shoppingListItem.new}" style="color: black" required>
+            <label for="newIngredient"></label>
+            <input id="newIngredient" name="ingredientName" type="text" th:placeholder="#{shoppingListItem.new}" style="color: black" required>
             <button type="submit" class="add-button" style="background: none; border: none;">
                 <span class="add-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
@@ -77,20 +77,20 @@
     <div th:each="shoppingListItem : ${shoppingListItems}" class="list-item" style="display: flex; align-items: center; justify-content: space-between;">
         <span th:text="${shoppingListItem.name}" class="item-name"></span>
         <span class="item-amount" style="display: flex; align-items: center;">
-            <span th:text="${shoppingListItem.purchaseAmountInGrams} + 'g'" style="margin-right: 10px"></span>
+            <span th:text="${#numbers.formatDecimal(shoppingListItem.purchaseAmountInGrams, 1, 0)} + 'g'" style="margin-right: 10px"></span>
             <form th:action="@{/shoppingList/updateAmount/{id}(id=${shoppingListItem.ingredientId})}" method="post" style="display: flex; gap: 10px;">
             <label for="newAmount" style="display: none;"></label>
-            <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0;  font-size: 14px; text-align: center;" required>
+            <input id="newAmount" name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 70px; padding: 0;  font-size: 14px; text-align: center;" required>
             <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
             <span class="add-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
-                    <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
+                    <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706z" fill="#07F353"></path>
                 </svg>
             </span>
             </button>
         </form>
         </span>
-        <span th:text="${shoppingListItem.calculatedPriceInEuros} + '€'" class="item-price"></span>
+        <span th:text="${#numbers.formatDecimal(shoppingListItem.calculatedPriceInEuros, 1, 2)} + '€'" class="item-price"></span>
         <form th:action="@{/shoppingList/delete/{id}(id=${shoppingListItem.ingredientId})}" method="post" th:title="#{shoppingListItem.delete}" class="item-delete" style="flex: 0;">
             <button type="submit" class="delete-button" style="background: none; border: none; padding: 0; margin: 0;">
             <span class="delete-icon">
@@ -118,7 +118,7 @@
                 </button>
             </form>
         </span>
-        <span class="item-price" th:text="${totalPrice} + '€'"></span>
+        <span class="item-price" th:text="${#numbers.formatDecimal(totalPrice, 1, 2) + '€'}"></span>
         <form class="item-delete" style="flex: 0;">
             <button type="submit" class="delete-button, invisible-element" style="background: none; border: none; padding: 0; margin: 0;">
             <span class="delete-icon">

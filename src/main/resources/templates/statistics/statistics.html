@@ -11,7 +11,7 @@
 </head>
 <body th:class="${theme}">
 
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <div class="main-container">
         <div class="statistics-container">
@@ -21,8 +21,8 @@
             <div th:each="fund : ${fundsStatistics}" class="statistics-item">
                 <h3 th:text="#{statistics.description} + ': ' + ${fund.fundName}"></h3>
                 <div>
-                    <p th:text="#{statistics.totalDeposits} + ': ' + ${fund.statistics.totalDeposits} + '€'"></p>
-                    <p th:text="#{statistics.totalWithdrawals} + ': ' + ${fund.statistics.totalWithdrawals} + '€'"></p>
+                    <p th:text="#{statistics.totalDeposits} + ': ' + ${#numbers.formatDecimal(fund.statistics.totalDeposits, 1, 2)} + '€'"></p>
+                    <p th:text="#{statistics.totalWithdrawals} + ': ' + ${#numbers.formatDecimal(fund.statistics.totalWithdrawals, 1, 2)} + '€'"></p>
                 </div>
                 <div class="charts">
                     <img th:src="'data:image/png;base64,' + ${fund.charts[0]}" alt="Line Chart" />
