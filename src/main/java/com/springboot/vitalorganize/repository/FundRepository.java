@@ -20,4 +20,5 @@ public interface FundRepository extends JpaRepository<FundEntity, Long> {
     // get all ids from the funds the user is part of
     @Query("SELECT DISTINCT f.id FROM FundEntity f JOIN f.users u WHERE u.id = :userId")
     List<Long> findFundIdsByUserId(@Param("userId") Long userId);
+
 }

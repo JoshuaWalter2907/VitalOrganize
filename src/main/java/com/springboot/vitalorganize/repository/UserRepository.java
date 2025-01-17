@@ -8,7 +8,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findByEmailAndProvider(String email, String provider);
     UserEntity findUserEntityById(Long user2);
-    boolean existsByUsername(String username);
 
     List<UserEntity> findAllByisPublic(boolean isPublic);
 
