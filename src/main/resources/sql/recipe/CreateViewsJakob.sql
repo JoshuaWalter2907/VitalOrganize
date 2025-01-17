@@ -22,3 +22,13 @@ FROM
         LEFT JOIN RecipeRating rr ON r.id = rr.recipe_id
 GROUP BY
     r.id;
+
+
+CREATE OR REPLACE VIEW MealReportView AS
+SELECT
+    m.userId,
+    m.cookDate AS meal_date,
+    r.title AS recipe_name,
+    r.nutrition_kcal AS calories
+FROM user_meals m
+         INNER JOIN Recipe r ON m.recipeId = r.id;

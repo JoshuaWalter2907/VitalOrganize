@@ -45,3 +45,14 @@ CREATE TABLE RecipeRating (
     rating_count INT,
     FOREIGN KEY (recipe_id) REFERENCES Recipe(id) ON DELETE CASCADE
 );
+
+-- Tabelle für gekochte Mahlzeiten
+CREATE TABLE user_meals (
+    id INT NOT NULL AUTO_INCREMENT,
+    userId INT NOT NULL,
+    recipeId INT NOT NULL,
+    cookDate DATE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (recipeId) REFERENCES recipes(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

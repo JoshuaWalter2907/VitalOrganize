@@ -5,6 +5,7 @@ import com.springboot.vitalorganize.model.Recipe.Ingredient;
 import com.springboot.vitalorganize.model.Recipe.Nutrition;
 import com.springboot.vitalorganize.model.Recipe.Rating;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +26,7 @@ public class RecipeDAO {
     /**
      * Speichert ein Rezept in der Datenbank.
      */
-    public void saveRecipe(Recipe recipe) {
+    public int saveRecipe(Recipe recipe) {
         // Speichert das Hauptrezept
         String insertRecipeSql = """
             INSERT INTO Recipe (difficulty, keywords, nutrition_kcal, portions, source, source_url, title, total_time)
@@ -50,9 +51,11 @@ public class RecipeDAO {
         }
 
         // Speichern der Diät-Daten
-        String insertDietSql = "INSERT INTO RecipeDiet (recipe_id, diet) VALUES (?, ?)";
-        for (String diet : recipe.getDiet()) {
-            jdbcTemplate.update(insertDietSql, recipeId, diet);
+        if (recipe.getDiet() != null) {
+            String insertDietSql = "INSERT INTO RecipeDiet (recipe_id, diet) VALUES (?, ?)";
+            for (String diet : recipe.getDiet()) {
+                jdbcTemplate.update(insertDietSql, recipeId, diet);
+            }
         }
 
         // Speichern der Zutaten
@@ -66,15 +69,19 @@ public class RecipeDAO {
         }
 
         // Speichern der Bilder
-        String insertImageSql = "INSERT INTO RecipeImage (recipe_id, image_url) VALUES (?, ?)";
-        for (String imageUrl : recipe.getImage_urls()) {
-            jdbcTemplate.update(insertImageSql, recipeId, imageUrl);
+        if (recipe.getImage_urls() != null) {
+            String insertImageSql = "INSERT INTO RecipeImage (recipe_id, image_url) VALUES (?, ?)";
+            for (String imageUrl : recipe.getImage_urls()) {
+                jdbcTemplate.update(insertImageSql, recipeId, imageUrl);
+            }
         }
 
         // Speichern der Bewertung
         String insertRatingSql = "INSERT INTO RecipeRating (recipe_id, rating_value, rating_count) VALUES (?, ?, ?)";
         Rating rating = recipe.getRating();
         jdbcTemplate.update(insertRatingSql, recipeId, rating.getRatingValue(), rating.getRatingCount());
+
+        return recipeId;
     }
 
     /**
@@ -100,12 +107,61 @@ public class RecipeDAO {
         return jdbcTemplate.query(sql, new RecipeViewRowMapper());
     }
 
+    public void delete(Long id) {
+        String sql = "DELETE FROM Recipe WHERE id = " + id;
+        jdbcTemplate.execute(sql);
+        System.out.println();
+    }
+
+    public void update(Recipe recipe) {
+        // Hauptrezept-Daten aktualisieren
+        String updateRecipeSql = """
+        UPDATE Recipe
+        SET difficulty = ?, keywords = ?, nutrition_kcal = ?, portions = ?, source = ?, source_url = ?, title = ?, total_time = ?
+        WHERE id = ?
+    """;
+
+        jdbcTemplate.update(updateRecipeSql,
+                recipe.getDifficulty(),
+                recipe.getKeywords(),
+                recipe.getNutrition().getKcal(),
+                recipe.getPortions(),
+                recipe.getSource(),
+                recipe.getSource_url(),
+                recipe.getTitle(),
+                recipe.getTotalTime(),
+                recipe.getId());
+
+        // Diät-Daten aktualisieren (bestehende Einträge löschen und neu einfügen)
+        String deleteDietSql = "DELETE FROM RecipeDiet WHERE recipe_id = ?";
+        jdbcTemplate.update(deleteDietSql, recipe.getId());
+
+        String insertDietSql = "INSERT INTO RecipeDiet (recipe_id, diet) VALUES (?, ?)";
+        for (String diet : recipe.getDiet()) {
+            jdbcTemplate.update(insertDietSql, recipe.getId(), diet);
+        }
+
+        // Zutaten aktualisieren (bestehende Einträge löschen und neu einfügen)
+        String deleteIngredientSql = "DELETE FROM RecipeIngredient WHERE recipe_id = ?";
+        jdbcTemplate.update(deleteIngredientSql, recipe.getId());
+
+        String insertIngredientSql = "INSERT INTO RecipeIngredient (recipe_id, name, amount, unit) VALUES (?, ?, ?, ?)";
+        for (Ingredient ingredient : recipe.getIngredients()) {
+            jdbcTemplate.update(insertIngredientSql,
+                    recipe.getId(),
+                    ingredient.getName(),
+                    ingredient.getAmount(),
+                    ingredient.getUnit());
+        }
+
+    }
+
     private static class RecipeViewRowMapper implements RowMapper<Recipe> {
 
         @Override
         public Recipe mapRow(ResultSet rs, int rowNum) throws SQLException {
             Recipe recipe = new Recipe();
-            recipe.setId(rs.getInt("recipe_id"));
+            recipe.setId(rs.getString("recipe_id"));
             recipe.setTitle(rs.getString("title"));
             recipe.setDifficulty(rs.getString("difficulty"));
             recipe.setKeywords(rs.getString("keywords"));

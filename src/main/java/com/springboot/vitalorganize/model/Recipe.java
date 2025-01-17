@@ -18,12 +18,12 @@ public class Recipe {
     private String title;
     private double totalTime;
 
-    public int getId() {
-        return id;
+    public String getId() {
+        return "" + id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(String id) {
+        this.id = Integer.parseInt(id);
     }
 
     public List<String> getDiet() {
@@ -127,6 +127,14 @@ public class Recipe {
         private String name;
         private String unit;
 
+        public Ingredient(){}
+
+        public Ingredient(String amount, String name, String unit){
+            this.amount = amount;
+            this.name = name;
+            this.unit = unit;
+        }
+
         public String getUnit() {
             return unit;
         }
@@ -150,10 +158,23 @@ public class Recipe {
         public void setAmount(String amount) {
             this.amount = amount;
         }
+
+        @Override
+        public String toString() {
+            return amount + " " + unit + " " + name;
+        }
     }
 
     public static class Nutrition {
         private int kcal;
+
+        public Nutrition(){
+            this.kcal = 0;
+        }
+
+        public Nutrition(int kcal){
+            this.kcal = kcal;
+        }
 
         public int getKcal() {
             return kcal;
@@ -167,6 +188,16 @@ public class Recipe {
     public static class Rating {
         private int ratingCount;
         private double ratingValue;
+
+        public Rating(){
+            ratingCount = 0;
+            ratingValue = 0;
+        }
+
+        public Rating(double ratingValue){
+            this.ratingCount = 0;
+            this.ratingValue = ratingValue;
+        }
 
         public int getRatingCount() {
             return ratingCount;
