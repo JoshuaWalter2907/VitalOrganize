@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/profile.css}">
+  <link rel="stylesheet" th:href="@{/css/fund.css}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <title>Chat</title>
+</head>
+<body th:class="${theme}">
+
+<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+
+<div class="main-container">
+  <div class="left-side">
+    <form th:action="@{/fund/newfund}">
+      <button type="submit" class="create-chat-btn">
+        <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
+      </button>
+    </form>
+    <div class="search-container">
+      <form action="/fund" method="get" class="search-form">
+        <div class="input-container">
+          <button type="submit" class="search-button">
+            <i class="fa fa-search"></i> <!-- Such-Icon -->
+          </button>
+          <input type="text" name="query" th:placeholder="#{fund.search}" th:value="${query}">
+        </div>
+      </form>
+    </div>
+    <div th:each="fund : ${fundData.funds}" class="fund-list">
+      <a th:href="@{/fund(id=${fund.id})}">
+        <span th:text="${fund.name}" class="fund-name"></span>
+      </a>
+    </div>
+  </div>
+  <div class="right-side-funds">
+    <div th:if="${!fundData.error}">
+      <div th:if="${fundData.myfunds == null}" class="fund-empty">
+        <p th:text="#{fund.placeholder}" th:if="${delete == null}">Bitte wählen Sie einen Fund aus</p>
+        <p th:text="#{fund.placeholder.delete}" th:if="${delete != null}">Bitte löschen sie erst alle Funds</p>
+      </div>
+      <div class="fund-users-container" th:if="${fundData.myfunds != null}">
+        <!-- Admin anzeigen -->
+        <div class="user-container">
+          <h4>Admin</h4>
+          <div class="admin-dropdown" th:if="${fundData.loggedInUser == fundData.myfunds.admin}">
+            <button class="dropdown-button-admin">
+              <i class="fa fa-bars"></i> <!-- Font Awesome Menü-Icon -->
+            </button>
+            <div class="dropdown-menu-admin">
+              <a class="dropdown-item-admin" th:href="@{/fund/edit-members(fundId=${fundData.myfunds.id})}" th:text="#{fund.edit}">Edit Members</a>
+              <div th:if="${!fundData.myfunds.payments.isEmpty()}">
+                <a class="dropdown-item-admin" th:if="${fundData.myfunds.payments.getLast.balance > 0}"
+                   th:href="@{/fund/delete-fund(fundId=${fundData.myfunds.id})}"  th:text="#{fund.delete}">Delete Fund</a>
+                <a class="dropdown-item-admin" th:if="${fundData.myfunds.payments.getLast.balance == 0}"
+                   th:href="@{/fund/delete-fund(fundId=${fundData.myfunds.id}, balance=true)}" th:text="#{fund.delete}">Delete Fund</a>
+              </div>
+              <div th:if="${fundData.myfunds.payments.isEmpty()}">
+                <a class="dropdown-item-admin"
+                   th:href="@{/fund/delete-fund(fundId=${fundData.myfunds.id}, balance=true)}" th:text="#{fund.delete}">Delete Fund</a>
+              </div>
+            </div>
+          </div>
+
+          <a class="user-label" th:href="@{/profile(profileId=${fundData.myfunds.admin.id})}">
+            <img th:src="${fundData.myfunds.admin.profilePictureUrl}" alt="AdminImage" class="profile-image">
+            <span class="username" th:text="${fundData.myfunds.admin.username}">Admin</span>
+          </a>
+        </div>
+
+        <!-- Andere Benutzer anzeigen -->
+        <div class="other-users-container">
+          <h4 th:text="#{fund.otherusers}">Andere Benutzer</h4>
+          <div class="users-grid">
+            <div th:each="entry : ${fundData.myfunds.users}" class="user-item" th:if="${entry != fundData.myfunds.admin}">
+              <a class="user-label" th:href="@{/profile(profileId=${entry.id})}">
+                <img th:src="${entry.profilePictureUrl}" alt="UserImage" class="profile-image">
+                <span class="username" th:text="${entry.username}">Benutzername</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div th:if="${fundData.myfunds != null}">
+        <div class="fund-balance">
+
+          <!-- Formular für Einzahlung -->
+          <form method="post" th:action="@{/fund/payinto}" class="form-card">
+            <input type="hidden" name="fundid" th:value="${fundData.myfunds.id}">
+            <input type="hidden" name="type" value="EINZAHLEN">
+
+            <div class="input-box">
+              <label for="amount" th:text="#{fund.amount}">Betrag</label>
+              <input id="amount" type="number" class="form-control" name="amount" value="10.0" required>
+            </div>
+
+            <div class="input-box">
+              <label for="description" th:text="#{fund.description}">Beschreibung</label>
+              <input id="description" type="text" class="form-control" name="description" placeholder="Beschreibung" required>
+            </div>
+
+            <button type="submit" class="search-button" th:text="#{fund.payin}" style="background-color: rgba(0,0,0,0.5); border-radius: 15px">
+              <span>Einzahlen mit PayPal</span>
+              <i class="fa fa-credit-card" style="margin-left: 10px;"></i>
+            </button>
+          </form>
+
+          <!-- Formular für Auszahlung -->
+
+
+          <!-- Anzeigen des Kontostands -->
+          <div class="fund-image" th:if="${fundData.myfunds.payments != null && !fundData.myfunds.payments.isEmpty()}">
+            <p>
+              <span th:text="#{fund.currentbalance}"></span>
+              <span th:if="${fundData.myfunds.payments.getLast.balance != null}" th:text="${fundData.myfunds.payments.getLast.balance}"></span>
+            </p>
+            <img th:if="${fundData.myfunds.payments.getLast.balance != null && fundData.myfunds.payments.getLast.balance >= 1000}" th:src="@{/images/full.png}">
+            <img th:if="${fundData.myfunds.payments.getLast.balance != null && fundData.myfunds.payments.getLast.balance >= 500 and fundData.myfunds.payments.getLast.balance < 1000}" th:src="@{/images/half full.png}">
+            <img th:if="${fundData.myfunds.payments.getLast.balance != null && fundData.myfunds.payments.getLast.balance < 500}" th:src="@{/images/nothing.png}">
+          </div>
+
+          <div class="fund-image" th:if="${fundData.myfunds.payments.isEmpty()}">
+            <p>
+              <span th:text="#{fund.currentbalance}"></span>
+              <span>: 0</span>
+            </p>
+            <img src="/images/nothing.png">
+          </div>
+          <form method="post" th:action="@{/fund/payinto}" class="form-card">
+            <input type="hidden" name="fundid" th:value="${fundData.myfunds.id}">
+            <input type="hidden" name="type" value="AUSZAHLEN">
+
+            <div class="input-box">
+              <label th:text="#{fund.amount}">Betrag</label>
+              <input  type="number" class="form-control" name="amount" value="10.0" required>
+            </div>
+
+            <div class="input-box">
+              <label th:text="#{fund.description}">Beschreibung</label>
+              <input  type="text" class="form-control" name="description" placeholder="Beschreibung" required>
+            </div>
+
+            <div class="input-box">
+              <label >E-Mail</label>
+              <input type="email" class="form-control" name="email" placeholder="E-mail" required>
+            </div>
+
+            <button type="submit" class="search-button" style="background-color: rgba(0,0,0,0.5); border-radius: 15px">
+              <span th:text="#{fund.payout}">Auszahlen mit PayPal</span>
+              <i class="fa fa-credit-card" style="margin-left: 10px;"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+
+      <form th:if="${fundData.show == false && fundData.myfunds != null}" th:action="@{/fund}" method="get">
+        <input type="hidden" name="id" th:value="${fundData.myfunds.id}">
+        <input type="hidden" name="show" th:value="true">
+        <button class="search-button" type="submit">
+          <i class="fa fa-caret-down" aria-hidden="true" style="margin-right: 10px"></i>
+          <span th:text="#{fund.show}">Show Payment History</span>
+          <i class="fa fa-caret-down" aria-hidden="true" style="margin-left: 10px"></i>
+        </button>
+      </form>
+
+      <form th:if="${fundData.show == true && fundData.myfunds != null}" th:action="@{/fund}" method="get">
+        <input type="hidden" name="id" th:value="${fundData.myfunds.id}">
+        <input type="hidden" name="show" th:value="false">
+        <button class="search-button" type="submit">
+          <i class="fa fa-caret-up" aria-hidden="true" style="margin-right: 10px"></i>
+          <span th:text="#{fund.hide}">Hide Payment History</span>
+          <i class="fa fa-caret-up" aria-hidden="true" style="margin-left: 10px"></i>
+        </button>
+      </form>
+
+      <div th:if="${fundData.show == true && fundData.myfunds != null}">
+        <div class="payment-history-container-table">
+          <div class="row">
+            <div class="cell header" style="width: 20%;" th:text="#{table.header.person}">Person</div>
+            <div class="cell header" style="width: 30%;" th:text="#{table.header.reason}">Grund</div>
+            <div class="cell header" style="width: 25%;" th:text="#{table.header.date}">Datum</div>
+            <div class="cell header" style="width: 13%;" th:text="#{table.header.amount}">Amount</div>
+            <div class="cell header" style="width: 12%;" th:text="#{table.header.balance}">Balance</div>
+          </div>
+        </div>
+        <div class="payment-history-container-table">
+          <form th:action="@{/fund}" method="get" class="row">
+            <input type="hidden" name="id" th:value="${fundData.myfunds.id}">
+            <input type="text" name="username" placeholder="Person suchen" class="cell input" style="width: 20%;" th:placeholder="#{form.placeholder.person}" />
+            <input type="text" name="reason" placeholder="Grund" class="cell input" style="width: 30%;" th:placeholder="#{form.placeholder.reason}" />
+            <input type="hidden" name="show" th:value="true">
+            <div class="date-input-group" style="width: 12%; text-align: center;">
+              <label style="font-size: 0.8rem; display: block;" th:text="#{form.label.from}">von</label>
+              <input type="date" name="datefrom" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <div class="date-input-group" style="width: 13%; text-align: center;">
+              <label style="font-size: 0.8rem; display: block;" th:text="#{form.label.to}">bis</label>
+              <input type="date" name="dateto" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <input type="number" name="amount" placeholder="Amount" class="cell input" style="width: 13%;" th:placeholder="#{form.placeholder.amount}" />
+            <button type="submit" class="search-button cell input" style="width: 12%">
+              <i class="fa fa-search"></i>
+            </button>
+          </form>
+        </div>
+
+        <div th:each="payment : ${fundData.fundpayments}"
+             th:if="${payment.user == fundData.loggedInUser || fundData.myfunds.admin == fundData.loggedInUser}"
+             class="payment-history-container-table">
+          <div class="row">
+            <div th:text="${payment.user != null ? payment.user.username : 'deleted User'}" class="cell" style="width: 20%;"></div>
+            <div th:utext="${payment.reason + ' <br>(' + payment.type + ')'}" class="cell" style="width: 30%;"></div>
+            <div th:text="${#temporals.format(payment.date, 'dd.MM.yyyy')}" class="cell" style="width: 25%;"></div>
+            <div th:text="${payment.amount}" class="cell" style="width: 13%;"></div>
+            <div th:text="${payment.balance}" class="cell" style="width: 12%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination-pages" th:if="${fundData.show == true && fundData.myfunds != null}">
+        <form th:action="@{/fund}" method="get">
+          <input type="hidden" name="id" th:value="${fundData.myfunds.id}">
+          <input type="hidden" name="show" th:value="true">
+          <input type="hidden" name="username" th:value="${fundData.username}"/>
+          <input type="hidden" name="reason" th:value="${fundData.reason}"/>
+          <input type="hidden" name="datefrom" th:value="${fundData.datefrom}"/>
+          <input type="hidden" name="dateto" th:value="${fundData.dateto}"/>
+          <input type="hidden" name="amount" th:value="${fundData.amount}"/>
+
+          <div class="items-per-page">
+            <label th:text="#{pagination.elements}">Elemente pro Seite:</label>
+            <label>
+              <select name="size" class="pagination-select"
+                      th:value="${fundData.pageSize}" onchange="this.form.submit()">
+                <option th:value="2" th:text="2" th:selected="${fundData.pageSize == 2}"></option>
+                <option th:value="5" th:text="5" th:selected="${fundData.pageSize == 5}"></option>
+                <option th:value="20" th:text="20" th:selected="${fundData.pageSize == 20}"></option>
+                <option th:value="50" th:text="50" th:selected="${fundData.pageSize == 50}"></option>
+              </select>
+            </label>
+          </div>
+
+          <div class="page-links">
+            <span th:each="i : ${#numbers.sequence(0, fundData.totalPages - 1)}">
+                <button type="submit" th:value="${i}" name="page" class="pagination-link"
+                        th:text="${i + 1}" th:classappend="${i == fundData.pageNumber ? ' active' : ''}"></button>
+            </span>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+</div>
+</body>
+</html>

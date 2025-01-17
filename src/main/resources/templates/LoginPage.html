@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomePage</title>
+
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
+
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body th:class="${theme}">
+
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="wrapper">
+  <!-- Formular ohne Datenbindung -->
+  <form id="login-form" th:action="@{/perform_login}" method="post">
+    <h1 th:text="#{login}">Login</h1>
+    <!-- Social Login Buttons -->
+    <div class="social-login">
+      <a th:href="@{/oauth2/authorization/google}" class="social-btn google-btn">
+        <span th:text="#{login.google}">Login with Google</span>
+      </a>
+      <a th:href="@{/oauth2/authorization/discord}" class="social-btn discord-btn">
+        <span th:text="#{login.discord}">Login with Discord</span>
+      </a>
+      <a th:href="@{/oauth2/authorization/github}" class="social-btn apple-btn">
+        <span th:text="#{login.github}">Login with GitHub</span>
+      </a>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>

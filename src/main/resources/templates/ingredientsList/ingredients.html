@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zutaten</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+    <link rel="stylesheet" th:href="@{/css/ingredients.css}">
+
+    <!-- Boxicons Library for Icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body th:class="${theme}">
+    <!-- Insert header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Ingredient list -->
+    <div class="list-container">
+        <div class="list-item">
+            <h3 th:text="#{ingredients.list}">Ingredients List</h3>
+            <div style="display: flex; align-items: center;">
+                <!-- Error message (conditionally displayed) -->
+                <div th:if="${error}" class="error-message-container" style="display: flex; align-items: center; margin-right: 10px;">
+                    <div th:text="#{${error}}" class="error-message" style="margin-left: 10px"></div>
+
+                    <!-- Error-removal-button -->
+                    <form th:action="@{/ingredients}" method="get" class="delete-error-form">
+                        <button type="submit" class="delete-error-button" style="background: none; border: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                                <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+                <form th:action="@{/ingredients/add}" method="post" class="add-ingredient">
+                    <label for="newIngredient"></label>
+                    <input id="newIngredient" name="newIngredient" type="text" th:placeholder="#{ingredient.new}" required>
+                    <button type="submit" class="add-button" th:title="#{ingredient.add}" style="background: none; border: none;">
+                        <span class="add-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                                <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill=#07F353></path>
+                            </svg>
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="filtering-and-sorting">
+            <div class="sorting">
+                <span th:text="#{ingredient.sort} + ': '" style="margin-right: 10px; font-size: 20px"></span>
+                <form th:action="@{/ingredients}" method="get" style="display: flex; align-items: center;">
+                    <select name="sort" style="margin-right: 10px; padding: 5px; border-radius: 4px; border: none; background-color:  var(--color-medium-dark)">
+                        <option value="alphabetical" th:selected="${sort == 'alphabetical'}" th:text="#{ingredient.sort.alphabetical}"></option>
+                        <option value="alphabeticalReverse" th:selected="${sort == 'alphabeticalReverse'}" th:text="#{ingredient.sort.alphabeticalReverse}"></option>
+                        <option value="insertionDate" th:selected="${sort == 'insertionDate'}" th:text="#{ingredient.sort.insertionDate}"></option>
+                        <option value="insertionDateReverse" th:selected="${sort == 'insertionDateReverse'}" th:text="#{ingredient.sort.insertionDateReverse}"></option>
+                    </select>
+                    <button type="submit" th:title="#{ingredient.sort.confirm}" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706z" fill="#07F353"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            <div class="filtering">
+                <span th:text="#{ingredient.filter} + ': '" style="margin-right: 10px; font-size: 20px"></span>
+                <form th:action="@{/ingredients}" method="get" style="margin-right: 10px; border: none">
+                    <button type="submit" name="filter" value="favourite"
+                            th:text="#{ingredient.filter.favourite}"
+                            th:style="'background-color:' + (${filter == 'favourite'} ? '#07F353' : 'var(--color-medium-dark)')">
+                    </button>
+                </form>
+                <form th:action="@{/ingredients}" method="get" style="border: none">
+                    <button type="submit" name="filter" value="shoppingList"
+                            th:text="#{ingredient.filter.shoppingList}"
+                            th:style="'background-color:' + (${filter == 'shoppingList'} ? '#07F353' : 'var(--color-medium-dark)')">
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- column titles -->
+        <div class="list-item" style="font-size:20px">
+            <span class="item-name" style="font-weight: bold;" th:text="#{ingredient.name}"></span>
+            <span class="item-category" style="font-weight: bold;" th:text="#{ingredient.category}"></span>
+            <span class="item-price" style="font-weight: bold;" th:text="#{ingredient.price}"></span>
+            <!-- next 3 forms are both invisible/unclickable and only there for keeping the layout intact -->
+            <form class="item-favourite">
+                <button style="visibility: hidden; pointer-events: none" class="delete-button">
+                    <span class="delete-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            <form class="shopping-list-add-remove-item">
+                <button style="visibility: hidden; pointer-events: none">
+                    <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="M19 15v-3h-2v3h-3v2h3v3h2v-3h3v-2h-.937zM4 7h11v2H4zm0 4h11v2H4zm0 4h8v2H4z" fill="black"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            <form class="item-delete">
+                <button style="visibility: hidden; pointer-events: none" class="delete-button">
+                    <span class="delete-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- table rows-->
+        <div th:each="ingredient : ${ingredients}" class="list-item">
+            <span th:text="${ingredient.name}" class="item-name" ></span>
+            <span th:text="${ingredient.category}" class="item-category"></span>
+            <span th:text="${#numbers.formatDecimal(ingredient.price, 1, 2)} + '€/100g'" class="item-price"></span>
+            <form th:action="@{/ingredients/onShoppingList/{id}(id=${ingredient.id})}" method="post" class="shopping-list-add-remove-item">
+                <input type="hidden" name="newItem" th:value="${ingredient.name}">
+                <button type="submit" style="background: none; border: none; cursor: pointer;">
+                    <span th:if="${!ingredient.onShoppingList}" th:title="#{ingredient.add.to.shoppinglist}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M19 15v-3h-2v3h-3v2h3v3h2v-3h3v-2h-.937zM4 7h11v2H4zm0 4h11v2H4zm0 4h8v2H4z" fill="black"></path>
+                        </svg>
+                    </span>
+                    <span th:if="${ingredient.onShoppingList}" th:title="#{ingredient.remove.from.shoppinglist}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M4 7h11v2H4zm0 4h11v2H4zm0 4h7v2H4zm15.299-2.708-4.3 4.291-1.292-1.291-1.414 1.415 2.706 2.704 5.712-5.703z" fill=#07F353></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            <form th:action="@{/ingredients/favourite/{id}(id=${ingredient.id})}" method="post" class="item-favourite">
+                <button type="submit" class="favourite-button" style="background: none; border: none;">
+                    <span th:if="${ingredient.favourite}" th:title="#{ingredient.favourite.remove}" class="favourite-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M20.205 4.791a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412L12 21.414l8.207-8.207c2.354-2.353 2.355-6.049-.002-8.416z" fill="red"></path>
+                        </svg>
+                    </span>
+                    <span th:if="${!ingredient.favourite}" th:title="#{ingredient.favourite.add}" class="not-favourite-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="M12 4.595a5.904 5.904 0 0 0-3.996-1.558 5.942 5.942 0 0 0-4.213 1.758c-2.353 2.363-2.352 6.059.002 8.412l7.332 7.332c.17.299.498.492.875.492a.99.99 0 0 0 .792-.409l7.415-7.415c2.354-2.354 2.354-6.049-.002-8.416a5.938 5.938 0 0 0-4.209-1.754A5.906 5.906 0 0 0 12 4.595zm6.791 1.61c1.563 1.571 1.564 4.025.002 5.588L12 18.586l-6.793-6.793c-1.562-1.563-1.561-4.017-.002-5.584.76-.756 1.754-1.172 2.799-1.172s2.035.416 2.789 1.17l.5.5a.999.999 0 0 0 1.414 0l.5-.5c1.512-1.509 4.074-1.505 5.584-.002z"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+            <form th:action="@{/ingredients/delete/{id}(id=${ingredient.id})}" method="post" th:title="#{ingredient.delete}" class="item-delete">
+                <button type="submit" class="delete-button" style="background: none; border: none;">
+                    <span class="delete-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
+                            <path d="m16.192 6.344-4.243 4.242-4.242-4.242-1.414 1.414L10.535 12l-4.242 4.242 1.414 1.414 4.242-4.242 4.243 4.242 1.414-1.414L13.364 12l4.242-4.242z" fill="black"></path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- pagination -->
+        <div class="custom-pagination">
+            <a th:if="${page.number > 1}"
+               th:href="@{/ingredients(page=0)}"
+               class="pagination-link" th:text="1"></a>
+            <span th:if="${page.totalPages > 3 and page.number > 2}">...</span>
+            <a th:if="${page.number > 0}"
+               th:href="@{/ingredients(page=${page.number - 1})}"
+               class="pagination-link" th:text="${page.number}"></a>
+            <a class="pagination-link active" th:text="${page.number + 1}"></a>
+            <a th:if="${page.number + 1 < page.totalPages - 1}"
+               th:href="@{/ingredients(page=${page.number + 1})}"
+               class="pagination-link" th:text="${page.number + 2}"></a>
+            <span th:if="${page.totalPages > 3 and page.number < page.totalPages - 3}">...</span>
+            <a th:if="${page.number < page.totalPages - 1}"
+               th:href="@{/ingredients(page=${page.totalPages - 1})}"
+               class="pagination-link" th:text="${page.totalPages}"></a>
+        </div>
+    </div>
+
+    <!-- price report options -->
+    <div style="display: flex; flex-direction: row; margin-top: 40px">
+        <span style="margin-right: 150px">
+            <form th:action="@{/ingredients/priceReportEmail}" method="post" style="display: flex; align-items: center;">
+                <button type="submit" style="background: none; border: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" th:attr="fill=${priceReportsEnabled ? '#07F353' : 'black'}" style="cursor: pointer; vertical-align: middle;">
+                        <path d="M7 5c-1.103 0-2 .897-2 2v10c0 1.103.897 2 2 2h10c1.103 0 2-.897 2-2V7c0-1.103-.897-2-2-2H7zm0 12V7h10l.002 10H7z"></path>
+                        <path th:if="${priceReportsEnabled}" d="M10.996 12.556 9.7 11.285l-1.4 1.43 2.704 2.647 4.699-4.651-1.406-1.422z"></path>
+                    </svg>
+                </button>
+                <span th:text="#{ingredient.report.email.weekly}" style="font-size: 17px; margin: 5px 10px;"></span>
+            </form>
+        </span>
+        <span>
+            <form th:action="@{/ingredients/sendPriceReportEmail}" method="post">
+                <button th:text="#{ingredient.report.email.immediately}"  th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" type="submit" style="font-size: 17px; padding: 5px 10px; background-color: var(--color-medium-dark); border: none; border-radius: 5px; cursor: pointer;"></button>
+            </form>
+        </span>
+    </div>
+</body>
+</html>

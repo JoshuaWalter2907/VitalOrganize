@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/profile.css}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
+
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <title>Profile Page</title>
+</head>
+<body th:class="${theme}">
+
+<header th:replace="~{fragments/header :: header}"></header>
+
+<div class="main-container">
+  <div class="left-side">
+      <form th:action="@{/profile-edit}" method="get">
+        <button type="submit" class="form-actions" th:text="#{profile.generalinformaiton}">
+          Allgemeine Informationen
+        </button>
+      </form>
+
+      <!-- Formular für Abonnement-Informationen -->
+      <form th:action="@{/profile-edit}" method="get">
+        <input type="hidden" name="tab" value="subscription" /> <!-- Füge ein verborgenes Input-Feld hinzu -->
+        <button type="submit" class="form-actions" th:text="#{profile.abos}">
+          Abonnements Informationen
+        </button>
+      </form>
+      <form th:action="@{/profile-edit}" method="get">
+        <input type="hidden" name="tab" value="paymenthistory" /> <!-- Füge ein verborgenes Input-Feld hinzu -->
+        <button type="submit" class="form-actions" th:text="#{profile.history}">
+          Payment History
+        </button>
+      </form>
+  </div>
+
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'paymenthistory'}">
+    <h1 th:text="#{profile.transactions}">Transaktionen</h1>
+    <div class="payment-history-header">
+      <form action="/profile-edit" method="get">
+        <input type="hidden" name="tab" value="paymenthistory">
+        <input type="hidden" name="kind" value="premium">
+        <button type="submit" class="dropdown-button" th:text="#{profile.membership}">
+          Membership
+        </button>
+      </form>
+      <form action="/profile-edit" method="get">
+        <input type="hidden" name="tab" value="paymenthistory">
+        <input type="hidden" name="kind" value="single">
+      <button type="submit" class="dropdown-button">
+          Funds
+        </button>
+      </form>
+    </div>
+    <div class="payment-history-container">
+
+      <div th:if="${ProfileEditData.historysubscription != null && ProfileEditData.kind == 'premium'}">
+        <div class="payment-history-container-table">
+          <div class="row">
+            <div class="cell header" th:text="#{table.header.person}" style="width: 20%;">Person</div>
+            <div class="cell header" th:text="#{table.header.reason}" style="width: 30%;">Grund</div>
+            <div class="cell header" th:text="#{table.header.date}" style="width: 25%;">Datum</div>
+            <div class="cell header" th:text="#{table.header.amount}" style="width: 13%;">Amount</div>
+            <div class="cell header" style="width: 12%;">Id</div>
+          </div>
+        </div>
+
+        <div class="payment-history-container-table">
+          <form th:action="@{/profile-edit}" method="get" class="row">
+            <input type="hidden" name="tab" value="paymenthistory">
+            <input type="hidden" name="kind" value="premium">
+            <input type="text" name="username" th:placeholder="#{fund.search.person}" class="cell input" style="width: 20%;" />
+            <div class="cell input" style="width: 30%;"> </div>
+            <div class="date-input-group" style="width: 12%; text-align: center;">
+              <label for="datefrom" style="font-size: 0.8rem; display: block;" th:text="#{form.label.from}">von</label>
+              <input type="date" id="datefrom" name="datefrom" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <div class="date-input-group" style="width: 13%; text-align: center;">
+              <label for="dateto" style="font-size: 0.8rem; display: block;" th:text="#{form.label.to}">bis</label>
+              <input type="date" id="dateto" name="dateto" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <input type="number" name="amount" th:placeholder="#{table.header.amount}" class="cell input" style="width: 13%;" />
+            <button type="submit" class="search-button cell input" style="width: 12%">
+              <i class="fa fa-search"></i>
+            </button>
+          </form>
+        </div>
+
+        <div th:each="payment : ${ProfileEditData.historysubscription}" class="payment-history-element">
+          <div class="row">
+            <p th:text="${payment.payerEmail}" class="cell" style="width: 20%;"></p>
+            <p class="cell" style="width: 30%;" th:text="#{profile.premium}"> Premium Membership</p>
+            <p th:text="${#temporals.format(payment.time, 'dd.MM.yyyy')}" class="cell" style="width: 25%;"></p>
+            <p th:text="${payment.amountWithBreakdown.grossAmount.value}" class="cell" style="width: 13%;"></p>
+            <p th:text="${payment.id}" class="cell" style="width: 12%;"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination-pages" th:if="${ProfileEditData.historysubscription != null && ProfileEditData.kind == 'premium'}">
+        <form th:action="@{/profile-edit}" method="get">
+          <input type="hidden" name="tab" value="paymenthistory">
+          <input type="hidden" name="kind" value="premium">
+          <input type="hidden" name="show" th:value="true">
+          <input type="hidden" name="username" th:value="${ProfileEditData.username}" />
+          <input type="hidden" name="reason" th:value="${ProfileEditData.reason}" />
+          <input type="hidden" name="datefrom" th:value="${ProfileEditData.datefrom}" />
+          <input type="hidden" name="dateto" th:value="${ProfileEditData.dateto}" />
+          <input type="hidden" name="amount" th:value="${ProfileEditData.amount}" />
+          <input type="hidden" name="show" th:value="true">
+
+          <div class="items-per-page">
+            <label for="size" th:text="#{pagination.elements}">Elemente pro Seite:</label>
+            <label>
+              <select name="size" class="pagination-select"
+                      th:value="${ProfileEditData.pageSize}" onchange="this.form.submit()">
+                <option th:value="2" th:text="2" th:selected="${ProfileEditData.pageSize == 2}"></option>
+                <option th:value="5" th:text="5" th:selected="${ProfileEditData.pageSize == 5}"></option>
+                <option th:value="20" th:text="20" th:selected="${ProfileEditData.pageSize == 20}"></option>
+                <option th:value="50" th:text="50" th:selected="${ProfileEditData.pageSize == 50}"></option>
+              </select>
+            </label>
+          </div>
+
+
+          <div class="page-links">
+            <span th:each="i : ${#numbers.sequence(0, ProfileEditData.totalSubscriptionPages - 1)}">
+                <button type="submit" th:value="${i}" name="page" class="pagination-link"
+                        th:text="${i + 1}" th:classappend="${i == ProfileEditData.pageNumber ? ' active' : ''}"></button>
+            </span>
+          </div>
+        </form>
+      </div>
+
+
+      <div th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
+        <div class="payment-history-container-table">
+          <div class="row">
+            <div class="cell header" th:text="#{table.header.person}" style="width: 20%;">Person</div>
+            <div class="cell header" th:text="#{table.header.reason}" style="width: 30%;">Grund</div>
+            <div class="cell header" th:text="#{table.header.date}" style="width: 25%;">Datum</div>
+            <div class="cell header" th:text="#{table.header.amount}" style="width: 13%;">Amount</div>
+            <div class="cell header" style="width: 12%;" th:text="#{table.header.balance}">Balance</div>
+          </div>
+        </div>
+
+        <div class="payment-history-container-table">
+          <form th:action="@{/profile-edit}" method="get" class="row">
+            <input type="hidden" name="tab" value="paymenthistory">
+            <input type="hidden" name="kind" value="single">
+            <input type="text" name="username" th:placeholder="#{fund.search.person}" class="cell input" style="width: 20%;" />
+            <input type="text" name="reason" th:placeholder="#{table.header.reason}" class="cell input" style="width: 30%;" />
+            <div class="date-input-group" style="width: 12%; text-align: center;">
+              <label for="datefrom" style="font-size: 0.8rem; display: block;" th:text="#{form.label.from}">von</label>
+              <input type="date" name="datefrom" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <div class="date-input-group" style="width: 13%; text-align: center;">
+              <label for="dateto" style="font-size: 0.8rem; display: block;" th:text="#{form.label.to}">bis</label>
+              <input type="date" name="dateto" class="cell input" style="width: 100%; font-size: 0.5rem;" />
+            </div>
+            <input type="number" name="amount" th:placeholder="#{table.header.amount}" class="cell input" style="width: 13%;" />
+            <button type="submit" class="search-button cell input" style="width: 12%">
+              <i class="fa fa-search"></i>
+            </button>
+          </form>
+        </div>
+
+        <div th:each="payment : ${ProfileEditData.historysingle}" class="payment-history-container-table">
+          <div class="row">
+            <div th:text="${payment.user.username}" class="cell" style="width: 20%;"></div>
+            <div th:utext="${payment.reason + ' <br>(' + payment.type + ')'}" class="cell" style="width: 30%;"></div>
+            <div th:text="${#temporals.format(payment.date, 'dd.MM.yyyy')}" class="cell" style="width: 25%;"></div>
+            <div th:text="${payment.amount}" class="cell" style="width: 13%;"></div>
+            <div th:text="${payment.balance}" class="cell" style="width: 12%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pagination-pages" th:if="${ProfileEditData.historysingle != null && ProfileEditData.kind == 'single'}">
+        <form th:action="@{/profile-edit}" method="get">
+          <input type="hidden" name="tab" value="paymenthistory">
+          <input type="hidden" name="kind" value="single">
+          <input type="hidden" name="username" th:value="${ProfileEditData.username}" />
+          <input type="hidden" name="reason" th:value="${ProfileEditData.reason}" />
+          <input type="hidden" name="datefrom" th:value="${ProfileEditData.datefrom}" />
+          <input type="hidden" name="dateto" th:value="${ProfileEditData.dateto}" />
+          <input type="hidden" name="amount" th:value="${ProfileEditData.amount}" />
+          <input type="hidden" name="show" th:value="true">
+
+          <div class="items-per-page">
+            <label for="size" th:text="#{pagination.elements}">Elemente pro Seite:</label>
+            <select name="size" id="size" class="pagination-select"
+                    th:value="${ProfileEditData.pageSize}" onchange="this.form.submit()">
+              <option th:value="2" th:text="2" th:selected="${ProfileEditData.pageSize == 2}"></option>
+              <option th:value="5" th:text="5" th:selected="${ProfileEditData.pageSize == 5}"></option>
+              <option th:value="20" th:text="20" th:selected="${ProfileEditData.pageSize == 20}"></option>
+              <option th:value="50" th:text="50" th:selected="${ProfileEditData.pageSize == 50}"></option>
+            </select>
+          </div>
+
+          <div class="page-links">
+            <span th:each="i : ${#numbers.sequence(0, ProfileEditData.totalPaymentsPages - 1)}">
+                <button type="submit" th:value="${i}" name="page" class="pagination-link"
+                        th:text="${i + 1}" th:classappend="${i == ProfileEditData.pageNumber ? ' active' : ''}"></button>
+            </span>
+
+          </div>
+        </form>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'subscription'}">
+    <h1 th:text="#{abos.administer}">Abonnements verwalten</h1>
+    <div th:each="subscription : ${ProfileEditData.subscriptions}" class="abonements">
+      <div class="abonements-left">
+        <div class="abo-image">
+          <i class="fas fa-crown"></i>
+        </div>
+        <div class="abo-details">
+          <p class="subscription-status"><span th:text="${subscription.status}"></span></p>
+          <p class="subscription-description" th:text="#{profile.premium}">Premium Mitgliedschaft</p>
+          <p class="subscription-organization">Vital Organize</p>
+          <p th:if="${subscription.status == 'ACTIVE'}" class="subscription-expire"> <span th:text="#{profile.expire}"></span><br> <span th:text="${#temporals.format(subscription.endTime, 'dd.MM.yyyy')}" class="subscription-time"></span></p>
+          <p th:if="${subscription.status != 'ACTIVE'}" class="subscription-expire"> <span th:text="#{premium.until}"></span> <br> <span th:text="${#temporals.format(subscription.endTime, 'dd.MM.yyyy')}" class="subscription-time"></span></p>
+
+        </div>
+      </div>
+      <div class="abonements-right">
+        <p th:text="#{abo.price}">10.00€/mtl.</p>
+
+        <div class="dropdown" th:if="${subscription.status !='CANCELLED'}">
+          <!-- Der Button für das Dropdown-Menü -->
+          <button class="dropdown-button">
+            <i class="fa fa-bars" aria-hidden="true"></i>
+          </button>
+          <div class="dropdown-menu">
+            <form th:if="${subscription.status == 'ACTIVE'}" th:action="@{/cancel-subscription}" method="post">
+              <button type="submit" th:text="#{cancle.subscription}">Cancel Subscription</button>
+            </form>
+            <form th:if="${subscription.status == 'ACTIVE'}" th:action="@{/pause-subscription}" method="post">
+              <button type="submit" th:text="#{pause.subscription}">Pause Subscription</button>
+            </form>
+            <form th:if="${subscription.status == 'SUSPENDED'}" th:action="@{/resume-subscription}" method="post">
+              <button type="submit" th:text="#{resume.subscription}">Resume Subscription</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="right-side" th:if="${ProfileEditData.showSubscription == 'general'}">
+    <h1 th:text="#{profile.accountSettings}"></h1>
+    <a class="special" th:text="#{profile.manageAccountDetails}"></a>
+
+    <div class="Konto-details">
+      <a th:text="#{profile.accountInfo}"></a>
+      <p>
+        <span th:text="#{profile.id}"></span>:
+        <span th:text="${ProfileEditData.profile.token}"></span>
+      </p>
+      <div class="input-container-profile">
+        <div class="input-box-fixed">
+          <label th:text="#{profile.username}"></label>
+          <input type="text" id="username" name="username" th:value="${ProfileEditData.profile.username}" readonly>
+        </div>
+        <div class="input-box-fixed">
+          <label th:text="#{profile.username}"></label>
+          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendToEmail != null && !ProfileEditData.profile.sendtoEmail.isEmpty() ?
+                 (#strings.substring(ProfileEditData.profile.sendtoEmail, 0, 1) + '***' +
+                  #strings.substring(ProfileEditData.profile.sendtoEmail, ProfileEditData.profile.sendtoEmail.length() - 10)) :
+                 (#strings.substring(ProfileEditData.profile.email, 0, 1) + '***' +
+                  #strings.substring(ProfileEditData.profile.email, ProfileEditData.profile.email.length() - 10))}"  readonly>
+        </div>
+      </div>
+    </div>
+    <form action="/save-profile" method="post">
+      <div class="Konto-details">
+        <a th:text="#{profile.personalInfo}"></a>
+        <p th:text="#{profile.manageNameAndContact}"></p>
+        <div class="input-container-profile">
+          <div class="input-box-profile">
+            <label th:text="#{profile.firstName}"></label>
+            <input type="text" id="surname" name="surname"
+                   th:value="${ProfileEditData.profile.personalInformation.firstName != null ?
+                 #strings.substring(ProfileEditData.profile.personalInformation.firstName, 0, 1) + '***' +
+                 #strings.substring(ProfileEditData.profile.personalInformation.firstName, ProfileEditData.profile.personalInformation.firstName.length() - 1) : ''}"
+                   th:placeholder="#{profile.firstName}">
+          </div>
+          <div class="input-box-profile">
+            <label th:text="#{profile.lastName}"></label>
+            <input type="text" id="name" name="name"
+                   th:value="${ProfileEditData.profile.personalInformation.lastName != null ?
+                 #strings.substring(ProfileEditData.profile.personalInformation.lastName, 0, 1) + '***' +
+                 #strings.substring(ProfileEditData.profile.personalInformation.lastName, ProfileEditData.profile.personalInformation.lastName.length() - 1) : ''}"
+                   th:placeholder="#{profile.lastName}">
+          </div>
+        </div>
+      </div>
+
+      <div class="Konto-details">
+        <a th:text="#{profile.address}"></a>
+        <div class="input-container-profile">
+          <div class="input-box-profile">
+            <label th:text="#{profile.addressLine1}"></label>
+            <input type="text" id="address" name="address"
+                   th:value="${ProfileEditData.profile.personalInformation.address != null ?
+                 ProfileEditData.profile.personalInformation.address : ''}"
+                   th:placeholder="#{profile.address}">
+          </div>
+          <div class="input-box-profile">
+            <label th:text="#{profile.city}"></label>
+            <input type="text" id="city" name="city"
+                   th:value="${ProfileEditData.profile.personalInformation.city != null ?
+                 ProfileEditData.profile.personalInformation.city : ''}"
+                   th:placeholder="#{profile.city}">
+          </div>
+        </div>
+        <div class="input-container-profile">
+          <div class="input-box-profile">
+            <label th:text="#{profile.region}"></label>
+            <input type="text" id="region" name="region"
+                   th:value="${ProfileEditData.profile.personalInformation.region != null ?
+                 ProfileEditData.profile.personalInformation.region : ''}"
+                   th:placeholder="#{profile.region}">
+          </div>
+          <div class="input-box-profile">
+            <label th:text="#{profile.postalCode}"></label>
+            <input type="text" id="postalCode" name="postalCode"
+                   th:value="${ProfileEditData.profile.personalInformation.postalCode}"
+                   th:placeholder="#{profile.postalCode}">
+
+          </div>
+        </div>
+        <div class="input-container-profile"
+             th:classappend="${ProfileEditData.profile.role == 'USER'} ? 'locked' : ''"
+             th:attrappend="data-tooltip=${ProfileEditData.profile.role == 'USER'} ? #{profile.premiumTooltip} : ''">
+          <div class="switch-container">
+            <span class="status-text" th:text="#{profile.private}">Private</span>
+            <label class="switch">
+              <input type="checkbox" id="public-private-toggle" name="publicPrivateToggle"
+                     th:checked="${ProfileEditData.isProfilePublic}" th:disabled="${ProfileEditData.profile.role == 'USER'}">
+              <span class="slider"></span>
+            </label>
+            <span class="status-text" th:text="#{profile.public}"></span>
+          </div>
+        </div>
+        <div>
+          <button type="submit" class="form-actions" th:text="#{profile.saveChanges}"></button>
+        </div>
+      </div>
+    </form>
+    <div class="Konto-details">
+      <a th:text="#{profile.downloadInfo}"></a>
+      <p th:text="#{profile.downloadDescription}"></p>
+    </div>
+    <div class="Konto-details">
+      <div>
+        <!-- Eingabefelder und 2FA-Formular, wenn auth=true -->
+        <div class="fa-input" th:if="${auth}">
+          <a th:text="#{profile.twoFactorAuth}"></a>
+          <form action="/verify-2fa" method="post">
+            <div class="input-container">
+              <input type="text" id="digit1" name="digit1" class="input-box" maxlength="1" required>
+              <input type="text" id="digit2" name="digit2" class="input-box" maxlength="1" required>
+              <input type="text" id="digit3" name="digit3" class="input-box" maxlength="1" required>
+              <input type="text" id="digit4" name="digit4" class="input-box" maxlength="1" required>
+              <input type="text" id="digit5" name="digit5" class="input-box" maxlength="1" required>
+              <input type="text" id="digit6" name="digit6" class="input-box" maxlength="1" required>
+            </div>
+            <button type="submit" class="form-actions" th:text="#{profile.verifyCode}"></button>
+          </form>
+        </div>
+
+        <!-- Download-Button, wenn auth=false -->
+        <form th:unless="${ProfileEditData.auth}" action="/send-2fa-code" method="post">
+          <button type="submit" class="form-actions" th:text="#{profile.downloadInformation}"></button>
+        </form>
+      </div>
+    </div>
+    <div class="Konto-details">
+      <a th:text="#{profile.deleteAccount}"></a>
+      <p th:text="#{profile.deleteAccountDescription}"></p>
+      <form action="/profile-edit/delete" method="post">
+        <button type="submit" class="form-actions" th:text="#{profile.deleteAccount}"></button>
+      </form>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

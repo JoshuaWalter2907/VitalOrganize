@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomePage</title>
+
+  <!-- Korrektes Einbinden des CSS-Files mit allen Themes -->
+  <link rel="stylesheet" th:href="@{/css/profile.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/themes.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+</head>
+<body th:class="${theme}">
+<!-- Einfügen des Headers -->
+<div th:replace="~{fragments/header :: header}"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+
+<div class="main-container-homepage">
+  <h3 th:text="#{homepage.featuresTitle}"></h3>
+  <p th:text="#{homepage.featuresDescription}"></p>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/chat}" th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-commenting" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.communicationTitle}"></h2>
+      <p th:text="#{homepage.communicationDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://www.medak.at/files/medak/user_data/fortbildungen_bilder/Kommunikation.jpg">
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="homepage-image">
+      <img src="https://th.bing.com/th/id/R.39a931a4313606272190e142cc97c611?rik=0%2fpF2uMrLOFWZQ&pid=ImgRaw&r=0">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.kitchenTitle}"></h2>
+      <p th:text="#{homepage.kitchenDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-cutlery" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/calendar}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-calendar" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.timeManagementTitle}"></h2>
+      <p th:text="#{homepage.timeManagementDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://arbeits-abc.de/wp-content/uploads/2020/10/zeit_vergeht.jpg">
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="homepage-image">
+      <img src="https://www.friedrich-verlag.de/fileadmin/user_upload/tx_vcfvhefteundartikel/541088-001/541088-001_teaser.jpg">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.apiTitle}"></h2>
+      <p th:text="#{homepage.apiDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/api-docs}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-question-circle" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/fund}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa fa-credit-card-alt" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.wgFundTitle}"></h2>
+      <p th:text="#{homepage.wgFundDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://th.bing.com/th/id/OIP.Uyi-95uh6u5UDa2zHKnpYAHaE7?rs=1&pid=ImgDetMain">
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
