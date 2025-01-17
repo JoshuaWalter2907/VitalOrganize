@@ -14,7 +14,7 @@
 </head>
 <body th:class="${theme}">
     <!-- Insert header -->
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <!-- Ingredient list -->
     <div class="list-container">
@@ -36,7 +36,7 @@
                 </div>
                 <form th:action="@{/ingredients/add}" method="post" class="add-ingredient">
                     <label for="newIngredient"></label>
-                    <input id="newIngredient" name="newIngredient" type="text" th:placeholder="#{ingredient.new}" required style="color: black">
+                    <input id="newIngredient" name="newIngredient" type="text" th:placeholder="#{ingredient.new}" required>
                     <button type="submit" class="add-button" th:title="#{ingredient.add}" style="background: none; border: none;">
                         <span class="add-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
@@ -51,14 +51,13 @@
             <div class="sorting">
                 <span th:text="#{ingredient.sort} + ': '" style="margin-right: 10px; font-size: 20px"></span>
                 <form th:action="@{/ingredients}" method="get" style="display: flex; align-items: center;">
-                    <select name="sort" style="margin-right: 10px; padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                    <select name="sort" style="margin-right: 10px; padding: 5px; border-radius: 4px; border: none; background-color:  var(--color-medium-dark)">
                         <option value="alphabetical" th:selected="${sort == 'alphabetical'}" th:text="#{ingredient.sort.alphabetical}"></option>
                         <option value="alphabeticalReverse" th:selected="${sort == 'alphabeticalReverse'}" th:text="#{ingredient.sort.alphabeticalReverse}"></option>
                         <option value="insertionDate" th:selected="${sort == 'insertionDate'}" th:text="#{ingredient.sort.insertionDate}"></option>
                         <option value="insertionDateReverse" th:selected="${sort == 'insertionDateReverse'}" th:text="#{ingredient.sort.insertionDateReverse}"></option>
                     </select>
                     <button type="submit" th:title="#{ingredient.sort.confirm}" style="border: none; background: none; padding: 0; cursor: pointer;">
-                        <!-- Confirm Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
                             <path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm-1.999 14.413-3.713-3.705L7.7 11.292l2.299 2.295 5.294-5.294 1.414 1.414-6.706 6.706z" fill="#07F353"></path>
                         </svg>
@@ -67,17 +66,16 @@
             </div>
             <div class="filtering">
                 <span th:text="#{ingredient.filter} + ': '" style="margin-right: 10px; font-size: 20px"></span>
-                <form th:action="@{/ingredients}" method="get" style="margin-right: 10px;">
+                <form th:action="@{/ingredients}" method="get" style="margin-right: 10px; border: none">
                     <button type="submit" name="filter" value="favourite"
                             th:text="#{ingredient.filter.favourite}"
-                            style="padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;"
-                            th:style="'background-color:' + (${filter == 'favourite'} ? '#07F353' : '#f8f9fa')">
+                            th:style="'background-color:' + (${filter == 'favourite'} ? '#07F353' : 'var(--color-medium-dark)')">
                     </button>
                 </form>
-                <form th:action="@{/ingredients}" method="get">
+                <form th:action="@{/ingredients}" method="get" style="border: none">
                     <button type="submit" name="filter" value="shoppingList"
                             th:text="#{ingredient.filter.shoppingList}"
-                            th:style="'background-color:' + (${filter == 'shoppingList'} ? '#07F353' : '#f8f9fa')">
+                            th:style="'background-color:' + (${filter == 'shoppingList'} ? '#07F353' : 'var(--color-medium-dark)')">
                     </button>
                 </form>
             </div>
@@ -122,7 +120,7 @@
         <div th:each="ingredient : ${ingredients}" class="list-item">
             <span th:text="${ingredient.name}" class="item-name" ></span>
             <span th:text="${ingredient.category}" class="item-category"></span>
-            <span th:text="${ingredient.price + '€/100g'}" class="item-price"></span>
+            <span th:text="${#numbers.formatDecimal(ingredient.price, 1, 2)} + '€/100g'" class="item-price"></span>
             <form th:action="@{/ingredients/onShoppingList/{id}(id=${ingredient.id})}" method="post" class="shopping-list-add-remove-item">
                 <input type="hidden" name="newItem" th:value="${ingredient.name}">
                 <button type="submit" style="background: none; border: none; cursor: pointer;">
@@ -198,7 +196,7 @@
         </span>
         <span>
             <form th:action="@{/ingredients/sendPriceReportEmail}" method="post">
-                <button th:text="#{ingredient.report.email.immediately}"  th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" type="submit" style="font-size: 17px; padding: 5px 10px; background-color: #FFFFFF; border: none; border-radius: 5px; cursor: pointer;"></button>
+                <button th:text="#{ingredient.report.email.immediately}"  th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''" class="tooltip" type="submit" style="font-size: 17px; padding: 5px 10px; background-color: var(--color-medium-dark); border: none; border-radius: 5px; cursor: pointer;"></button>
             </form>
         </span>
     </div>

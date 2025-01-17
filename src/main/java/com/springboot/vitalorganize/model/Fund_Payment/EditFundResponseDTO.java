@@ -14,4 +14,5 @@ public class EditFundResponseDTO {
     private FundEntity fund;
     private Long id;
     private List<UserEntity> friends;
+    private String query;
 }

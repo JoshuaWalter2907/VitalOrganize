@@ -1,4 +1,4 @@
-package com.springboot.vitalorganize.model.Fund_Statistics;
+package com.springboot.vitalorganize.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -2,7 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
-import com.springboot.vitalorganize.model.Ingredient.IngredientListData;
+import com.springboot.vitalorganize.model.IngredientListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,9 +26,7 @@ public class IngredientListService {
     private final UserService userService;
 
     // limited to 100 api calls per day (requires 2 per added ingredient)
-    public void addIngredient(String name){
-        Long userId = userService.getCurrentUser().getId();
-
+    public void addIngredient(Long userId, String name){
         if(ingredientRepository.findByUserIdAndName(userId, name).orElse(null) != null){
             throw new IllegalArgumentException("ingredient.error.alreadyOnList");
         }

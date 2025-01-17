@@ -47,8 +47,7 @@ public class WebConfig implements WebMvcConfigurer {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/api/**", "/api", "/change-theme", "/change-lang").permitAll();
-                    registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/additional-registration", "/api/**", "/api", "/change-theme", "/change-lang", "/login", "/error").permitAll();
 
                     registry.requestMatchers("/chat/**", "/newChat", "/create-group").access((authenticationSupplier, context) -> {
                         Authentication authentication = authenticationSupplier.get();
@@ -77,21 +76,19 @@ public class WebConfig implements WebMvcConfigurer {
                                     handleGitHubLogin(oauth2Token);
                                     response.sendRedirect("/additional-registration");
                                 } else {
-                                    response.sendRedirect("/profile");
+                                    response.sendRedirect("/");
                                 }
                             } else {
                                 response.sendRedirect("/");
                             }
-                        }))
-                .logout(logout -> {
-                    logout
-                            .logoutUrl("/logout")
-                            .invalidateHttpSession(true)
-                            .clearAuthentication(true)
-                            .deleteCookies("JSESSIONID")
-                            .logoutSuccessUrl("/")
-                            .permitAll();
-                })
+                }))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessUrl("/")
+                        .permitAll())
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(accessDeniedHandler()))
                 .build();

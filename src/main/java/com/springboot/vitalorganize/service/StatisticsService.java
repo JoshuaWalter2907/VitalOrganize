@@ -1,6 +1,6 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.model.Fund_Statistics.FundStatisticsData;
+import com.springboot.vitalorganize.model.FundStatisticsData;
 import com.springboot.vitalorganize.repository.FundRepository;
 import com.springboot.vitalorganize.repository.PaymentRepository;
 import lombok.AllArgsConstructor;

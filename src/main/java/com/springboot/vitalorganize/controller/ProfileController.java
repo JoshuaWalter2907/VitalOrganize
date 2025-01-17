@@ -213,6 +213,8 @@ public class ProfileController {
      * @return Profilepage
      */
     private String redirectToProfile() {
+
+
         return "redirect:/profile";
     }
 

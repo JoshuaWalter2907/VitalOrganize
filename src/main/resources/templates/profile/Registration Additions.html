@@ -14,7 +14,7 @@
 <body th:class="${theme}">
 
 
-<div th:replace="fragments/header :: header" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
 
 <div class="wrapper">
     <h1 th:text="#{profile.completeProfile}"></h1>

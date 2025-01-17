@@ -1,7 +1,7 @@
 package com.springboot.vitalorganize.controller;
 
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
-import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
+import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.repository.UserRepository;
 import com.springboot.vitalorganize.service.ShoppingListService;
 import lombok.AllArgsConstructor;
@@ -29,11 +29,6 @@ public class ShoppingListApiController {
             Long userId = userEntity.getId();
 
             List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
-
-            // limit prices to 2 digits behind the comma
-            shoppingListItems.forEach(item -> item.setCalculatedPriceInEuros(
-                    Double.parseDouble(String.format("%.2f", item.getCalculatedPriceInEuros()).replace(",", "."))
-            ));
 
             return ResponseEntity.ok(shoppingListItems);
         } catch (IllegalArgumentException e) {

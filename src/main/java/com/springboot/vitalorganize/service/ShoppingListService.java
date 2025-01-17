@@ -2,7 +2,7 @@ package com.springboot.vitalorganize.service;
 
 import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.ShoppingListItemEntity;
-import com.springboot.vitalorganize.model.Shopping_List.ShoppingListData;
+import com.springboot.vitalorganize.model.ShoppingListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
 import com.springboot.vitalorganize.repository.ShoppingListItemRepository;
 import jakarta.transaction.Transactional;
@@ -34,15 +34,15 @@ public class ShoppingListService {
         }
     }
 
-    public void addItem(Long userId, String name) {
+    public void addItem(Long userId, String germanOrEnglishName) {
         ShoppingListItemEntity item = new ShoppingListItemEntity();
         item.setUserId(userId);
         Long ingredientId;
 
         // all ingredients are saved with their english name
-        String englishName = translationService.translateQuery(name, "de", "en");
+        String name = translationService.translateQuery(germanOrEnglishName, "de", "en");
 
-        IngredientEntity ingredient = ingredientRepository.findByUserIdAndName(userId, englishName).orElse(null);
+        IngredientEntity ingredient = ingredientRepository.findByUserIdAndName(userId, name).orElse(null);
 
         if(ingredient != null) {
             // ingredient exists in the ingredients table
@@ -53,7 +53,7 @@ public class ShoppingListService {
             }
         } else {
             // ingredient is not in the ingredients table
-            ingredientListService.addIngredient(name);
+            ingredientListService.addIngredient(userId, name);
 
             ingredientId = ingredientRepository.findByUserIdAndName(userId, name).orElseThrow().getId();
         }
@@ -86,8 +86,8 @@ public class ShoppingListService {
         try {
             newAmount = Double.parseDouble(newAmountStr);
 
-            if (newAmount <= 0) {
-                throw new IllegalArgumentException("shoppingList.error.notGreaterThanZero");
+            if (newAmount < 0) {
+                throw new IllegalArgumentException("shoppingList.error.notAPositiveNumber");
             }
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("shoppingList.error.notANumber");
