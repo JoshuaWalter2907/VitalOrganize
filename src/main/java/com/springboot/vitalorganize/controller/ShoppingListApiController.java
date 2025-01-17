@@ -30,11 +30,6 @@ public class ShoppingListApiController {
 
             List<ShoppingListData> shoppingListItems = shoppingListService.getAllItems(userId);
 
-            // limit prices to 2 digits behind the comma
-            shoppingListItems.forEach(item -> item.setCalculatedPriceInEuros(
-                    Double.parseDouble(String.format("%.2f", item.getCalculatedPriceInEuros()).replace(",", "."))
-            ));
-
             return ResponseEntity.ok(shoppingListItems);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("An error occurred while fetching the shopping list (" + e.getMessage() + ").");

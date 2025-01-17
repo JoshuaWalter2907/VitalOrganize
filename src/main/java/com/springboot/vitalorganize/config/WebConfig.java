@@ -27,6 +27,10 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
@@ -47,7 +51,8 @@ public class WebConfig implements WebMvcConfigurer {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/additional-registration", "/api/**", "/api", "/change-theme", "/change-lang", "/login", "/error").permitAll();
+                    registry.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/profileaddition", "/api/**", "/api", "/change-theme", "/change-lang").permitAll();
+                    registry.requestMatchers("/login", "/error", "/perform_login").permitAll();
 
                     registry.requestMatchers("/chat/**", "/newChat", "/create-group").access((authenticationSupplier, context) -> {
                         Authentication authentication = authenticationSupplier.get();
@@ -76,19 +81,21 @@ public class WebConfig implements WebMvcConfigurer {
                                     handleGitHubLogin(oauth2Token);
                                     response.sendRedirect("/additional-registration");
                                 } else {
-                                    response.sendRedirect("/");
+                                    response.sendRedirect("/profile");
                                 }
                             } else {
                                 response.sendRedirect("/");
                             }
-                }))
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessUrl("/")
-                        .permitAll())
+                        }))
+                .logout(logout -> {
+                    logout
+                            .logoutUrl("/logout")
+                            .invalidateHttpSession(true)
+                            .clearAuthentication(true)
+                            .deleteCookies("JSESSIONID")
+                            .logoutSuccessUrl("/")
+                            .permitAll();
+                })
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(accessDeniedHandler()))
                 .build();
@@ -267,5 +274,23 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public WebClient webClient() {
         return WebClient.builder().build();
+    }
+  
+   @Bean
+    public SpringResourceTemplateResolver templateResolver() {
+        SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
+        templateResolver.setPrefix("classpath:/templates/"); // Ordner für Thymeleaf-Templates
+        templateResolver.setSuffix(".html");                // Dateiendung der Templates
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setCacheable(false);               // Für Debugging: kein Caching
+        return templateResolver;
+    }
+
+    @Bean
+    public SpringTemplateEngine templateEngine(ITemplateResolver templateResolver) {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        templateEngine.setEnableSpringELCompiler(true); // Aktiviert Spring Expression Language
+        return templateEngine;
     }
 }

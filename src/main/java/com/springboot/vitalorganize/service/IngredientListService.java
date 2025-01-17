@@ -26,9 +26,7 @@ public class IngredientListService {
     private final UserService userService;
 
     // limited to 100 api calls per day (requires 2 per added ingredient)
-    public void addIngredient(String name){
-        Long userId = userService.getCurrentUser().getId();
-
+    public void addIngredient(Long userId, String name){
         if(ingredientRepository.findByUserIdAndName(userId, name).orElse(null) != null){
             throw new IllegalArgumentException("ingredient.error.alreadyOnList");
         }

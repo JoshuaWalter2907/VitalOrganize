@@ -1,6 +1,7 @@
 package com.springboot.vitalorganize.service;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.springboot.vitalorganize.config.SpoonacularConfig;
@@ -74,7 +75,13 @@ public class SpoonacularService {
     }
 
     public Map<String, Object> extractIngredientInfo(JsonObject jsonObject) {
-        String category = jsonObject.get("aisle").getAsString();
+        JsonElement aisle = jsonObject.get("aisle");
+        String category = "unknown";
+
+        // specific api value can be null in rare cases
+        if(!aisle.isJsonNull()) {
+            category = aisle.getAsString();
+        }
 
         double estimatedCostInUSCents = jsonObject.getAsJsonObject("estimatedCost").get("value").getAsDouble();
 
