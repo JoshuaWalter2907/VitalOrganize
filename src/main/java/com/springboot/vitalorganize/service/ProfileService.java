@@ -153,7 +153,7 @@ public class ProfileService {
 
         currentUser.setUsername(registrationAdditionResponseDTO.getUsername());
         currentUser.setBirthday(LocalDate.parse(registrationAdditionResponseDTO.getBirthday()));
-        if(!registrationAdditionResponseDTO.getEmail().isBlank())
+        if(registrationAdditionResponseDTO.getEmail() != null)
             currentUser.setSendToEmail(registrationAdditionResponseDTO.getEmail());
         userRepository.save(currentUser);
     }

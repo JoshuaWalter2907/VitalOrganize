@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class SubscriptionRequestDTO {
 
-    private String subscriptionId;
+    private String subscription_id;
     private String token;
 
 }
