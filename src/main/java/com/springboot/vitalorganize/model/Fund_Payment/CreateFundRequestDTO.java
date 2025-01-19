@@ -13,3 +13,5 @@ public class CreateFundRequestDTO {
     private List<Long> selectedUsers;
 
 }
+
+

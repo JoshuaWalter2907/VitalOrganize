@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HomePage</title>
 
-  <!-- Korrektes Einbinden des CSS-Files mit allen Themes -->
   <link rel="stylesheet" th:href="@{/css/profile.css}">
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/themes.css}">
@@ -14,8 +13,7 @@
 
 </head>
 <body th:class="${theme}">
-<!-- Einfügen des Headers -->
-<div th:replace="~{fragments/header :: header}"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}"></div>
 
 <div class="main-container-homepage">
   <h3 th:text="#{homepage.featuresTitle}"></h3>
