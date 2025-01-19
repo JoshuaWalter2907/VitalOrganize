@@ -126,7 +126,8 @@
 
 .custom-pagination span {
     padding: 8px 12px;
-    color: #6c757d;
+    color: black;
+    font-weight: bold;
 }
 
 .sorting{

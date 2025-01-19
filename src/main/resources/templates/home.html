@@ -105,7 +105,7 @@
     <div class="homepage-image">
       <img src="https://tse2.mm.bing.net/th?id=OIP.ygvtCEoc6676AWFz2_ubXAHaE7">
     </div>
-    </div>
+  </div>
 
 
   <div class="container-left">
@@ -144,20 +144,22 @@
 
 
   <div class="container-left">
-<div class="homepage-image">
-  <img src="https://thumb.mp-farm.com/1660052/thumb.jpg">
-</div>
-  <div class="content">
-    <h2 th:text="#{homepage.statisticsTitle}"></h2>
-    <p th:text="#{homepage.statisticsDescription}"></p>
-  </div>
-  <div class="content-symbol">
-    <form th:action="@{/statistics}" method="get">
-      <button type="submit" class="search-button" style="font-size: 80px">
-        <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-      </button>
-    </form>
-  </div>
+    <div class="homepage-image">
+      <img src="https://thumb.mp-farm.com/1660052/thumb.jpg">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.statisticsTitle}"></h2>
+      <p th:text="#{homepage.statisticsDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/statistics}" method="get"
+            th:attrappend="data-tooltip=${loggedInUser != null && loggedInUser.role == 'USER'} ? 'Du musst Premium Member sein, um diese Funktion nutzen zu können' : ''"
+            class="tooltip">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+        </button>
+      </form>
+    </div>
 
   </div>
 </div>

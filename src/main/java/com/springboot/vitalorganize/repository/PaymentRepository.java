@@ -33,11 +33,12 @@ public interface PaymentRepository  extends JpaRepository<PaymentEntity, Long> {
 
     // get the net daily transactions for the last 30 days
     @Query("SELECT p.fund.id, p.date, " +
-            "SUM(CASE WHEN p.type = 'EINZAHLEN' THEN p.amount ELSE (0 - p.amount) END) AS netAmount, " +
+            "SUM(CASE WHEN p.type = 'EINZAHLEN' THEN p.amount ELSE 0 END) - " +
+            "SUM(CASE WHEN p.type = 'AUSZAHLEN' THEN p.amount ELSE 0 END) AS netAmount, " +
             "SUM(CASE WHEN p.type = 'EINZAHLEN' THEN p.amount ELSE 0 END) AS totalDeposits, " +
             "SUM(CASE WHEN p.type = 'AUSZAHLEN' THEN p.amount ELSE 0 END) AS totalWithdrawals " +
             "FROM PaymentEntity p WHERE p.fund.id = :fundId AND p.date >= :startDate " +
-            "GROUP BY p.date ORDER BY p.date")
+            "GROUP BY DATE(p.date), p.fund.id ORDER BY p.date")
     List<Object[]> findDailyTransactionsByFund(@Param("fundId") Long fundId,
                                                @Param("startDate") LocalDateTime startDate);
 }
