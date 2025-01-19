@@ -11,6 +11,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+/**
+ * Controller für die ShoppingList-Page
+ */
 @AllArgsConstructor
 @Controller
 @RequestMapping("/shoppingList")
@@ -19,7 +22,11 @@ public class ShoppingListController {
     private final ShoppingListService shoppingListService;
     private final UserService userService;
 
-    // load the shoppingList page
+    /**
+     * Zeigt die Einkaufsliste des Nutzers an
+     * @param model Das Model für die View
+     * @return ShoppingList-Page
+     */
     @GetMapping()
     public String listItems(Model model) {
         Long userId = userService.getCurrentUser().getId();
@@ -37,7 +44,12 @@ public class ShoppingListController {
         return "shoppingList/shoppingList";
     }
 
-    // add an item to the shopping list
+    /**
+     * Fügt der Einkaufsliste eine Zutat hinzu
+     * @param name Der Name der Zutat
+     * @param attr Wird verwendet, um Fehlermeldungen an die View zu übermitteln
+     * @return ShoppingList-Page
+     */
     @PostMapping("/add")
     public String addItem(@RequestParam(value = "ingredientName") String name,
                           RedirectAttributes attr) {
@@ -52,21 +64,32 @@ public class ShoppingListController {
         return "redirect:/shoppingList";
     }
 
-    // delete the item from the shopping list
+    /**
+     * Löscht eine Zutat von der Einkaufsliste
+     * @param id Die Id der Zutat
+     * @param attr Wird verwendet, um Fehlermeldungen an die View zu übermitteln
+     * @return ShoppingList-Page
+     */
     @PostMapping("/delete/{id}")
-    public String deleteItem(@PathVariable("id") Long itemId,
+    public String deleteItem(@PathVariable("id") Long id,
                              RedirectAttributes attr) {
         Long userId = userService.getCurrentUser().getId();
 
         try{
-            shoppingListService.deleteItem(userId, itemId);
+            shoppingListService.deleteItem(userId, id);
         } catch (IllegalArgumentException e) {
             attr.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/shoppingList";
     }
 
-    // update an item's amount in the shopping list
+    /**
+     * Verändert die Menge einer Zutat
+     * @param id Die Id der Zutat
+     * @param newAmountStr Die neue Menge als String
+     * @param attr Wird verwendet, um Fehlermeldungen an die View zu übermitteln
+     * @return ShoppingList-Page
+     */
     @PostMapping("/updateAmount/{id}")
     public String updateAmount(@PathVariable("id") Long id,
                                @RequestParam("newAmount") String newAmountStr,

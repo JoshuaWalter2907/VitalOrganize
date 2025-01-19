@@ -4,10 +4,7 @@ import com.springboot.vitalorganize.entity.IngredientEntity;
 import com.springboot.vitalorganize.entity.Profile_User.UserEntity;
 import com.springboot.vitalorganize.model.IngredientListData;
 import com.springboot.vitalorganize.repository.IngredientRepository;
-import com.springboot.vitalorganize.service.IngredientListService;
-import com.springboot.vitalorganize.service.ShoppingListService;
-import com.springboot.vitalorganize.service.TranslationService;
-import com.springboot.vitalorganize.service.UserService;
+import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,6 +12,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+
+/**
+ * Controller für die Ingredient-Page
+ */
 @Controller
 @AllArgsConstructor
 @RequestMapping("/ingredients")
@@ -25,8 +26,17 @@ public class IngredientListController {
     private final UserService userService;
     private final ShoppingListService shoppingListService;
     private final TranslationService translationService;
+    private final PriceReportEmailService priceReportEmailService;
 
-    // load the ingredients page
+    /**
+     * Zeigt die Zutatenliste des Nutzers an
+     * @param model Das Model für die View
+     * @param request Wird zum Zugriff auf die Session des aktuellen Nutzers verwendet
+     * @param page Die derzeitige Page der Zutatenliste
+     * @param sort Die derzeitige Sortierung der Zutatenliste
+     * @param filter Der derzeitige Filter der Zutatenliste
+     * @return Ingredient-Page
+     */
     @GetMapping
     public String listIngredients(Model model,
                                   HttpServletRequest request,
@@ -47,7 +57,12 @@ public class IngredientListController {
         return "ingredientsList/ingredients";
     }
 
-    // add the ingredient
+    /**
+     * Fügt der Zutatenliste eine Zutat hinzu
+     * @param name Der Name der Zutat
+     * @param attr Wird verwendet, um Fehlermeldungen an die View zu übermitteln
+     * @return Ingredient-Page
+     */
     @PostMapping("/add")
     public String addIngredient(@RequestParam(value = "newIngredient") String name,
                                 RedirectAttributes attr) {
@@ -61,21 +76,34 @@ public class IngredientListController {
         return "redirect:/ingredients";
     }
 
-    // delete the ingredient
+    /**
+     * Löscht eine Zutat von der Zutatenliste
+     * @param id Die Id der Zutat
+     * @return Ingredient-Page
+     */
     @PostMapping("/delete/{id}")
     public String deleteIngredient(@PathVariable("id") Long id) {
         ingredientListService.deleteIngredient(id);
         return "redirect:/ingredients";
     }
 
-    // toggle the favourite status
+    /**
+     * Verändert den "favourite"-Status einer Zutat
+     * @param id Die Id der Zutat
+     * @return Ingredient-Page
+     */
     @PostMapping("/favourite/{id}")
     public String toggleFavouriteIngredient(@PathVariable("id") Long id) {
         ingredientListService.toggleFavourite(id);
         return "redirect:/ingredients";
     }
 
-    // toggle the onShoppingList status
+    /**
+     * Verändert den "onShoppingList"-Status einer Zutat
+     * @param id Die Id der Zutat
+     * @param attr Wird verwendet, um Fehlermeldungen an die View zu übermitteln
+     * @return Ingredient-Page
+     */
     @PostMapping("/onShoppingList/{id}")
     public String toggleOnShoppingList(@PathVariable("id") Long id,
                                        RedirectAttributes attr) {
@@ -94,14 +122,20 @@ public class IngredientListController {
         return "redirect:/ingredients";
     }
 
-    // toggle the priceReportEnabled status
+    /**
+     * Verändert den "priceReportsEnabled"-Status eines Nutzers
+     * @return Ingredient-Page
+     */
     @PostMapping("/priceReportEmail")
     public String togglePriceReportEmail() {
         userService.togglePriceReportEmail();
         return "redirect:/ingredients";
     }
 
-    // send the price report via email
+    /**
+     * Schickt dem Nutzer eine Email mit den Preisen seiner Lieblingszutaten
+     * @return Ingredient-Page
+     */
     @PostMapping("/sendPriceReportEmail")
     public String sendPriceReportEmail() {
         UserEntity userEntity = userService.getCurrentUser();
@@ -109,7 +143,7 @@ public class IngredientListController {
 
         // premium function, requires membership
         if(userEntity.isMember()){
-            ingredientListService.sendEmailWithPrices(userId);
+            priceReportEmailService.sendEmailWithPrices(userId);
         }
         return "redirect:/ingredients";
     }
