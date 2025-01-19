@@ -74,16 +74,16 @@
 
   <div class="container-left">
     <div class="homepage-image">
-      <img src="https://images.pexels.com/photos/1435910/pexels-photo-1435910.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1">
+      <img src="https://images.pexels.com/photos/1435910/pexels-photo-1435910.jpeg">
     </div>
     <div class="content">
-      <h2 th:text="#{homepage.kitchenTitle} + Zutatenliste"></h2>
-      <p th:text="#{homepage.kitchenDescription}"></p>
+      <h2 th:text="#{homepage.ingredientsTitle}"></h2>
+      <p th:text="#{homepage.ingredientsDescription}"></p>
     </div>
     <div class="content-symbol">
       <form th:action="@{/ingredients}" method="get">
         <button type="submit" class="search-button" style="font-size: 80px">
-          <i class="fa fa-cutlery" aria-hidden="true"></i>
+          <i class="fa-solid fa-list" aria-hidden=true></i>
         </button>
       </form>
     </div>
@@ -93,16 +93,16 @@
     <div class="content-symbol">
       <form th:action="@{/shoppingList}" method="get">
         <button type="submit" class="search-button" style="font-size: 80px">
-          <i class="fa fa-calendar" aria-hidden="true"></i>
+          <i class="fa-solid fa-cart-shopping" aria-hidden=true></i>
         </button>
       </form>
     </div>
     <div class="content">
-      <h2 th:text="#{homepage.timeManagementTitle} + Einkaufsliste"></h2>
-      <p th:text="#{homepage.timeManagementDescription}"></p>
+      <h2 th:text="#{homepage.shoppingListTitle}"></h2>
+      <p th:text="#{homepage.shoppingListDescription}"></p>
     </div>
     <div class="homepage-image">
-      <img src="https://tse2.mm.bing.net/th?id=OIP.ygvtCEoc6676AWFz2_ubXAHaE7&rs=1&pid=ImgDetMain">
+      <img src="https://tse2.mm.bing.net/th?id=OIP.ygvtCEoc6676AWFz2_ubXAHaE7">
     </div>
   </div>
 
@@ -145,13 +145,13 @@
       <img src="https://thumb.mp-farm.com/1660052/thumb.jpg">
     </div>
     <div class="content">
-      <h2 th:text="#{homepage.apiTitle} + Statistiken"></h2>
-      <p th:text="#{homepage.apiDescription}"></p>
+      <h2 th:text="#{homepage.statisticsTitle}"></h2>
+      <p th:text="#{homepage.statisticsDescription}"></p>
     </div>
     <div class="content-symbol">
-      <form th:action="@{/api-docs}" method="get">
+      <form th:action="@{/statistics}" method="get">
         <button type="submit" class="search-button" style="font-size: 80px">
-          <i class="fa fa-question-circle" aria-hidden="true"></i>
+          <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
         </button>
       </form>
     </div>

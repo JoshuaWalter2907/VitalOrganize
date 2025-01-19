@@ -50,16 +50,6 @@
         <span class="item-name" style="font-weight: bold;" th:text="#{shoppingListItem.name}"></span>
         <span class="item-amount" style="font-weight: bold; display: flex; align-items: center;">
             <span th:text="#{shoppingListItem.purchaseAmount}" style="margin-right: 10px"></span>
-            <form method="post" style="display: flex; flex: 2; gap: 10px; visibility: hidden; pointer-events: none;">
-                <input name="newAmount" class="edit-amount" type="text" th:placeholder="#{shoppingListItem.amount.new}" style="width: 150px; padding: 0; font-size: 14px; text-align: center; visibility: hidden; pointer-events: none;" required>
-                <button type="submit" class="add-button" style="background: none; border: none; padding: 0; margin: 0;">
-                    <span class="add-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="vertical-align: middle;">
-                            <path d="M4 21a1 1 0 0 0 .24 0l4-1a1 1 0 0 0 .47-.26L21 7.41a2 2 0 0 0 0-2.82L19.42 3a2 2 0 0 0-2.83 0L4.3 15.29a1.06 1.06 0 0 0-.27.47l-1 4A1 1 0 0 0 3.76 21 1 1 0 0 0 4 21zM18 4.41 19.59 6 18 7.59 16.42 6zM5.91 16.51 15 7.41 16.59 9l-9.1 9.1-2.11.52z" color="black"></path>
-                        </svg>
-                    </span>
-                </button>
-            </form>
         </span>
         <span class="item-price" style="font-weight: bold;" th:text="#{shoppingListItem.calculatedPrice}"></span>
         <form class="item-delete" style="flex: 0; visibility: hidden; pointer-events: none;">
