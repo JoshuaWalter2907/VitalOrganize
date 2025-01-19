@@ -20,7 +20,7 @@ public class HouseholdPlannerController {
     private PlannerService plannerService; // Service zur Planung von Aufgaben
 
     @Autowired
-    UserService userService; // Service zur Benutzerverwaltung
+    UserService userService;
 
     private final String WG_ADMIN = "admin"; // Konstante für den Admin-Rollenbezeichner
 

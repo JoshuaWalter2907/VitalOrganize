@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Setter
@@ -121,12 +122,12 @@ public class UserEntity {
 
     public SubscriptionEntity getLatestSubscription() {
         if (subscriptions == null || subscriptions.isEmpty()) {
-            return null; // Keine Subscription vorhanden
+            return null;
         }
-        // Sortiere nach einer Eigenschaft, z. B. Startzeit oder ID
         return subscriptions.stream()
-                .max((s1, s2) -> s1.getStartTime().compareTo(s2.getStartTime())) // Nach Startzeit sortieren
+                .max(Comparator.comparing(SubscriptionEntity::getStartTime))
                 .orElse(null);
+
     }
 
     public boolean isMember(){

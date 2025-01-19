@@ -38,6 +38,7 @@
     </div>
   </div>
 
+
   <div class="container-left">
     <div class="homepage-image">
       <img src="https://th.bing.com/th/id/R.39a931a4313606272190e142cc97c611?rik=0%2fpF2uMrLOFWZQ&pid=ImgRaw&r=0">
@@ -47,7 +48,7 @@
       <p th:text="#{homepage.kitchenDescription}"></p>
     </div>
     <div class="content-symbol">
-      <form th:action="@{/}" method="get">
+      <form th:action="@{/recipes}" method="get">
         <button type="submit" class="search-button" style="font-size: 80px">
           <i class="fa fa-cutlery" aria-hidden="true"></i>
         </button>
@@ -57,7 +58,7 @@
 
   <div class="container-left">
     <div class="content-symbol">
-      <form th:action="@{/calendar}" method="get">
+      <form th:action="@{/planner}" method="get">
         <button type="submit" class="search-button" style="font-size: 80px">
           <i class="fa fa-calendar" aria-hidden="true"></i>
         </button>
@@ -71,6 +72,41 @@
       <img src="https://arbeits-abc.de/wp-content/uploads/2020/10/zeit_vergeht.jpg">
     </div>
   </div>
+
+  <div class="container-left">
+    <div class="homepage-image">
+      <img src="https://images.pexels.com/photos/1435910/pexels-photo-1435910.jpeg">
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.ingredientsTitle}"></h2>
+      <p th:text="#{homepage.ingredientsDescription}"></p>
+    </div>
+    <div class="content-symbol">
+      <form th:action="@{/ingredients}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa-solid fa-list" aria-hidden=true></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="container-left">
+    <div class="content-symbol">
+      <form th:action="@{/shoppingList}" method="get">
+        <button type="submit" class="search-button" style="font-size: 80px">
+          <i class="fa-solid fa-cart-shopping" aria-hidden=true></i>
+        </button>
+      </form>
+    </div>
+    <div class="content">
+      <h2 th:text="#{homepage.shoppingListTitle}"></h2>
+      <p th:text="#{homepage.shoppingListDescription}"></p>
+    </div>
+    <div class="homepage-image">
+      <img src="https://tse2.mm.bing.net/th?id=OIP.ygvtCEoc6676AWFz2_ubXAHaE7">
+    </div>
+    </div>
+
 
   <div class="container-left">
     <div class="homepage-image">
@@ -106,6 +142,24 @@
     </div>
   </div>
 
+
+  <div class="container-left">
+<div class="homepage-image">
+  <img src="https://thumb.mp-farm.com/1660052/thumb.jpg">
+</div>
+  <div class="content">
+    <h2 th:text="#{homepage.statisticsTitle}"></h2>
+    <p th:text="#{homepage.statisticsDescription}"></p>
+  </div>
+  <div class="content-symbol">
+    <form th:action="@{/statistics}" method="get">
+      <button type="submit" class="search-button" style="font-size: 80px">
+        <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+      </button>
+    </form>
+  </div>
+
+  </div>
 </div>
 
 </body>

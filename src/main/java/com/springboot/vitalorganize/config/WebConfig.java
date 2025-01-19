@@ -68,7 +68,7 @@ public class WebConfig implements WebMvcConfigurer {
                 })
                 .oauth2Login(oauth2Login -> oauth2Login
                         .loginPage("/login")
-                        .successHandler((_, response, authentication) -> {
+                        .successHandler((a, response, authentication) -> {
                             if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
                                 String provider = oauth2Token.getAuthorizedClientRegistrationId();
                                 if ("discord".equals(provider)) {
