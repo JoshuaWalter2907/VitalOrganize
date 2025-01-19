@@ -12,6 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Dieser Service ist zuständig für die Funktionalität der Statistikseite
+ * Diese Klasse bietet Methoden für die Statistikseite
+ */
 @Service
 @AllArgsConstructor
 public class StatisticsService {
@@ -21,7 +25,10 @@ public class StatisticsService {
     private final GraphService graphService;
     private final FundRepository fundRepository;
 
-    // fetch all statistics for all funds for the current user
+    /**
+     * Gibt alle Statistiken zu Funds des aktuellen Nutzers zurück
+     * @return Liste mit Statistikdaten zu jedem Fund
+     */
     public List<FundStatisticsData> fetchAllFundStatistics(){
         Long userId = userService.getCurrentUser().getId();
 
@@ -41,7 +48,12 @@ public class StatisticsService {
         return fundsStatistics;
     }
 
-    // fetch statistics for a fund
+    /**
+     * Gibt alle Statistiken zu einem Fund zurück
+     * @param fundId Die Id des Funds
+     * @param startDate Der erste Tag des 30-Tage-Zeitraums
+     * @return Map mit Statistikdaten zum Fund
+     */
     public Map<String, Object> fetchStatisticsForFund(Long fundId, LocalDateTime startDate) {
         List<Object[]> dailyData = paymentRepository.findDailyTransactionsByFund(fundId, startDate);
 

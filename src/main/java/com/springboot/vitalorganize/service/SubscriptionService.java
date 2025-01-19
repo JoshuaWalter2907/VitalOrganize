@@ -74,8 +74,8 @@ public class SubscriptionService {
      */
     public boolean confirmSubscription(SubscriptionRequestDTO subscriptionRequestDTO) {
         UserEntity userEntity = userService.getCurrentUser();
-        String payerId = paypalService.getPayerIdFromSubscription(subscriptionRequestDTO.getSubscriptionId());
-        String approvalResponse = paypalService.confirmSubscription(subscriptionRequestDTO.getSubscriptionId(), payerId);
+        String payerId = paypalService.getPayerIdFromSubscription(subscriptionRequestDTO.getSubscription_id());
+        String approvalResponse = paypalService.confirmSubscription(subscriptionRequestDTO.getSubscription_id(), payerId);
 
 
         if ("approved".equals(approvalResponse)) {
@@ -85,7 +85,7 @@ public class SubscriptionService {
 
 
             SubscriptionEntity subscriptionEntity = new SubscriptionEntity();
-            subscriptionEntity.setSubscriptionId(subscriptionRequestDTO.getSubscriptionId());
+            subscriptionEntity.setSubscriptionId(subscriptionRequestDTO.getSubscription_id());
             subscriptionEntity.setPayerId(payerId);
             subscriptionEntity.setPlanId("P-1DP07006BV376124WM5XEB6Q");
             subscriptionEntity.setStatus("ACTIVE");

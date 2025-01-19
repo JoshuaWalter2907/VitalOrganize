@@ -16,7 +16,7 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div>
 
 
 <div class="main-container">
@@ -24,13 +24,10 @@
     <h2 th:text="#{chat.choose.user}">Wähle Benutzer aus</h2>
     <form id="user-selection-form" method="post" action="/create-group" class="create-group-form">
       <div class="user-list">
-        <!-- Schleife durch die Gruppen der Benutzer -->
         <div th:each="group : ${newChat.groupedUsers}">
-          <!-- Gruppentitel: Der Anfangsbuchstabe -->
           <div class="divider">
             <span th:text="${group.key}">A</span>
           </div>
-          <!-- Benutzer in der Gruppe -->
           <div th:each="user : ${group.value}" class="user-item" th:data-user-id="${user.id}">
             <label class="user-label">
               <img th:src="${user.getProfilePictureUrl()}" alt="UserImage" class="profile-image">

@@ -22,12 +22,12 @@
       <button type="submit">
         <i class="fa fa-edit"></i>
       </button>
-      <span class="edit-profile-text" th:text="#{profile.edit}">Edit Profile</span> <!-- Text unterhalb des Buttons -->
+      <span class="edit-profile-text" th:text="#{profile.edit}">Edit Profile</span>
     </form>
   </div>
   <div class="main-profile">
     <div class="username-container">
-      <i th:if="${profileData.userEntity.getRole == 'MEMBER'}" class="fa fa-crown crown-icon"></i> <!-- Krone-Icon -->
+      <i th:if="${profileData.userEntity.getRole == 'MEMBER'}" class="fa fa-crown crown-icon"></i>
       <a th:text="${profileData.userEntity.getUsername()}" class="username"></a>
     </div>
 
@@ -36,19 +36,15 @@
   </div>
 
   <div class="profile-container">
-    <!-- Spalte: Freunde -->
     <div class="column">
       <h3 th:text="#{profile.friends}">Friends</h3>
       <ul>
         <th:block th:each="friend : ${profileData.friends}">
           <li>
-            <!-- Profilbild -->
             <img th:src="${friend.profilePictureUrl}" alt="Profile Picture">
 
-            <!-- Benutzername -->
             <span th:text="${friend.username}">Friend Name</span>
 
-            <!-- Unfriend-Button -->
             <form th:if="${profileData.friendRequests != null}" th:action="@{'/unfriend/' + ${friend.id}}" method="post">
               <button type="submit" th:text="#{profile.unfriend}">Unfriend</button>
             </form>
@@ -57,20 +53,16 @@
       </ul>
     </div>
 
-    <!-- Spalte: Potenzielle Freunde -->
     <div class="column" th:if="${profileData.potentialFriends != null}">
       <h3 th:text="#{profile.potentialFriends}">Potential Friends</h3>
       <ul>
         <th:block th:each="potential : ${profileData.potentialFriends}">
           <li>
-            <!-- Profilbild -->
             <img th:src="${potential.profilePictureUrl}" alt="Profile Picture">
 
-            <!-- Benutzername -->
             <span th:text="${potential.username}">Potential Friend</span>
             <span th:if="${potential.isPublic != true}" class="private">(privat)</span>
 
-            <!-- Dropdown-Menü -->
             <div class="dropdown">
               <button th:text="#{profile.actions}">Actions</button>
               <div class="dropdown-menu">
@@ -88,7 +80,6 @@
       </ul>
     </div>
 
-    <!-- Spalte: Blockierte Benutzer -->
     <div class="column" th:if="${profileData.blockedUsers != null}">
       <h3 th:text="#{profile.blockedUsers}">Blocked Users</h3>
       <ul>
@@ -104,7 +95,6 @@
       </ul>
     </div>
 
-    <!-- Spalte: Friend Requests -->
     <div class="column" th:if="${profileData.outgoingFriendRequests != null || profileData.friendRequests != null}">
       <h3 th:text="#{profile.friendRequests}">Friend Requests</h3>
 
@@ -113,13 +103,10 @@
         <ul>
           <th:block th:each="outgoingRequest : ${profileData.outgoingFriendRequests}">
             <li class="friend-request-item">
-              <!-- Profilbild -->
               <img th:src="${outgoingRequest.receiver.profilePictureUrl}" alt="Profile Picture" class="profile-picture">
 
-              <!-- Benutzername -->
               <span class="username" th:text="${outgoingRequest.receiver.username}">Receiver Name</span>
 
-              <!-- Button mit Status -->
               <form th:action="@{/cancelRequest/{id}(id=${outgoingRequest.id})}" method="post" style="display:inline;">
                 <button type="submit" class="cancel-button" th:text="#{profile.cancelRequest}">Cancel</button>
               </form>
@@ -133,13 +120,10 @@
         <ul>
           <th:block th:each="incomingRequest : ${profileData.friendRequests}">
             <li class="friend-request-item">
-              <!-- Profilbild -->
               <img th:src="${incomingRequest.sender.profilePictureUrl}" alt="Profile Picture" class="profile-picture">
 
-              <!-- Benutzername -->
               <span class="username" th:text="${incomingRequest.sender.username}">Sender Name</span>
 
-              <!-- Aktion-Buttons -->
               <div class="actions">
                 <form th:action="@{/acceptRequest/{id}(id=${incomingRequest.id})}" method="post">
                   <button type="submit" class="accept-button" th:text="#{profile.accept}">Accept</button>

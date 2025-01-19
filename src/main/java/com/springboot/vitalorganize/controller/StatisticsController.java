@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
+/**
+ * Controller für die Statistics-Page
+ */
 @Controller
 @AllArgsConstructor
 @RequestMapping("/statistics")
@@ -20,7 +23,11 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
     private final UserService userService;
 
-    // fetch all statistics for the current user
+    /**
+     * Zeigt alle Statistiken des aktuellen Nutzers an
+     * @param model Das Model für die View
+     * @return Statistics-Page
+     */
     @GetMapping
     public String showStatistics(Model model) {
         UserEntity userEntity = userService.getCurrentUser();

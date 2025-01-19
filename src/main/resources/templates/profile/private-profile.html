@@ -24,15 +24,14 @@
         </button>
       </form>
 
-      <!-- Formular für Abonnement-Informationen -->
       <form th:action="@{/profile-edit}" method="get">
-        <input type="hidden" name="tab" value="subscription" /> <!-- Füge ein verborgenes Input-Feld hinzu -->
+        <input type="hidden" name="tab" value="subscription" />
         <button type="submit" class="form-actions" th:text="#{profile.abos}">
           Abonnements Informationen
         </button>
       </form>
       <form th:action="@{/profile-edit}" method="get">
-        <input type="hidden" name="tab" value="paymenthistory" /> <!-- Füge ein verborgenes Input-Feld hinzu -->
+        <input type="hidden" name="tab" value="paymenthistory" />
         <button type="submit" class="form-actions" th:text="#{profile.history}">
           Payment History
         </button>
@@ -274,9 +273,9 @@
         </div>
         <div class="input-box-fixed">
           <label th:text="#{profile.username}"></label>
-          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendToEmail != null && !ProfileEditData.profile.sendtoEmail.isEmpty() ?
-                 (#strings.substring(ProfileEditData.profile.sendtoEmail, 0, 1) + '***' +
-                  #strings.substring(ProfileEditData.profile.sendtoEmail, ProfileEditData.profile.sendtoEmail.length() - 10)) :
+          <input type="text" id="email" name="email"        th:value="${ProfileEditData.profile.sendToEmail != null && !ProfileEditData.profile.sendToEmail.isEmpty() ?
+                 (#strings.substring(ProfileEditData.profile.sendToEmail, 0, 1) + '***' +
+                  #strings.substring(ProfileEditData.profile.sendToEmail, ProfileEditData.profile.sendToEmail.length() - 10)) :
                  (#strings.substring(ProfileEditData.profile.email, 0, 1) + '***' +
                   #strings.substring(ProfileEditData.profile.email, ProfileEditData.profile.email.length() - 10))}"  readonly>
         </div>
@@ -364,8 +363,7 @@
     </div>
     <div class="Konto-details">
       <div>
-        <!-- Eingabefelder und 2FA-Formular, wenn auth=true -->
-        <div class="fa-input" th:if="${auth}">
+        <div class="fa-input" th:if="${ProfileEditData.auth}">
           <a th:text="#{profile.twoFactorAuth}"></a>
           <form action="/verify-2fa" method="post">
             <div class="input-container">
@@ -380,7 +378,6 @@
           </form>
         </div>
 
-        <!-- Download-Button, wenn auth=false -->
         <form th:unless="${ProfileEditData.auth}" action="/send-2fa-code" method="post">
           <button type="submit" class="form-actions" th:text="#{profile.downloadInformation}"></button>
         </form>

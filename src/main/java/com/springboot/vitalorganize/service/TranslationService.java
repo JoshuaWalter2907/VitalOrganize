@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+/**
+ * Dieser Service ist zuständig für die Übersetzung von deutschen Zutatennamen
+ * Diese Klasse bietet eine Methode zur Übersetzung
+ */
 @Service
 @AllArgsConstructor
 public class TranslationService {
@@ -16,6 +20,13 @@ public class TranslationService {
     private DeepTranslateConfig deepTranslateConfig;
     private final WebClient webClient;
 
+    /**
+     * Übersetzt den Namen einer Zutat ins Englische
+     * @param textToTranslate Der ursprüngliche Name der Zutat
+     * @param sourceLang Die ursprünglich verwendete Sprache
+     * @param targetLang Die gewünschte Sprache
+     * @return Ins Englische übersetzter Name der Zutat
+     */
     public String translateQuery(String textToTranslate, String sourceLang, String targetLang) {
         String apiUrl = "https://deep-translate1.p.rapidapi.com/language/translate/v2";
         String rapidApiKey = deepTranslateConfig.getTranslateApiKey();

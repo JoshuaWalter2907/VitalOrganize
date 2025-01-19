@@ -25,13 +25,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 
+/**
+ * Dieser Service ist zuständig für die Erstellung von Graphen
+ * Diese Klasse bietet Methoden zum Erstellen von Graphen
+ */
 @Service
 @AllArgsConstructor
 public class GraphService {
 
     private final PaymentRepository paymentRepository;
 
-    // return a base64 encoded string of an image for each fund (image of the graph)
+    /**
+     * Gibt eine Liste der Fund-Graphen in Form von base64-image-Strings zurück
+     * @param fundId Die Id des Funds
+     * @param startDate Der erste Tag des 30-Tage-Zeitraums
+     * @return eine Liste von Benutzern
+     */
     public List<String> generateFundCharts(Long fundId, LocalDateTime startDate) {
 
         List<Object[]> dailyData = paymentRepository.findDailyTransactionsByFund(fundId, startDate);
@@ -50,6 +59,12 @@ public class GraphService {
         return charts;
     }
 
+    /**
+     * Verarbeitet die Daten für das Säulendiagramm
+     * @param transactions Tägliche Transaktionen der letzten 30 Tage
+     * @param startDate Der erste Tag des 30-Tage-Zeitraums
+     * @return Eine Map mit den Netto-Transaktionen jedes Tages
+     */
     private Map<String, Double> processBarChartData(List<Object[]> transactions, LocalDateTime startDate) {
         Map<String, Double> dailyNetAmounts = new LinkedHashMap<>();
 
@@ -68,6 +83,13 @@ public class GraphService {
         return dailyNetAmounts;
     }
 
+    /**
+     * Verarbeitet die Daten für den Kontostand-Graph
+     * @param transactions Tägliche Transaktionen der letzten 30 Tage
+     * @param startDate Der erste Tag des 30-Tage-Zeitraums
+     * @param fundId Die Id des Funds
+     * @return Eine Map mit dem Kontostand jedes Tages
+     */
     private Map<String, Double> processLineChartData(List<Object[]> transactions, LocalDateTime startDate, Long fundId) {
         Map<String, Double> dailyBalances = new LinkedHashMap<>();
 
@@ -100,6 +122,12 @@ public class GraphService {
         return dailyBalances;
     }
 
+    /**
+     * Erstellt das Säulendiagramm
+     * @param labels Achsenbeschriftung
+     * @param barData Die Daten für das Diagramm
+     * @return base64-image-String des Diagramms
+     */
     private String createBarChart(List<String> labels, Map<String, Double> barData) {
         try {
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -142,6 +170,11 @@ public class GraphService {
         }
     }
 
+    /**
+     * Erstellt einen custom Renderer für verschiedenfarbige Säulen
+     * @param dataset Das Dataset
+     * @return BarRenderer
+     */
     private static BarRenderer getBarRenderer(DefaultCategoryDataset dataset) {
         BarRenderer renderer = new BarRenderer() {
             @Override
@@ -161,6 +194,12 @@ public class GraphService {
         return renderer;
     }
 
+    /**
+     * Erstellt den Kontostand-Graph
+     * @param labels Achsenbeschriftung
+     * @param lineData Die Daten für den Graph
+     * @return base64-image-String des Graphen
+     */
     private String createLineChart(List<String> labels, Map<String, Double> lineData) {
         try {
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -205,6 +244,10 @@ public class GraphService {
         }
     }
 
+    /**
+     * Modifiziert das Design des Graphen/Diagramms
+     * @param plot Der Plot
+     */
     private void customizeChartLayout(CategoryPlot plot){
         // add vertical grid lines to separate each day
         plot.setDomainGridlinesVisible(true);
@@ -228,6 +271,11 @@ public class GraphService {
         plot.setRangeZeroBaselineStroke(new BasicStroke(1.0f));
     }
 
+    /**
+     * Formatiert ein Datum in das deutsche "dd.mm."-Format
+     * @param date Das Datum
+     * @return String des formatierten Datums
+     */
     private String formatDate(String date) {
         return LocalDate.parse(date).format(DateTimeFormatter.ofPattern("d.M."));
     }

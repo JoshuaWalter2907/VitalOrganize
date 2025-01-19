@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller für die ShoppingList-API
+ */
 @RestController
 @RequestMapping("/api/shoppingList")
 @AllArgsConstructor
@@ -20,7 +23,11 @@ public class ShoppingListApiController {
     private final ShoppingListService shoppingListService;
     private final UserRepository userRepository;
 
-    // fetch the whole shopping list
+    /**
+     * Gibt die gesamte Einkaufsliste des Nutzers zurück
+     * @param authorizationHeader Der Authorization-Header mit API-Token
+     * @return API-Response
+     */
     @GetMapping("/all")
     public ResponseEntity<?> getAllItems(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
         try {
@@ -36,7 +43,12 @@ public class ShoppingListApiController {
         }
     }
 
-    // add an item to the shopping list
+    /**
+     * Fügt der Einkaufsliste eine Zutat hinzu
+     * @param name Der Name der Zutat
+     * @param authorizationHeader Der Authorization-Header mit API-Token
+     * @return API-Response
+     */
     @PostMapping
     public ResponseEntity<?> addItem(@RequestParam("ingredientName") String name,
                                      @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
@@ -53,7 +65,12 @@ public class ShoppingListApiController {
         }
     }
 
-    // delete the item from the shopping list
+    /**
+     * Löscht eine Zutat von der Einkaufsliste
+     * @param id Die Id der Zutat
+     * @param authorizationHeader Der Authorization-Header mit API-Token
+     * @return API-Response
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id,
                                         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {
@@ -70,7 +87,13 @@ public class ShoppingListApiController {
         }
     }
 
-    // update an item's amount in the shopping list
+    /**
+     * Verändert die Menge einer Zutat
+     * @param id Die Id der Zutat
+     * @param newAmountStr Die neue Menge als String
+     * @param authorizationHeader Der Authorization-Header mit API-Token
+     * @return API-Response
+     */
     @PutMapping("/{id}/amount")
     public ResponseEntity<?> updateItemAmount(@PathVariable Long id,
                                               @RequestParam("newAmount") String newAmountStr,
@@ -88,7 +111,12 @@ public class ShoppingListApiController {
         }
     }
 
-    // fetch a single item from the shopping list
+    /**
+     * Gibt eine einzelne Zutat zurück
+     * @param id Die Id der Zutat
+     * @param authorizationHeader Der Authorization-Header mit API-Token
+     * @return API-Response
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> getItem(@PathVariable Long id,
                                      @RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader) {

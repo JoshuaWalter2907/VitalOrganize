@@ -16,7 +16,7 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div>
 
 <div class="main-container">
   <div class="left-side">
@@ -24,7 +24,7 @@
       <form action="/fund/newfund" method="get" class="search-form">
         <div class="input-container">
           <button type="submit" class="search-button">
-            <i class="fa fa-search"></i> <!-- Such-Icon -->
+            <i class="fa fa-search"></i>
           </button>
           <input type="text" name="query" th:placeholder="#{fund.search.person}" th:value="${query}">
         </div>

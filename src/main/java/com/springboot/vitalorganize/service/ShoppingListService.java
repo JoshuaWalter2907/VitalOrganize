@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Dieser Service ist zuständig für die Funktionalität der Einkaufslisten-Seite
+ * Diese Klasse bietet Methoden für die Einkaufsliste
+ */
 @AllArgsConstructor
 @Service
 public class ShoppingListService {
@@ -20,12 +24,24 @@ public class ShoppingListService {
     private final TranslationService translationService;
     private final IngredientListService ingredientListService;
 
+    /**
+     * Prüft, ob die Id einer Zutat auf der Einkaufsliste des Nutzers vorhanden ist
+     * @param userId Die Id des Nutzers
+     * @param itemId Die Id der Zutat
+     * @throws IllegalArgumentException wenn die Id nicht gefunden wird
+     */
     public void checkIfIdExists(Long userId, Long itemId) {
         if(!shoppingListItemRepository.existsByUserIdAndIngredientId(userId, itemId)){
             throw new IllegalArgumentException("shoppingList.error.itemNotFound");
         }
     }
 
+    /**
+     * Gibt das Access Token aus dem AuthorizationHeader zurück
+     * @param authorizationHeader Der AuthorizationHeader mit dem Access Token
+     * @return Access Token
+     * @throws IllegalArgumentException wenn der AuthorizationHeader das falsche Format hat
+     */
     public String extractAccessToken(String authorizationHeader) {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);
@@ -33,7 +49,12 @@ public class ShoppingListService {
             throw new IllegalArgumentException("authorizationHeader.wrongFormat");
         }
     }
-
+    /**
+     * Gibt das Access Token aus dem AuthorizationHeader zurück
+     * @param userId Die Id des Nutzers
+     * @param germanOrEnglishName Der deutsche oder englische Name der Zutat
+     * @throws IllegalArgumentException wenn die Zutat schon auf der Einkaufsliste ist
+     */
     public void addItem(Long userId, String germanOrEnglishName) {
         ShoppingListItemEntity item = new ShoppingListItemEntity();
         item.setUserId(userId);
@@ -63,6 +84,11 @@ public class ShoppingListService {
         shoppingListItemRepository.save(item);
     }
 
+    /**
+     * Löscht eine Zutat von der Einkaufsliste
+     * @param userId Die Id des Nutzers
+     * @param itemId Die Id der Zutat
+     */
     @Transactional
     public void deleteItem(Long userId, Long itemId) {
         checkIfIdExists(userId, itemId);
@@ -71,10 +97,21 @@ public class ShoppingListService {
         shoppingListItemRepository.deleteByUserIdAndIngredientId(userId, itemId);
     }
 
+    /**
+     * Gibt die ganze Einkaufsliste des Nutzers zurück
+     * @param userId Die Id des Nutzers
+     * @return Liste aller Einkaufslisteneinträge
+     */
     public List<ShoppingListData> getAllItems(Long userId) {
         return shoppingListItemRepository.findShoppingListByUserId(userId);
     }
 
+    /**
+     * Verändert die Menge einer Zutat
+     * @param userId Die Id des Nutzers
+     * @param itemId Die Id der Zutat
+     * @param newAmountStr Die neue Menge als String
+     */
     public void updateAmount(Long userId, Long itemId, String newAmountStr){
         checkIfIdExists(userId, itemId);
 
@@ -108,7 +145,13 @@ public class ShoppingListService {
         shoppingListItemRepository.save(item);
     }
 
-    public Optional<ShoppingListData> getItem(Long userId, Long ingredientId) {
-        return shoppingListItemRepository.findShoppingListItemByUserIdAndIngredientId(userId, ingredientId);
+    /**
+     * Gibt eine einzelne Zutat von der Einkaufsliste zurück
+     * @param userId Die Id des Nutzers
+     * @param itemId Die Id der Zutat
+     * @return Einzelner Einkaufslisteneintrag
+     */
+    public Optional<ShoppingListData> getItem(Long userId, Long itemId) {
+        return shoppingListItemRepository.findShoppingListItemByUserIdAndIngredientId(userId, itemId);
     }
 }

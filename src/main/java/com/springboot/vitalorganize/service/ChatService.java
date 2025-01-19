@@ -1,6 +1,5 @@
 package com.springboot.vitalorganize.service;
 
-import com.springboot.vitalorganize.component.PaginationHelper;
 import com.springboot.vitalorganize.entity.Chat.ChatGroupEntity;
 import com.springboot.vitalorganize.entity.Chat.DirectChatEntity;
 import com.springboot.vitalorganize.entity.Chat.MessageEntity;
@@ -37,7 +36,6 @@ public class ChatService {
 
     private SimpMessagingTemplate brokerMessagingTemplate;
     private final UserService userService;
-    private final PaginationHelper paginationHelper;
 
 
     /**

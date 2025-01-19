@@ -271,6 +271,10 @@ public class WebConfig implements WebMvcConfigurer {
         return registrationBean;
     }
 
+    /**
+     * Für API Zugriff
+     * @return WebClient der für den API Zugriff benötigt wird
+     */
     @Bean
     public WebClient webClient() {
         return WebClient.builder().build();
