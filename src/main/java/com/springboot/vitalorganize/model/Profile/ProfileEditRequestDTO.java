@@ -31,5 +31,4 @@ public class ProfileEditRequestDTO {
     private int size = 5;
 
 
-    // Getter und Setter
 }

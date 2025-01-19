@@ -391,6 +391,7 @@ public class ChatService {
      */
     public List<UserEntity> preparePublicUsersPage() {
         List<UserEntity> publicUsers = userService.getPublicUsers();
+        publicUsers.add(userService.getCurrentUser());
 
         List<UserEntity> members = publicUsers.stream()
                 .filter(UserEntity::isMember)

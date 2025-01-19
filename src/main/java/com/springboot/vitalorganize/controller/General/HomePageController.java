@@ -5,6 +5,7 @@ import com.springboot.vitalorganize.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -129,8 +130,8 @@ public class HomePageController {
         String username = "";
         String birthdate = "";
 
-        String uri = session.getAttribute("uri").toString();
-        if(uri.equals("/additional-registration")){
+        String url = session.getAttribute("uri").toString();
+        if(url.equals("/additional-registration")){
             email = session.getAttribute("email").toString();
             username = session.getAttribute("username").toString();
             birthdate = session.getAttribute("birthday").toString();
@@ -138,13 +139,13 @@ public class HomePageController {
 
         boolean isVerified = twoFactorService.verifyCode(verify2FARequestDTO.getDigits(), session);
 
-
+        System.out.println(url);
         if (isVerified) {
             session.setAttribute("2fa_verified", true);
-            if ("/profile-edit".equals(uri)) {
+            if ("/profile-edit".equals(url)) {
                 senderService.createPdf(userService.getCurrentUser());
                 return "redirect:/profile-edit";
-            } else if ("/additional-registration".equals(uri)) {
+            } else if ("/additional-registration".equals(url)) {
                 return "forward:/additional-registration?username=" + username + "&birthday=" + birthdate + "&email=" + email;
             }
         }

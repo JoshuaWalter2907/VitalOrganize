@@ -367,12 +367,13 @@
           <a th:text="#{profile.twoFactorAuth}"></a>
           <form action="/verify-2fa" method="post">
             <div class="input-container">
-              <input type="text" id="digit1" name="digit1" class="input-box" maxlength="1" required>
-              <input type="text" id="digit2" name="digit2" class="input-box" maxlength="1" required>
-              <input type="text" id="digit3" name="digit3" class="input-box" maxlength="1" required>
-              <input type="text" id="digit4" name="digit4" class="input-box" maxlength="1" required>
-              <input type="text" id="digit5" name="digit5" class="input-box" maxlength="1" required>
-              <input type="text" id="digit6" name="digit6" class="input-box" maxlength="1" required>
+              <input type="text" id="digit1" name="digits[0]" class="input-box" maxlength="1" required>
+              <input type="text" id="digit2" name="digits[1]" class="input-box" maxlength="1" required>
+              <input type="text" id="digit3" name="digits[2]" class="input-box" maxlength="1" required>
+              <input type="text" id="digit4" name="digits[3]" class="input-box" maxlength="1" required>
+              <input type="text" id="digit5" name="digits[4]" class="input-box" maxlength="1" required>
+              <input type="text" id="digit6" name="digits[5]" class="input-box" maxlength="1" required>
+
             </div>
             <button type="submit" class="form-actions" th:text="#{profile.verifyCode}"></button>
           </form>

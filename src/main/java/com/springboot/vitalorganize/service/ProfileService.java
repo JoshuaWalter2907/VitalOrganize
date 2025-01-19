@@ -223,7 +223,7 @@ public class ProfileService {
         profileEditResponseDTO.setSubscriptions(subscriptions);
         profileEditResponseDTO.setProfile(userEntity);
         profileEditResponseDTO.setProfilePublic(userEntity.isPublic());
-        profileEditResponseDTO.setAuth(profileEditRequestDTO.isAuth());
+        profileEditResponseDTO.setAuth(profileEditRequestDTO.isFa());
         profileEditResponseDTO.setKind(profileEditRequestDTO.getKind());
 
         int pageNumber = profileEditRequestDTO.getPage();

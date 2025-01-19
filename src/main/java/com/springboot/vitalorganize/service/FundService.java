@@ -221,7 +221,7 @@ public class FundService {
 
         FundEntity fund = getFund(deleteFundRequestDTO.getFundId());
         if(getLatestFundBalance(fund) != 0) {
-            deleteFundResponseDTO.setId(deleteFundResponseDTO.getId());
+            deleteFundResponseDTO.setId(deleteFundRequestDTO.getFundId());
             deleteFundResponseDTO.setBalance(getLatestFundBalance(fund));
             return deleteFundResponseDTO;
         }else {

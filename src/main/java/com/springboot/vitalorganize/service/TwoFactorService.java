@@ -32,6 +32,16 @@ public class TwoFactorService {
     public void generateAndSendCode(FARequestDTO faRequestDTO) {
         UserEntity userEntity = userService.getCurrentUser();
         String email = faRequestDTO.getEmail();
+        if (email == null || email.isEmpty()) {
+            if("provider".equals(userEntity.getProvider()))
+                email = userEntity.getSendToEmail();
+            else{
+                email = userEntity.getEmail();
+
+            }
+        }
+        System.out.println(email);
+
 
         String code = String.format("%06d", new Random().nextInt(999999));
 
@@ -55,6 +65,7 @@ public class TwoFactorService {
 
         UserEntity userEntity = userService.getCurrentUser();
 
+        System.out.println(code);
         if (userEntity.getTwoFactorCode().equals(code) &&
                 userEntity.getTwoFactorExpiry().isAfter(LocalDateTime.now())) {
 
