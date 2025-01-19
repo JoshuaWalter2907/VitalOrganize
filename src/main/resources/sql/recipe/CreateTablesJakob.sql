@@ -8,7 +8,9 @@ CREATE TABLE Recipe (
     source VARCHAR(255),
     source_url VARCHAR(255),
     title VARCHAR(255),
-    total_time DOUBLE
+    total_time DOUBLE,
+    user_id bigint,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Tabelle für Diäten (eine Diät pro Rezept)

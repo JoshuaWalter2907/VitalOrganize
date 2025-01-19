@@ -1,105 +1,128 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Rezepte</title>
-    <link rel="stylesheet" href="/css/recipe/recipe.css">
+    <title th:text="#{recipes.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+    <link rel="stylesheet" th:href="@{/css/recipe/recipe.css}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-<h1>Rezeptübersicht</h1>
-<!-- Suchfeld -->
-<form action="#" method="get">
-    <input type="text" name="search" placeholder="Suche nach Rezepten" />
-    <button type="submit">Suchen</button>
-</form>
-<!-- Anlegen Button für interne Rezepte -->
-<div th:if="${isInternal}">
-    <button id="insertButton">Rezept anlegen</button>
-</div>
-<!-- Modal -->
-<div id="insertModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>Neues Rezept anlegen</h3>
-        <form id="newRecipeForm" method="post" action="/recipes/new">
-            <label for="recipeName">Rezeptname:</label>
-            <input type="text" id="recipeName" name="recipeName" placeholder="Rezept eingeben..." required />
-            <div class="modal-actions">
-                <button type="button" id="cancelButton" class="modal-button">Abbrechen</button>
-                <button type="submit" id="saveButton" class="modal-button save">Speichern</button>
-            </div>
+<body th:class="${theme}">
+<header th:replace="~{fragments/header :: header}"></header>
+<div class="recipe-wrapper">
+    <div class="recipe-content">
+        <h1 th:text="#{recipes.overview}"></h1>
+    </div>
+    <div class="recipe-content">
+        <!-- Suchfeld -->
+        <form action="#" method="get">
+            <input class="name-input" type="text" name="search" th:placeholder="#{recipes.searchField}" />
+            <button class="action-item" type="submit" th:text="#{recipes.searchButton}"></button>
         </form>
+        <!-- Anlegen Button für interne Rezepte -->
+        <div th:if="${isInternal}">
+            <button class="action-item" id="insertButton" th:text="#{recipes.addRecipe}"></button>
+        </div>
+        <!-- Modal -->
+        <div id="insertModal" class="modal">
+            <!-- Modal content -->
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3 class="modal-title"  th:text="#{recipe.add.title}">Neues Rezept anlegen</h3>
+                <form id="newRecipeForm" method="post" action="/recipes/new">
+                    <label class="modal-name" for="recipeName" th:text="#{recipe.add.name}">Rezeptname:</label>
+                    <input class="modal-name-input" type="text" id="recipeName" name="recipeName" th:placeholder="#{recipe.add.textField}" required />
+                    <div class="modal-actions">
+                        <button type="button" id="cancelButton" class="modal-button" th:text="#{recipe.add.cancel}">Abbrechen</button>
+                        <button type="submit" id="saveButton" class="modal-button save" th:text="#{recipe.add.save}">Speichern</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="recipe-content">
+        <!-- Tabelle -->
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{recipes.name}"></th>
+                <th th:text="#{recipes.special}"></th>
+                <th th:text="#{recipes.difficulty}"></th>
+                <th th:text="#{recipes.portions}"></th>
+                <th th:text="#{recipes.ingredients}"></th>
+                <th th:text="#{recipes.calories}"></th>
+                <th th:if="${!isInternal}" th:text="#{recipes.rating}"></th>
+                <th th:if="${!isInternal}" th:text="#{recipes.source}"></th>
+                <th th:text="#{recipes.time}"></th>
+                <th th:text="#{recipes.actions}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="recipe : ${recipes}">
+                <td th:text="${recipe.title}" data-label="Titel"></td>
+                <td data-label="Diät">
+                    <ul th:if="${recipe.diet != null && !recipe.diet.isEmpty()}">
+                        <li th:each="dietData : ${recipe.diet}" th:text="${dietData}"></li>
+                    </ul>
+                </td>
+                <td th:text="${recipe.difficulty}" data-label="Schwierigkeit"></td>
+                <td th:text="${recipe.portions}" data-label="Portionen"></td>
+                <td data-label="Zutaten">
+                    <ul>
+                        <li th:each="ingredient : ${recipe.ingredients}">
+                            <span th:text="${ingredient.amount}"></span>
+                            <span th:text="${ingredient.unit}"></span>
+                            <span th:text="${ingredient.name}"></span>
+                        </li>
+                    </ul>
+                </td>
+                <td th:text="${recipe.nutrition != null ? recipe.nutrition.kcal : ''}" data-label="Kalorien"></td>
+                <td th:if="${!isInternal}" data-label="Bewertung">
+                    <span th:text="${recipe.rating != null ? recipe.rating.ratingValue : ''}"></span>
+                    (<span th:text="${recipe.rating != null ? recipe.rating.ratingCount : ''}"></span> Bewertungen)
+                </td>
+                <td th:if="${!isInternal}" data-label="Quelle">
+                    <a th:href="${recipe.source}" th:text="${recipe.source_url}"></a>
+                </td>
+                <td th:text="${recipe.totalTime != null ? recipe.totalTime / 60 : ''}" data-label="Zeit"></td>
+                <td th:if="${isInternal}">
+                        <!-- Edit Button -->
+                        <button th:data-id="${recipe.id}"
+                                onclick="editRecipe(this, this.getAttribute('data-id'))"
+                        class="action-item" th:text="#{recipes.edit}"></button>
+                        <!-- Delete Button -->
+                        <button th:data-id="${recipe.id}"
+                                onclick="deleteRecipe(this, this.getAttribute('data-id'))"
+                                class="action-item" th:text="#{recipes.delete}"></button>
+                        <!-- Download Button -->
+                        <a th:href="@{/recipes/{id}/export(id=${recipe.id})}" download
+                           class="action-item" th:text="#{recipes.export}"></a>
+                        <!-- Cooked Button -->
+                        <form th:action="@{/recipes/cooked}" method="post">
+                            <input type="hidden" name="id" th:value="${recipe.id}">
+                            <button type="submit" class="action-item" th:text="#{recipes.cooked}"></button>
+                        </form>
+                </td>
+                <td th:if="${!isInternal}">
+                    <form th:action="@{/recipes/saveLocal}" method="post">
+                        <input type="hidden" name="title" th:value="${recipe.title}">
+                        <input type="hidden" name="difficulty" th:value="${recipe.difficulty}">
+                        <input type="hidden" name="portions" th:value="${recipe.portions}">
+                        <input type="hidden" name="ingredients"
+                               th:value="${recipe.ingredients}">
+                        <input type="hidden" name="calories" th:value="${ recipe.nutrition.kcal}">
+                        <input type="hidden" name="rating" th:value="0">
+                        <input type="hidden" name="source" th:value="${recipe.source}">
+                        <input type="hidden" name="time" th:value="${recipe.totalTime}">
+                        <button class="action-item" type="submit"  th:text="#{recipes.saveLocal}"></button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
-<!-- Tabelle -->
-<table>
-    <thead>
-    <tr>
-        <th>Titel</th>
-        <th>Diät</th>
-        <th>Schwierigkeit</th>
-        <th>Portionen</th>
-        <th>Zutaten</th>
-        <th>Kalorien</th>
-        <th th:if="${!isInternal}">Bewertung</th>
-        <th th:if="${!isInternal}">Quelle</th>
-        <th>Gesamtzeit (min)</th>
-        <th>Aktionen</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="recipe : ${recipes}">
-        <td th:text="${recipe.title}" data-label="Titel"></td>
-        <td data-label="Diät">
-            <ul th:if="${recipe.diet != null && !recipe.diet.isEmpty()}">
-                <li th:each="dietData : ${recipe.diet}" th:text="${dietData}"></li>
-            </ul>
-        </td>
-        <td th:text="${recipe.difficulty}" data-label="Schwierigkeit"></td>
-        <td th:text="${recipe.portions}" data-label="Portionen"></td>
-        <td data-label="Zutaten">
-            <ul>
-                <li th:each="ingredient : ${recipe.ingredients}">
-                    <span th:text="${ingredient.amount}"></span>
-                    <span th:text="${ingredient.unit}"></span>
-                    <span th:text="${ingredient.name}"></span>
-                </li>
-            </ul>
-        </td>
-        <td th:text="${recipe.nutrition != null ? recipe.nutrition.kcal : ''}" data-label="Kalorien"></td>
-        <td th:if="${!isInternal}" data-label="Bewertung">
-            <span th:text="${recipe.rating != null ? recipe.rating.ratingValue : ''}"></span>
-            (<span th:text="${recipe.rating != null ? recipe.rating.ratingCount : ''}"></span> Bewertungen)
-        </td>
-        <td th:if="${!isInternal}" data-label="Quelle">
-            <a th:href="${recipe.source}" th:text="${recipe.source_url}"></a>
-        </td>
-        <td th:text="${recipe.totalTime != null ? recipe.totalTime / 60 : ''}" data-label="Zeit"></td>
-        <td th:if="${isInternal}">
-            <button th:data-id="${recipe.id}"
-                    onclick="editRecipe(this, this.getAttribute('data-id'))">Bearbeiten</button>
-            <button th:data-id="${recipe.id}"
-                    onclick="deleteRecipe(this, this.getAttribute('data-id'))">Löschen</button>
-            <a class="button-link" th:href="@{/recipes/{id}/export(id=${recipe.id})}" download>Rezept als PDF exportieren</a>
-        </td>
-        <td th:if="${!isInternal}">
-            <form th:action="@{/recipes/saveLocal}" method="post">
-                <input type="hidden" name="title" th:value="${recipe.title}">
-                <input type="hidden" name="difficulty" th:value="${recipe.difficulty}">
-                <input type="hidden" name="portions" th:value="${recipe.portions}">
-                <input type="hidden" name="ingredients"
-                       th:value="${recipe.ingredients}">
-                <input type="hidden" name="calories" th:value="${ recipe.nutrition.kcal}">
-                <input type="hidden" name="rating" th:value="0">
-                <input type="hidden" name="source" th:value="${recipe.source}">
-                <input type="hidden" name="time" th:value="${recipe.totalTime}">
-                <button type="submit">Als Favorit hinzufügen</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
 <script src="/js/recipe/recipes.js" defer></script>
 </body>
 </html>

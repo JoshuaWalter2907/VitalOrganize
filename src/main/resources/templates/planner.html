@@ -1,38 +1,52 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Haushaltsplaner</title>
+    <title th:text="#{planner.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/themes.css}">
+    <link rel="stylesheet" th:href="@{/css/planner.css}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
-<h1>Haushaltsplaner</h1>
+<body th:class="${theme}">
+    <header th:replace="~{fragments/header :: header}"></header>
+    <div class="planner-container">
+        <h1 th:text="#{planner.header}"></h1>
+        <table border="1">
+            <thead>
+            <tr>
+                <th th:text="#{planner.week}">Woche</th>
+                <th th:text="#{planner.name}">Name</th>
+                <th th:text="#{planner.role}">Rolle</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="assignment : ${assignments}">
+                <td th:text="${assignment.week}"></td>
+                <td th:text="${assignment.personName}"></td>
+                <td th:text="${assignment.role}"></td>
+            </tr>
+            </tbody>
+        </table>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>Woche</th>
-        <th>Name</th>
-        <th>Rolle</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="assignment : ${assignments}">
-        <td th:text="${assignment.week}"></td>
-        <td th:text="${assignment.personName}"></td>
-        <td th:text="${assignment.role}"></td>
-    </tr>
-    </tbody>
-</table>
-
-<div th:if="${isAdmin}">
-    <h2>Neue Zuweisung</h2>
-    <form method="post" action="/planner/add">
-        <label>Woche (Montag):
-            <input type="date" name="week" min="2025-01-01" max="2025-12-31" required />
-        </label><br/>
-        <label>Name: <input type="text" name="personName" required/></label><br/>
-        <label>Rolle: <input type="text" name="role" required/></label><br/>
-        <button type="submit">Hinzufügen</button>
-    </form>
-</div>
+        <div th:if="${isAdmin}">
+            <h2 th:text="#{planner.newAssignment}"></h2>
+            <form method="post" action="/planner/add">
+                <div>
+                    <label th:text="#{planner.week}"></label><br>
+                    <input class="input" type="date" name="week" required />
+                </div>
+                <div>
+                    <label th:text="#{planner.name}"></label><br>
+                    <input class="input" type="text" name="personName" required/>
+                </div>
+                <div>
+                    <label th:text="#{planner.role}"></label><br>
+                    <input class="input" type="text" name="role" required/>
+                </div>
+                <button class="add-button" type="submit" th:text="#{planner.add}"></button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

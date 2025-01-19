@@ -1,4 +1,4 @@
-CREATE VIEW RecipeView AS
+CREATE OR REPLACE VIEW RecipeView AS
 SELECT
     r.id AS recipe_id,
     r.title,
@@ -9,6 +9,7 @@ SELECT
     r.source,
     r.source_url,
     r.total_time,
+    r.user_id,
     GROUP_CONCAT(DISTINCT rd.diet ORDER BY rd.diet) AS diets,
     GROUP_CONCAT(DISTINCT ri.image_url ORDER BY ri.image_url) AS image_urls,
     GROUP_CONCAT(DISTINCT CONCAT_WS('|', rin.name, rin.amount, rin.unit) ORDER BY rin.name) AS ingredients,
@@ -22,7 +23,6 @@ FROM
         LEFT JOIN RecipeRating rr ON r.id = rr.recipe_id
 GROUP BY
     r.id;
-
 
 CREATE OR REPLACE VIEW MealReportView AS
 SELECT

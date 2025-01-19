@@ -1,0 +1,60 @@
+.planner-container {
+    background: rgba(0,0,0,.1);
+    width: 70%;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.input {
+    display: inline-block;
+    width: 200px;
+    padding: 10px 15px;
+    background-color: #d0d0d0;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    box-sizing: border-box;
+    text-align: center;
+    outline: none;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+/* Tabellen-Content */
+table {
+    border: #0A7075 hidden;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+table ul {
+    list-style-type: none;
+}
+th, td {
+    border-left: #0A7075 hidden;
+    border-bottom: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.add-button {
+    display: inline-block;
+    width: 150px;
+    padding: 10px 15px;
+    background-color: var(--text-color-light);
+    color: var(--text-color-dark);
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}

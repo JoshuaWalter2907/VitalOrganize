@@ -1,3 +1,15 @@
+.recipe-wrapper{
+    background: rgba(0,0,0,.1);
+    width: 70%;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.recipe-content{
+    margin-bottom: 50px;
+    margin-top: 25px;
+}
 /* Modal-Stil */
 .modal {
     display: none; /* Standardmäßig ausblenden */
@@ -18,7 +30,7 @@
     padding: 20px;
     border: 1px solid #888;
     width: 90%; /* Responsiv: bis zu 90% der Breite */
-    max-width: 400px; /* Maximal 400px */
+    max-width: 600px; /* Maximal 400px */
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -44,6 +56,22 @@
     text-align: right;
 }
 
+.name-input {
+    display: inline-block;
+    width: 200px;
+    padding: 10px 15px;
+    background-color: #d0d0d0;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    box-sizing: border-box;
+    text-align: center;
+    outline: none;
+    transition: background-color 0.3s ease;
+}
+
 .modal-button {
     background-color: #f2f2f2;
     color: #333;
@@ -52,6 +80,7 @@
     margin-left: 5px;
     cursor: pointer;
     border-radius: 3px;
+    font-size: 20px;
 }
 
 .modal-button.save {
@@ -67,22 +96,46 @@
     background-color: #45a049;
 }
 
-.button-link {
+.modal-title{
+    color: var(--text-color-light);
+    margin-bottom: 10px;
+    font-size: 30px;
+}
+
+.modal-name{
+    margin-right: 5px;
+    font-size: 20px;
+}
+
+.modal-name-input{
+    border-radius: 3px;
+    font-size: 20px;
+}
+
+.action-item {
     display: inline-block;
-    padding: 10px 20px;
-    font-size: 14px;
-    color: white;
-    background-color: #007bff;
+    width: 150px;
+    padding: 10px 15px;
+    background-color: var(--text-color-light);
+    color: var(--text-color-dark);
     text-align: center;
     text-decoration: none;
     border-radius: 5px;
-    border: 1px solid #007bff;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
 }
 
-.button-link:hover {
+.action-item:hover {
     background-color: #0056b3;
-    border-color: #0056b3;
+}
+
+/* Optional: Entfernt den Fokusrahmen bei Klicks (wenn nicht erwünscht) */
+.action-item:focus {
+    outline: none;
 }
 
 /* Tabellen-Content */
@@ -90,14 +143,15 @@ table {
     border-collapse: collapse;
     width: 100%;
 }
+table ul {
+    list-style-type: none;
+}
 th, td {
-    border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
     padding: 8px;
     text-align: left;
 }
-th {
-    background-color: #f2f2f2;
-}
+
 
 /* Responsives Design für schmale Bildschirme */
 @media screen and (max-width: 600px) {

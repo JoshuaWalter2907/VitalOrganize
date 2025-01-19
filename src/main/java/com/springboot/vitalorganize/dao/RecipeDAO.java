@@ -5,13 +5,11 @@ import com.springboot.vitalorganize.model.Recipe.Ingredient;
 import com.springboot.vitalorganize.model.Recipe.Nutrition;
 import com.springboot.vitalorganize.model.Recipe.Rating;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -26,11 +24,12 @@ public class RecipeDAO {
     /**
      * Speichert ein Rezept in der Datenbank.
      */
-    public int saveRecipe(Recipe recipe) {
+    public int insertRecipe(Recipe recipe) {
         // Speichert das Hauptrezept
         String insertRecipeSql = """
-            INSERT INTO Recipe (difficulty, keywords, nutrition_kcal, portions, source, source_url, title, total_time)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Recipe (difficulty, keywords, nutrition_kcal, portions, source, source_url, title, 
+                        total_time, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
         jdbcTemplate.update(insertRecipeSql,
@@ -41,7 +40,8 @@ public class RecipeDAO {
                 recipe.getSource(),
                 recipe.getSource_url(),
                 recipe.getTitle(),
-                recipe.getTotalTime());
+                recipe.getTotalTime(),
+                recipe.getUser_id());
 
         // Holen der generierten ID
         Integer recipeId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
@@ -99,12 +99,20 @@ public class RecipeDAO {
         String sql = "SELECT * FROM RecipeView WHERE title LIKE ?";
         return jdbcTemplate.query(sql, new RecipeViewRowMapper(), "%" + name + "%");
     }
+    public List<Recipe> loadRecipeForUser(String name, Long id) {
+        String sql = "SELECT * FROM RecipeView WHERE title LIKE ? AND user_id = ?";
+        return jdbcTemplate.query(sql, new RecipeViewRowMapper(), "%" + name + "%", id);
+    }
     /**
      * Lädt eine Liste mit allen Rezepten
      */
     public List<Recipe> loadAllRecipes() {
         String sql = "SELECT * FROM RecipeView";
         return jdbcTemplate.query(sql, new RecipeViewRowMapper());
+    }
+    public List<Recipe> loadAllRecipesForUser(Long id) {
+        String sql = "SELECT * FROM RecipeView WHERE user_id = ?";
+        return jdbcTemplate.query(sql, new RecipeViewRowMapper(), id);
     }
 
     public void delete(Long id) {

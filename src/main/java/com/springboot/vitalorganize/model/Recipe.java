@@ -17,6 +17,7 @@ public class Recipe {
     private String source_url;
     private String title;
     private double totalTime;
+    private Long user_id;
 
     public String getId() {
         return "" + id;
@@ -120,6 +121,14 @@ public class Recipe {
 
     public void setTotalTime(double totalTime) {
         this.totalTime = totalTime;
+    }
+
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long user_id) {
+        this.user_id = user_id;
     }
 
     public static class Ingredient {

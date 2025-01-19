@@ -35,6 +35,8 @@ public class UserEntity {
     private String role;
     @Setter
     private LocalDate birthday;
+    @Setter
+    private String wg_role;
 
     @Setter
     @Column(nullable = false)
