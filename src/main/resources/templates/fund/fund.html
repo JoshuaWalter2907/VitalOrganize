@@ -14,20 +14,20 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div>
 
 <div class="main-container">
   <div class="left-side">
     <form th:action="@{/fund/newfund}">
       <button type="submit" class="create-chat-btn">
-        <i class="fa fa-plus"></i> <!-- Font Awesome Plus Icon -->
+        <i class="fa fa-plus"></i>
       </button>
     </form>
     <div class="search-container">
       <form action="/fund" method="get" class="search-form">
         <div class="input-container">
           <button type="submit" class="search-button">
-            <i class="fa fa-search"></i> <!-- Such-Icon -->
+            <i class="fa fa-search"></i>
           </button>
           <input type="text" name="query" th:placeholder="#{fund.search}" th:value="${query}">
         </div>
@@ -46,12 +46,11 @@
         <p th:text="#{fund.placeholder.delete}" th:if="${delete != null}">Bitte löschen sie erst alle Funds</p>
       </div>
       <div class="fund-users-container" th:if="${fundData.myfunds != null}">
-        <!-- Admin anzeigen -->
         <div class="user-container">
           <h4>Admin</h4>
           <div class="admin-dropdown" th:if="${fundData.loggedInUser == fundData.myfunds.admin}">
             <button class="dropdown-button-admin">
-              <i class="fa fa-bars"></i> <!-- Font Awesome Menü-Icon -->
+              <i class="fa fa-bars"></i>
             </button>
             <div class="dropdown-menu-admin">
               <a class="dropdown-item-admin" th:href="@{/fund/edit-members(fundId=${fundData.myfunds.id})}" th:text="#{fund.edit}">Edit Members</a>
@@ -74,7 +73,6 @@
           </a>
         </div>
 
-        <!-- Andere Benutzer anzeigen -->
         <div class="other-users-container">
           <h4 th:text="#{fund.otherusers}">Andere Benutzer</h4>
           <div class="users-grid">
@@ -90,7 +88,6 @@
       <div th:if="${fundData.myfunds != null}">
         <div class="fund-balance">
 
-          <!-- Formular für Einzahlung -->
           <form method="post" th:action="@{/fund/payinto}" class="form-card">
             <input type="hidden" name="fundid" th:value="${fundData.myfunds.id}">
             <input type="hidden" name="type" value="EINZAHLEN">
@@ -111,10 +108,8 @@
             </button>
           </form>
 
-          <!-- Formular für Auszahlung -->
 
 
-          <!-- Anzeigen des Kontostands -->
           <div class="fund-image" th:if="${fundData.myfunds.payments != null && !fundData.myfunds.payments.isEmpty()}">
             <p>
               <span th:text="#{fund.currentbalance}"></span>

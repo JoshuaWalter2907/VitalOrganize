@@ -14,7 +14,7 @@
 <body th:class="${theme}">
 
 
-<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div>
 
 <div class="wrapper">
     <h1 th:text="#{profile.completeProfile}"></h1>
@@ -31,7 +31,6 @@
                 <label th:text="#{profile.username}"></label>
                 <input type="text" id="username" name="username" th:value="${RegistrationAdditionData.username != null ? RegistrationAdditionData.username : ''}" required>
             </div>
-            <!-- Display error message -->
             <p th:if="${RegistrationAdditionData.error}" th:text="${RegistrationAdditionData.error}" style="color:red;"></p>
             <div class="input-box-profile">
                 <label th:text="#{profile.birthDate}"></label>

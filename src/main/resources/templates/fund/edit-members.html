@@ -16,7 +16,7 @@
 </head>
 <body th:class="${theme}">
 
-<div th:replace="~{fragments/header :: header}" id="header"></div> <!-- Achte darauf, dass das Fragment korrekt geladen wird -->
+<div th:replace="~{fragments/header :: header}" id="header"></div>
 
 <div class="main-container">
   <div class="left-side">
@@ -25,7 +25,7 @@
         <input type="hidden" name="fundId" th:value="${editFundData.id}">
         <div class="input-container">
           <button type="submit" class="search-button">
-            <i class="fa fa-search"></i> <!-- Such-Icon -->
+            <i class="fa fa-search"></i>
           </button>
           <input type="text" name="query" th:placeholder="#{fund.search.person}" th:value="${editFundData.query}">
         </div>
@@ -38,7 +38,6 @@
           <label class="user-label">
             <img th:src="${entry.profilePictureUrl}" alt="UserImage" class="profile-image">
             <span class="username" th:text="${entry.username}">Benutzername</span>
-            <!-- Überprüfen, ob der Friend in fund.users ist und wenn ja, das Checkbox ankreuzen -->
             <input type="checkbox" name="selectedUsers" th:value="${entry.id}" class="user-checkbox"
                    th:checked="${editFundData.fund.users.contains(entry)}">
           </label>
